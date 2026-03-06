@@ -915,9 +915,11 @@ measurement pipeline.
 % - Keep Y-axis fixed at 0 to 100.
 % - Add value labels.
 \caption{Coverage of structured SUT-relevant signals across corpora.
-Platform signal is high in ATT\&CK-style corpora, while CVE-linked
-signal is sparse; CAPEC zeros are schema-driven in this dataset.}\label{fig:coverage}
-\Description{Grouped bar chart for Enterprise, Mobile, ICS, CAPEC, and FiGHT with measured platform, software-link, and CVE-link rates.}
+Percentages are attack-pattern-level rates per corpus:
+$\rho_P$ (has platform field), $\rho_S$ (linked to software), and
+$\rho_V$ (contains CVE evidence). CAPEC zeros are schema-driven in this
+dataset.}\label{fig:coverage}
+\Description{Grouped bar chart for Enterprise, Mobile, ICS, CAPEC, and FiGHT with measured attack-pattern-level rates: platform field presence, software linkage, and CVE evidence.}
 \end{figure}
 
 \myparagraph{Campaign-level platform signal under software-only inference}
@@ -937,7 +939,10 @@ and are multi-label; they indicate compatibility evidence, not exclusive
 or certain per-campaign target OS attribution.
 
 \begin{table}[!htb]
-\caption{Software-derived OS-family evidence across Enterprise campaigns (multi-label counts).}\label{tab:campaign_os_families}
+\caption{Software-derived OS-family evidence across Enterprise campaigns
+(multi-label counts). Values are inferred from software-linked platform
+tags and should be read as compatibility evidence, not exclusive target
+OS attribution.}\label{tab:campaign_os_families}
 \centering\scriptsize
 \begin{tabular}{lr}
 \toprule
@@ -986,8 +991,10 @@ labels without a version pin.
 % FIGURE NOTE:
 % - Stacked bar must sum to 100%.
 % - Include total N in caption or legend.
-\caption{Specificity of software references linked to campaigns and intrusion sets. Most references remain unversioned, limiting direct SUT instantiation.}\label{fig:software_specificity}
-\Description{Stacked bar with three segments: software references without version and without CPE, with textual version but no CPE, and with CPE, using measured counts and percentages.}
+\caption{Specificity of active Enterprise software objects used as SUT
+evidence (N=\enterpriseactivesoftwarecount{}). Most objects remain
+unversioned, limiting direct SUT instantiation.}\label{fig:software_specificity}
+\Description{Stacked bar with three segments over active Enterprise software objects: no version and no CPE, textual version without CPE, and CPE present.}
 \end{figure}
 
 \subsection{Vulnerability Reference Rate (RQ1, RQ2)}
@@ -1052,8 +1059,10 @@ SharePoint ToolShell Exploitation & CVE-2025-49704; CVE-2025-49706; CVE-2025-537
 % FIGURE NOTE:
 % - Show count and percentage on bars.
 % - Keep parser version in script header.
-\caption{Location of CVE evidence in the Enterprise corpus. A non-trivial share appears only in free text, not in structured fields.}\label{fig:cve_location}
-\Description{Two horizontal bars comparing measured CVE evidence found in structured fields versus free-text descriptions.}
+\caption{Location of CVE evidence in the Enterprise corpus
+(N=\cveuniquecount{} unique CVEs). A non-trivial share appears only in
+free text, not in structured fields.}\label{fig:cve_location}
+\Description{Two horizontal bars comparing measured CVE evidence in structured fields versus free-text-only locations across unique CVEs extracted from Enterprise STIX.}
 \end{figure}
 
 \subsection{Initial Access Signals (RQ1 Supplement)}
@@ -1166,8 +1175,10 @@ Software + compatibility & \sutprofileuniquesoftwarecompatpercentage\% & \sutpro
 \begin{figure}[!htb]
 \centering
 \resizebox{\columnwidth}{!}{\input{figs/ablation_template.tex}}
-\caption{RQ3 ablation: confusion rate by profile-setting variant at $\delta=0.10$. Compatibility-summary features provide the only measurable reduction.}\label{fig:ablation_rq3}
-\Description{Horizontal bar chart of confused-group percentages for six profile settings: software only, software plus CVE, software plus platform, software plus CVE plus platform, software plus OS family, and software plus compatibility summary.}
+\caption{RQ3 ablation over intrusion-set SUT profiles at $\delta=0.10$.
+Compatibility-summary features provide the only measurable confusion
+reduction.}\label{fig:ablation_rq3}
+\Description{Horizontal bar chart of confusion percentages for six intrusion-set profile variants: software only, software plus CVE, software plus platform, software plus CVE plus platform, software plus OS family, and software plus compatibility summary.}
 \end{figure}
 Figure~\ref{fig:jaccard_cdf} visualizes the full confusion
 distribution. The key reading is that adding CVE evidence does not
@@ -1179,8 +1190,10 @@ materially shift nearest-neighbor separability at $\delta = 0.10$.
 % FIGURE NOTE:
 % - Plot both curves using the same intrusion-set population.
 % - Mark delta=0.1 with a vertical line and label.
-\caption{Nearest-neighbor profile confusion under software-only and software+CVE constraints. The curves largely overlap, indicating limited separability gain from CVE augmentation.}\label{fig:jaccard_cdf}
-\Description{CDF of nearest-neighbor Jaccard distance with measured software-only and software-plus-CVE curves. A vertical line marks delta equals 0.1.}
+\caption{Nearest-neighbor profile confusion for intrusion-set SUT profiles
+under software-only and software+CVE constraints. The curves largely
+overlap, indicating limited separability gain from CVE augmentation.}\label{fig:jaccard_cdf}
+\Description{CDF of nearest-neighbor Jaccard distance for intrusion-set profiles, with measured software-only and software-plus-CVE curves. A vertical line marks delta equals 0.1.}
 \end{figure}
 % LTeX: enabled=true
 
