@@ -585,7 +585,7 @@ model architecture~\cite{milajerdi2019holmes,han2020unicorn,DBLP:conf/uss/Dong0N
 data is sufficient to instantiate the environment where emulation
 must run.
 
-\myparagraph{CTI extraction pipelines and machine-actionability}
+\myparagraph{CTI extraction pipelines}
 Recent CTI extraction pipelines improve structured recovery of
 behavioral intelligence from reports, including TTP extraction and
 graph construction~\cite{savat2021extractor,DBLP:journals/corr/abs-2412-10872,cheng2025ctinexus,DBLP:conf/uss/BuchelPLCZBE0GC25}.
@@ -748,9 +748,9 @@ Table~\ref{tab:dataset} summarizes object counts across all analyzed
 sources.
 
 \begin{table}[!htb]
-\caption{STIX object counts across ATT\&CK domains and sources
-         (total bundle counts; active counts after deprecation
-         filtering are reported in Section~\ref{sec:methodology}).}\label{tab:dataset}
+\caption{STIX object totals across ATT\&CK domains and sources.
+Active counts after deprecation filtering are reported in
+Section~\ref{sec:methodology}.}\label{tab:dataset}
 \centering\footnotesize
 \begin{tabular}{lrrrrr}
 \toprule
@@ -779,9 +779,7 @@ coverage contrast only; in this setup it is not a campaign-level CTI
 corpus.
 
 The Enterprise bundle contains 20,048 relationship objects.
-After excluding 144 deprecated or revoked \texttt{attack-pattern}
-objects, 15 deprecated \texttt{intrusion-set} objects, and
-3 deprecated \texttt{malware} objects, our analysis covers
+After deprecation and revocation filtering, our analysis covers
 691 active techniques, 52 campaigns, 172 intrusion sets, and
 784 software artifacts (693 malware~$+$~91 tools).
 The same bundle version and object-filtering conventions are used
@@ -790,16 +788,15 @@ study~\cite{ferraz2026proceduralsemanticsgapstructured}.
 
 \subsection{Extracted Fields}
 
-For each \texttt{attack-pattern} object, we extract
+For each attack-pattern object, we extract four fields:
 \texttt{x\_mitre\_platforms},
 \texttt{x\_mitre\_system\_requirements},
 \texttt{x\_mitre\_permissions\_required}, and
-\texttt{x\_mitre\_defense\_bypassed}. For \texttt{malware} and
-\texttt{tool} objects, we extract \texttt{name}, \texttt{aliases},
-\texttt{x\_mitre\_platforms}, and any CPE or version strings in
-\texttt{external\_references}. CVE identifiers are extracted from
-\texttt{description} fields and from linked
-\texttt{vulnerability} objects.
+\texttt{x\_mitre\_defense\_bypassed}.
+For malware and tool objects, we extract names, aliases, platform tags,
+and any CPE or version strings in \texttt{external\_references}.
+CVE identifiers are extracted from \texttt{description} fields and from
+linked \texttt{vulnerability} objects.
 
 % ===============================================================
 \section{Measurement Methodology}\label{sec:methodology}
@@ -842,11 +839,12 @@ precedence:
       \texttt{Containers} or \texttt{Linux} and the technique does not
       belong to kernel-interaction or boot-persistence clusters:
       \textbf{CF}.
-\item If \texttt{x\_mitre\_permissions\_required} contains
-      \texttt{Administrator}, \texttt{SYSTEM}, or \texttt{root}, or the
+\item If permissions-required fields contain administrator-level
+      privileges (\texttt{Administrator}, \texttt{SYSTEM}, or
+      \texttt{root}), or the
       technique falls in privilege-escalation or boot/firmware
       defense-evasion: \textbf{VMR}.
-\item If \texttt{x\_mitre\_platforms} references
+\item If platform tags reference
       \texttt{Windows Domain} or \texttt{Identity Provider}, or the
       technique is Lateral Movement with an Active Directory software
       dependency: \textbf{ID}.
@@ -916,7 +914,9 @@ measurement pipeline.
 % FIGURE NOTE:
 % - Keep Y-axis fixed at 0 to 100.
 % - Add value labels.
-\caption{Coverage of structured SUT-relevant signals across corpora. Platform signal is high in ATT\&CK-style corpora, while CVE-linked signal is sparse; CAPEC zeros are schema-driven in this dataset.}\label{fig:coverage}
+\caption{Coverage of structured SUT-relevant signals across corpora.
+Platform signal is high in ATT\&CK-style corpora, while CVE-linked
+signal is sparse; CAPEC zeros are schema-driven in this dataset.}\label{fig:coverage}
 \Description{Grouped bar chart for Enterprise, Mobile, ICS, CAPEC, and FiGHT with measured platform, software-link, and CVE-link rates.}
 \end{figure}
 
@@ -931,8 +931,10 @@ remaining \enterprisecampaignsplatformunknowncount{} campaigns
 fields alone: \emph{FrostyGoop Incident}, \emph{KV Botnet Activity},
 \emph{Leviathan Australian Intrusions}, \emph{SPACEHOP Activity}, and
 \emph{ShadowRay}. Table~\ref{tab:campaign_os_families} summarizes the
-OS-family distribution among campaigns with signal. Campaigns can map
-to multiple families.
+OS-family distribution among campaigns with signal.
+These OS-family counts are inferred from software-linked platform tags
+and are multi-label; they indicate compatibility evidence, not exclusive
+or certain per-campaign target OS attribution.
 
 \begin{table}[!htb]
 \caption{Software-derived OS-family evidence across Enterprise campaigns (multi-label counts).}\label{tab:campaign_os_families}
@@ -1066,8 +1068,8 @@ active techniques in the Initial Access tactic. At campaign level,
 Initial Access technique.
 
 To avoid over-interpretation, we report a conservative
-\emph{social-interaction proxy}: campaigns linked to
-T1566.* (Phishing family) or T1199 (Trusted Relationship).
+\emph{social-interaction proxy}. We count campaigns linked to
+T1566.* (Phishing family) or to T1199 (Trusted Relationship).
 Under this rule,
 \campaignswithsocialinitialaccesscount{} campaigns
 (\campaignswithsocialinitialaccesspct\%)
