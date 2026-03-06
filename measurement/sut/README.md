@@ -45,6 +45,7 @@ After a successful run, these files are regenerated:
 - `results/audit/initial_access_campaigns.csv`
 - `results/audit/initial_access_techniques.csv`
 - `results/audit/profile_specificity_software_only.csv`
+- `results/audit/profile_ablation_summary.csv`
 - `results/audit/evidence_threshold_curve.csv`
 - `results/audit/delta_sensitivity.csv`
 - `results/audit/bootstrap_confusion_distribution.csv`

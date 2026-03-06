@@ -1,0 +1,4 @@
+setting,unique_count,unique_pct,confused_count,confused_pct,total_is,num_features
+software_only,156,90.7,16,9.3,172,582
+software_cve,156,90.7,16,9.3,172,585
+software_platform,156,90.7,16,9.3,172,595

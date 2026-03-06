@@ -846,10 +846,12 @@ def analyze_compatibility(techniques, rel_fwd, by_id):
 # 6. SUT Profile Specificity (Jaccard)
 # ─────────────────────────────────────────────────────────────────
 
-def build_sut_profiles(intrusion_sets, software_objects, rel_fwd, by_id, include_cve=False):
+def build_sut_profiles(
+    intrusion_sets, software_objects, rel_fwd, by_id, include_cve=False, include_platform=False
+):
     """
     Build binary SUT profile vectors for each intrusion set.
-    Profile = set of software IDs (+ optionally CVE IDs) linked to the IS.
+    Profile = set of software IDs (+ optionally CVE IDs, platform labels) linked to the IS.
     """
     software_ids = set(s['id'] for s in software_objects)
 
@@ -886,6 +888,20 @@ def build_sut_profiles(intrusion_sets, software_objects, rel_fwd, by_id, include
                 profile.add(f"CVE:{cve}")
                 all_features.add(f"CVE:{cve}")
 
+        # Optionally add platform labels from linked software objects
+        if include_platform:
+            platforms = set()
+            for rtype, tgt, _ in rel_fwd.get(is_id, []):
+                if rtype == 'uses' and tgt in by_id:
+                    obj = by_id[tgt]
+                    if obj.get('type') in ('malware', 'tool'):
+                        for p in obj.get('x_mitre_platforms', []) or []:
+                            platforms.add(p)
+            for p in platforms:
+                feat = f"PLATFORM:{p}"
+                profile.add(feat)
+                all_features.add(feat)
+
         profiles[is_id] = profile
 
     return profiles, sorted(all_features)
@@ -905,13 +921,19 @@ def jaccard_distance(set_a, set_b):
 def analyze_profile_specificity(intrusion_sets, software_objects, rel_fwd, by_id):
     """
     RQ3: SUT profile specificity analysis.
-    Computes for software-only and software+CVE settings.
+    Computes for software-only, software+CVE, and software+platform settings.
     """
     results = {}
 
-    for setting, include_cve in [('software_only', False), ('software_cve', True)]:
+    settings = [
+        ('software_only', False, False),
+        ('software_cve', True, False),
+        ('software_platform', False, True),
+    ]
+    for setting, include_cve, include_platform in settings:
         profiles, features = build_sut_profiles(
-            intrusion_sets, software_objects, rel_fwd, by_id, include_cve=include_cve
+            intrusion_sets, software_objects, rel_fwd, by_id,
+            include_cve=include_cve, include_platform=include_platform
         )
 
         is_ids = list(profiles.keys())
@@ -1270,12 +1292,17 @@ def main():
     )
     sw_only = specificity_results['software_only']
     sw_cve = specificity_results['software_cve']
+    sw_platform = specificity_results['software_platform']
     print(f"  Software-only unique profiles: {sw_only['unique_count']}/{sw_only['total_is']} "
           f"({sw_only['unique_pct']}%)")
     print(f"  Software+CVE unique profiles: {sw_cve['unique_count']}/{sw_cve['total_is']} "
           f"({sw_cve['unique_pct']}%)")
     print(f"  Software+CVE confused: {sw_cve['confused_count']}/{sw_cve['total_is']} "
           f"({sw_cve['confused_pct']}%)")
+    print(f"  Software+platform unique profiles: {sw_platform['unique_count']}/{sw_platform['total_is']} "
+          f"({sw_platform['unique_pct']}%)")
+    print(f"  Software+platform confused: {sw_platform['confused_count']}/{sw_platform['total_is']} "
+          f"({sw_platform['confused_pct']}%)")
 
     threshold_results = analyze_min_evidence_threshold(
         specificity_results['software_only']['per_is_rows'],
@@ -1434,7 +1461,9 @@ def main():
         # RQ3 Specificity
         'sut_profile_unique_software_percentage': sw_only['unique_pct'],
         'sut_profile_unique_software_cve_percentage': sw_cve['unique_pct'],
+        'sut_profile_unique_software_platform_percentage': sw_platform['unique_pct'],
         'sut_profile_confusion_software_cve_percentage': sw_cve['confused_pct'],
+        'sut_profile_confusion_software_platform_percentage': sw_platform['confused_pct'],
         'sut_profile_confusion_software_cve_ci_low': proportion_ci_wilson(
             sw_cve['confused_count'],
             sw_cve['total_is'],
@@ -1529,6 +1558,7 @@ def main():
         'jaccard_cdf': {
             'software_only_distances': specificity_results['software_only']['nearest_distances'],
             'software_cve_distances': specificity_results['software_cve']['nearest_distances'],
+            'software_platform_distances': specificity_results['software_platform']['nearest_distances'],
             'delta_threshold': JACCARD_DELTA,
         },
         'compatibility_table': {
@@ -1711,6 +1741,25 @@ def main():
         writer.writeheader()
         for row in specificity_results['software_only']['per_is_rows']:
             writer.writerow(row)
+
+    # Profile specificity ablation summary at delta=0.10
+    with open(AUDIT_DIR / 'profile_ablation_summary.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['setting', 'unique_count', 'unique_pct', 'confused_count', 'confused_pct', 'total_is', 'num_features']
+        )
+        writer.writeheader()
+        for setting in ['software_only', 'software_cve', 'software_platform']:
+            row = specificity_results[setting]
+            writer.writerow({
+                'setting': setting,
+                'unique_count': row['unique_count'],
+                'unique_pct': row['unique_pct'],
+                'confused_count': row['confused_count'],
+                'confused_pct': row['confused_pct'],
+                'total_is': row['total_is'],
+                'num_features': row['num_features'],
+            })
 
     # Confusion curve by minimum software evidence threshold
     with open(AUDIT_DIR / 'evidence_threshold_curve.csv', 'w', newline='') as f:

@@ -44,6 +44,7 @@ required=(
   "results/audit/initial_access_campaigns.csv"
   "results/audit/initial_access_techniques.csv"
   "results/audit/profile_specificity_software_only.csv"
+  "results/audit/profile_ablation_summary.csv"
   "results/audit/evidence_threshold_curve.csv"
   "results/audit/delta_sensitivity.csv"
   "results/audit/bootstrap_confusion_distribution.csv"
@@ -78,6 +79,7 @@ checks.append((d['ent_campaigns_with_cve_ci_low'] <= d['ent_campaigns_with_cve_p
 checks.append((d['campaigns_with_initial_access_ci_low'] <= d['campaigns_with_initial_access_pct'] <= d['campaigns_with_initial_access_ci_high'], 'initial access CI must bound point estimate'))
 checks.append((d['bootstrap_confusion_ci_low'] <= d['bootstrap_confusion_pct'] <= d['bootstrap_confusion_ci_high'], 'bootstrap confusion CI must bound point estimate'))
 checks.append((d['bootstrap_unique_ci_low'] <= d['bootstrap_unique_pct'] <= d['bootstrap_unique_ci_high'], 'bootstrap unique CI must bound point estimate'))
+checks.append((0.0 <= d['sut_profile_confusion_software_platform_percentage'] <= 100.0, 'software+platform confusion pct out of range'))
 
 unknown_names = []
 with open(base/'audit'/'campaign_platform_unknown.csv', newline='', encoding='utf-8') as f:

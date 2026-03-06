@@ -116,6 +116,12 @@ def main():
         "`results/todo_values.json`, `results/audit/bootstrap_confusion_distribution.csv`",
     )
     add_row(
+        rows, "RQ3-J5", "Analysis: profile ablation summary",
+        f"unique(sw)={v(todo,'sut_profile_unique_software_percentage')}%, unique(sw+cve)={v(todo,'sut_profile_unique_software_cve_percentage')}%, unique(sw+platform)={v(todo,'sut_profile_unique_software_platform_percentage')}%",
+        "sut_profile_unique_software_percentage, sut_profile_unique_software_cve_percentage, sut_profile_unique_software_platform_percentage",
+        "`results/todo_values.json`, `results/audit/profile_ablation_summary.csv`",
+    )
+    add_row(
         rows, "AUX-OS1", "Analysis: Campaign OS-family table",
         f"Windows={v(todo,'campaign_os_windows_count')} Linux={v(todo,'campaign_os_linux_count')} macOS={v(todo,'campaign_os_macos_count')}",
         "campaign_os_windows_count, campaign_os_linux_count, campaign_os_macos_count",
