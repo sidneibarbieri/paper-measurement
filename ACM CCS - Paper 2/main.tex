@@ -421,8 +421,8 @@ complete is it for deriving environment prerequisites such as
 platforms, software dependencies, and vulnerabilities?
 
 \noindent\hangindent=2.7em\hangafter=1
-\textbf{RQ2 (Deployability):} To what extent can software references and
-vulnerability references be translated into deployable SUT
+\textbf{RQ2 (Deployability):} To what extent can software and
+vulnerability references be transformed into deployable SUT
 specifications for containers, VMs, or IaC, and what classes
 of requirements remain unmappable?
 
@@ -664,7 +664,7 @@ privilege model.
 \myparagraph{Software constraints}
 A software constraint is induced when a \texttt{malware}
 or \texttt{tool} object is linked to a technique or campaign via a
-\emph{uses} relationship. Software constraints imply the presence
+\emph{uses} relationship type. Software constraints imply the presence
 of an installable artifact in the SUT\@. Their specificity depends
 on whether the object carries a version identifier or CPE
 reference; absent these fields, the constraint is satisfiable only
@@ -979,7 +979,7 @@ practice.
 
 \myparagraph{Campaign-linked exploited CVEs}
 Among the 12 actionable CVEs, 8 are explicitly tied to campaign
-objects in Enterprise STIX. These CVEs appear in five campaigns and
+objects in Enterprise STIX\@. These CVEs appear in five campaigns and
 represent the strongest structured vulnerability evidence for SUT
 instantiation in the current bundle.
 
@@ -988,7 +988,7 @@ instantiation in the current bundle.
 \centering\scriptsize
 \begin{tabular}{>{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}p{3.0cm}}
 \toprule
-\textbf{Campaign} & \textbf{CVE(s)} \\
+\textbf{Campaign} & \textbf{CVEs} \\
 \midrule
 APT28 Nearest Neighbor Campaign & CVE-2022-38028 \\
 ShadowRay & CVE-2023-48022 \\
@@ -1139,7 +1139,7 @@ in structured \texttt{vulnerability} SDOs or
 \texttt{external\_references} entries with the
 \texttt{cve} source name. This means automated extraction
 requires NLP pipelines whose error rate compounds across a
-multi-step SUT derivation workflow. \emph{Remediation:} LLM-based
+multi-step SUT derivation workflow. Remediation: LLM-based
 enrichment pipelines, operating on the existing corpus of
 threat reports that authors cite but do not structure, could
 extract CVE identifiers and attach them as structured

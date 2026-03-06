@@ -46,10 +46,11 @@
   \node at (11.3,-8) {CAPEC};
   \node at (14.3,-8) {FiGHT};
 
-  \fill[acmBlue] (0.4,103) rectangle (0.9,108);
-  \node[anchor=west] at (1.0,105.5) {$\rho_P$: platform coverage};
-  \fill[acmTeal] (6.1,103) rectangle (6.6,108);
-  \node[anchor=west] at (6.7,105.5) {$\rho_S$: software links};
-  \fill[acmSand] (11.0,103) rectangle (11.5,108);
-  \node[anchor=west] at (11.6,105.5) {$\rho_V$: CVE links};
+  % Legend moved to the right-side empty area to avoid overlap with bar labels.
+  \fill[acmBlue] (10.9,106) rectangle (11.4,109.5);
+  \node[anchor=west] at (11.5,107.7) {$\rho_P$: platform};
+  \fill[acmTeal] (10.9,100.5) rectangle (11.4,104.0);
+  \node[anchor=west] at (11.5,102.2) {$\rho_S$: software};
+  \fill[acmSand] (10.9,95.0) rectangle (11.4,98.5);
+  \node[anchor=west] at (11.5,96.7) {$\rho_V$: CVE};
 \end{tikzpicture}
