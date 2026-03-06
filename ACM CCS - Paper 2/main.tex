@@ -774,6 +774,9 @@ The quantitative pipeline in this artifact traverses all five local
 bundles for cross-corpus coverage metrics. RQ2 and RQ3 remain focused
 on Enterprise because only Enterprise contains campaign coverage
 sufficient for the deployment-focused analyses.
+CAPEC is included as STIX-encoded attack-pattern knowledge for
+coverage contrast only; in this setup it is not a campaign-level CTI
+corpus.
 
 The Enterprise bundle contains 20,048 relationship objects.
 After excluding 144 deprecated or revoked \texttt{attack-pattern}
@@ -1039,6 +1042,32 @@ SharePoint ToolShell Exploitation & CVE-2025-49704; CVE-2025-49706; CVE-2025-537
 \Description{Two horizontal bars comparing measured CVE evidence found in structured fields versus free-text descriptions.}
 \end{figure}
 
+\subsection{Initial Access Signals (RQ1 Supplement)}
+
+The Enterprise corpus contains \initialaccesstechniquecount{}
+active techniques in the Initial Access tactic. At campaign level,
+\campaignswithinitialaccesscount{} of
+\enterpriseactivecampaigncount{} campaigns
+(\campaignswithinitialaccesspct\%) are linked to at least one
+Initial Access technique.
+
+To avoid over-interpretation, we report a conservative
+\emph{social-interaction proxy}: campaigns linked to
+T1566.* (Phishing family) or T1199 (Trusted Relationship).
+Under this rule,
+\campaignswithsocialinitialaccesscount{} campaigns
+(\campaignswithsocialinitialaccesspct\%)
+show social-interaction Initial Access evidence.
+
+When intersecting Initial Access with campaign-level CVE evidence,
+\campaignswithinitialaccessandcvecount{} campaigns
+(\campaignswithinitialaccessandcvepct\%) have both signals, while
+\campaignswithinitialaccessnocvecount{} campaigns
+(\campaignswithinitialaccessnocvepct\%) have Initial Access
+without any campaign-level CVE evidence. This indicates that, in
+structured ATT\&CK encoding, Initial Access is often documented
+without explicit exploit identifiers.
+
 \subsection{SUT Compatibility Classification (RQ2)}
 % TASK (RQ2 compatibility):
 % 1) Apply CF/VMR/ID rules exactly as in Methodology.
@@ -1144,6 +1173,11 @@ software profile of a particular APT group is also building a SUT
 susceptible to many other groups. Claims of ``APT-X-specific
 emulation'' should therefore be qualified by reporting the SUT
 confusion rate at a stated distance threshold.
+For attribution-oriented interpretations, a minimum-evidence
+threshold should be made explicit before actor-level conclusions.
+This paper does not set a universal threshold; it shows that sparse
+SUT profiles increase overlap and that threshold selection must be
+calibrated using measured confusion behavior.
 
 \subsection{Path Toward Machine-Actionable SUT Specifications}
 

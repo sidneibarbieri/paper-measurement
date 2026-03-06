@@ -580,7 +580,113 @@ def analyze_vulnerability_references(campaigns, intrusion_sets, software_objects
 
 
 # ─────────────────────────────────────────────────────────────────
-# 4. SUT Compatibility Classification
+# 4. Initial Access Analysis
+# ─────────────────────────────────────────────────────────────────
+
+def get_attack_external_id(obj):
+    """Return ATT&CK external technique ID (e.g., T1566.001) when available."""
+    for ref in obj.get('external_references', []) or []:
+        if ref.get('source_name') == 'mitre-attack':
+            return ref.get('external_id', '')
+    return ''
+
+
+def analyze_initial_access(campaigns, techniques, rel_fwd, cve_results, excluded_campaign_ids):
+    """
+    Initial Access focused analysis:
+      - campaigns using at least one Initial Access technique
+      - social-interaction proxy via phishing/trusted-relationship techniques
+      - overlap with campaign-level CVE evidence
+    """
+    # Initial Access technique set
+    initial_access_ids = set()
+    ext_id_by_tech = {}
+    tech_name_by_id = {}
+    for tech in techniques:
+        tech_id = tech['id']
+        ext_id_by_tech[tech_id] = get_attack_external_id(tech)
+        tech_name_by_id[tech_id] = tech.get('name', '')
+        for phase in tech.get('kill_chain_phases', []):
+            if phase.get('kill_chain_name') == 'mitre-attack' and phase.get('phase_name') == 'initial-access':
+                initial_access_ids.add(tech_id)
+                break
+
+    # Conservative social-interaction proxy:
+    # - Phishing family (T1566.*)
+    # - Trusted Relationship (T1199)
+    social_proxy_ids = set()
+    for tid in initial_access_ids:
+        ext = ext_id_by_tech.get(tid, '')
+        if ext.startswith('T1566') or ext == 'T1199':
+            social_proxy_ids.add(tid)
+
+    usable_campaigns = [c for c in campaigns if c['id'] not in excluded_campaign_ids]
+    n_campaigns = len(usable_campaigns)
+
+    # Map campaign name -> CVE count from existing vulnerability analysis.
+    campaign_cve_count = {}
+    for row in cve_results.get('campaign_cve_details', []):
+        campaign_cve_count[row['campaign_name']] = int(row.get('cve_count', 0))
+
+    campaigns_with_ia = 0
+    campaigns_with_social_proxy = 0
+    campaigns_with_ia_and_cve = 0
+    campaign_rows = []
+    ia_technique_counter = Counter()
+
+    for camp in usable_campaigns:
+        cid = camp['id']
+        cname = camp.get('name', '')
+        ia_tids = set()
+        for rtype, tgt, _ in rel_fwd.get(cid, []):
+            if rtype == 'uses' and tgt in initial_access_ids:
+                ia_tids.add(tgt)
+
+        has_ia = len(ia_tids) > 0
+        has_social_proxy = len(ia_tids & social_proxy_ids) > 0
+        cve_count = campaign_cve_count.get(cname, 0)
+        has_cve = cve_count > 0
+
+        if has_ia:
+            campaigns_with_ia += 1
+            for tid in ia_tids:
+                ia_technique_counter[tech_name_by_id.get(tid, tid)] += 1
+        if has_social_proxy:
+            campaigns_with_social_proxy += 1
+        if has_ia and has_cve:
+            campaigns_with_ia_and_cve += 1
+
+        campaign_rows.append({
+            'campaign_name': cname,
+            'campaign_id': cid,
+            'has_initial_access': has_ia,
+            'has_social_proxy': has_social_proxy,
+            'campaign_cve_count': cve_count,
+            'initial_access_technique_count': len(ia_tids),
+            'initial_access_techniques': sorted(
+                f"{ext_id_by_tech.get(tid, '')}:{tech_name_by_id.get(tid, tid)}"
+                for tid in ia_tids
+            ),
+        })
+
+    return {
+        'initial_access_technique_count': len(initial_access_ids),
+        'social_proxy_technique_count': len(social_proxy_ids),
+        'campaigns_with_initial_access_count': campaigns_with_ia,
+        'campaigns_with_initial_access_pct': pct(campaigns_with_ia, n_campaigns),
+        'campaigns_with_social_initial_access_count': campaigns_with_social_proxy,
+        'campaigns_with_social_initial_access_pct': pct(campaigns_with_social_proxy, n_campaigns),
+        'campaigns_with_initial_access_and_cve_count': campaigns_with_ia_and_cve,
+        'campaigns_with_initial_access_and_cve_pct': pct(campaigns_with_ia_and_cve, n_campaigns),
+        'campaigns_with_initial_access_no_cve_count': campaigns_with_ia - campaigns_with_ia_and_cve,
+        'campaigns_with_initial_access_no_cve_pct': pct(campaigns_with_ia - campaigns_with_ia_and_cve, n_campaigns),
+        'top_initial_access_techniques': ia_technique_counter.most_common(),
+        'campaign_rows': campaign_rows,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────
+# 5. SUT Compatibility Classification
 # ─────────────────────────────────────────────────────────────────
 
 # Tactic IDs that map to specific clusters
@@ -720,7 +826,7 @@ def analyze_compatibility(techniques, rel_fwd, by_id):
 
 
 # ─────────────────────────────────────────────────────────────────
-# 5. SUT Profile Specificity (Jaccard)
+# 6. SUT Profile Specificity (Jaccard)
 # ─────────────────────────────────────────────────────────────────
 
 def build_sut_profiles(intrusion_sets, software_objects, rel_fwd, by_id, include_cve=False):
@@ -838,7 +944,7 @@ def analyze_profile_specificity(intrusion_sets, software_objects, rel_fwd, by_id
 
 
 # ─────────────────────────────────────────────────────────────────
-# 6. Cross-domain coverage (for Figure 1)
+# 7. Cross-domain coverage (for Figure 1)
 # ─────────────────────────────────────────────────────────────────
 
 def analyze_cross_domain_coverage(file_by_domain):
@@ -857,7 +963,7 @@ def analyze_cross_domain_coverage(file_by_domain):
 
 
 # ─────────────────────────────────────────────────────────────────
-# 7. Software coverage for cross-domain figure
+# 8. Software coverage for cross-domain figure
 # ─────────────────────────────────────────────────────────────────
 
 def compute_software_link_rate(objects_by_type, rel_fwd, rel_rev):
@@ -992,8 +1098,23 @@ def main():
     print(f"  IS with CVE: {cve_results['is_with_cve']}/{software_results['total_intrusion_sets']} "
           f"({cve_results['is_with_cve_pct']}%)")
 
+    # ── Initial Access analysis ──
+    print("\n[5/7] Analyzing Initial Access signals...")
+    initial_access_results = analyze_initial_access(
+        campaigns, techniques, rel_fwd, cve_results, excluded_campaign_ids
+    )
+    print(f"  Initial Access techniques: {initial_access_results['initial_access_technique_count']}")
+    print(f"  Campaigns with Initial Access: {initial_access_results['campaigns_with_initial_access_count']}/{software_results['total_usable_campaigns']} "
+          f"({initial_access_results['campaigns_with_initial_access_pct']}%)")
+    print(f"  Campaigns with social-interaction IA proxy: {initial_access_results['campaigns_with_social_initial_access_count']}/{software_results['total_usable_campaigns']} "
+          f"({initial_access_results['campaigns_with_social_initial_access_pct']}%)")
+    print(f"  Campaigns with IA and CVE evidence: {initial_access_results['campaigns_with_initial_access_and_cve_count']}/{software_results['total_usable_campaigns']} "
+          f"({initial_access_results['campaigns_with_initial_access_and_cve_pct']}%)")
+    print(f"  Campaigns with IA and no CVE evidence: {initial_access_results['campaigns_with_initial_access_no_cve_count']}/{software_results['total_usable_campaigns']} "
+          f"({initial_access_results['campaigns_with_initial_access_no_cve_pct']}%)")
+
     # ── Compatibility Classification ──
-    print("\n[5/7] Classifying technique compatibility (RQ2)...")
+    print("\n[6/7] Classifying technique compatibility (RQ2)...")
     compat_results = analyze_compatibility(techniques, rel_fwd, by_id)
     print(f"  CF: {compat_results['cf_count']} ({compat_results['cf_pct']}%)")
     print(f"  VMR: {compat_results['vmr_count']} ({compat_results['vmr_pct']}%)")
@@ -1001,7 +1122,7 @@ def main():
     print(f"  Total: {compat_results['cf_count'] + compat_results['vmr_count'] + compat_results['id_count']}")
 
     # ── Profile Specificity ──
-    print("\n[6/7] Computing SUT profile specificity (RQ3)...")
+    print("\n[7/7] Computing SUT profile specificity (RQ3)...")
     specificity_results = analyze_profile_specificity(
         intrusion_sets, software_objects, rel_fwd, by_id
     )
@@ -1015,7 +1136,7 @@ def main():
           f"({sw_cve['confused_pct']}%)")
 
     # ── Cross-domain coverage ──
-    print("\n[7/7] Computing cross-domain coverage...")
+    print("\n[8/8] Computing cross-domain coverage...")
     cross_domain = analyze_cross_domain_coverage({
         'enterprise': {'name': 'Enterprise', 'path': ENTERPRISE_FILE},
         'mobile': {'name': 'Mobile', 'path': MOBILE_FILE},
@@ -1089,6 +1210,17 @@ def main():
         'ent_campaigns_with_cve_pct': cve_results['campaigns_with_cve_pct'],
         'ent_intrusion_sets_with_cve_count': cve_results['is_with_cve'],
         'ent_intrusion_sets_with_cve_pct': cve_results['is_with_cve_pct'],
+
+        # Initial Access
+        'initial_access_technique_count': initial_access_results['initial_access_technique_count'],
+        'campaigns_with_initial_access_count': initial_access_results['campaigns_with_initial_access_count'],
+        'campaigns_with_initial_access_pct': initial_access_results['campaigns_with_initial_access_pct'],
+        'campaigns_with_social_initial_access_count': initial_access_results['campaigns_with_social_initial_access_count'],
+        'campaigns_with_social_initial_access_pct': initial_access_results['campaigns_with_social_initial_access_pct'],
+        'campaigns_with_initial_access_and_cve_count': initial_access_results['campaigns_with_initial_access_and_cve_count'],
+        'campaigns_with_initial_access_and_cve_pct': initial_access_results['campaigns_with_initial_access_and_cve_pct'],
+        'campaigns_with_initial_access_no_cve_count': initial_access_results['campaigns_with_initial_access_no_cve_count'],
+        'campaigns_with_initial_access_no_cve_pct': initial_access_results['campaigns_with_initial_access_no_cve_pct'],
 
         # RQ2 Compatibility
         'compatibility_container_feasible_count': compat_results['cf_count'],
@@ -1288,6 +1420,34 @@ def main():
                 'cve_count': row['cve_count'],
                 'cves': ';'.join(row['cves']),
             })
+
+    # Initial Access campaign details
+    with open(AUDIT_DIR / 'initial_access_campaigns.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'campaign_name', 'campaign_id', 'has_initial_access', 'has_social_proxy',
+                'campaign_cve_count', 'initial_access_technique_count', 'initial_access_techniques'
+            ]
+        )
+        writer.writeheader()
+        for row in initial_access_results['campaign_rows']:
+            writer.writerow({
+                'campaign_name': row['campaign_name'],
+                'campaign_id': row['campaign_id'],
+                'has_initial_access': row['has_initial_access'],
+                'has_social_proxy': row['has_social_proxy'],
+                'campaign_cve_count': row['campaign_cve_count'],
+                'initial_access_technique_count': row['initial_access_technique_count'],
+                'initial_access_techniques': ';'.join(row['initial_access_techniques']),
+            })
+
+    # Initial Access technique frequency across campaigns
+    with open(AUDIT_DIR / 'initial_access_techniques.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=['technique_name', 'campaign_count'])
+        writer.writeheader()
+        for name, count in initial_access_results['top_initial_access_techniques']:
+            writer.writerow({'technique_name': name, 'campaign_count': count})
 
     # Technique compatibility classification
     with open(AUDIT_DIR / 'technique_compatibility.csv', 'w', newline='') as f:

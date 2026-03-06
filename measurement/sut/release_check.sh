@@ -41,6 +41,8 @@ required=(
   "results/audit/campaign_platform_unknown.csv"
   "results/audit/is_cves.csv"
   "results/audit/is_software.csv"
+  "results/audit/initial_access_campaigns.csv"
+  "results/audit/initial_access_techniques.csv"
   "results/audit/platform_distribution.csv"
   "results/audit/technique_compatibility.csv"
 )

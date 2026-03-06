@@ -74,6 +74,18 @@ def main():
         "`results/todo_values.json`, `results/audit/campaign_cves.csv`",
     )
     add_row(
+        rows, "RQ1-IA1", "Analysis: Initial Access Signals",
+        f"IA techniques={v(todo,'initial_access_technique_count')} campaigns={v(todo,'campaigns_with_initial_access_count')}/{v(todo,'enterprise_active_campaign_count')} ({v(todo,'campaigns_with_initial_access_pct')}%)",
+        "initial_access_technique_count, campaigns_with_initial_access_count, campaigns_with_initial_access_pct",
+        "`results/todo_values.json`, `results/audit/initial_access_campaigns.csv`, `results/audit/initial_access_techniques.csv`",
+    )
+    add_row(
+        rows, "RQ1-IA2", "Analysis: Initial Access social/CVE overlap",
+        f"social-proxy={v(todo,'campaigns_with_social_initial_access_count')} ({v(todo,'campaigns_with_social_initial_access_pct')}%), IA+CVE={v(todo,'campaigns_with_initial_access_and_cve_count')} ({v(todo,'campaigns_with_initial_access_and_cve_pct')}%), IA-no-CVE={v(todo,'campaigns_with_initial_access_no_cve_count')} ({v(todo,'campaigns_with_initial_access_no_cve_pct')}%)",
+        "campaigns_with_social_initial_access_count, campaigns_with_initial_access_and_cve_count, campaigns_with_initial_access_no_cve_count",
+        "`results/todo_values.json`, `results/audit/initial_access_campaigns.csv`",
+    )
+    add_row(
         rows, "RQ2-K1", "Analysis: Compatibility table",
         f"CF={v(todo,'compatibility_container_feasible_count')} ({v(todo,'compatibility_container_feasible_percentage')}%), VMR={v(todo,'compatibility_vm_required_count')} ({v(todo,'compatibility_vm_required_percentage')}%), ID={v(todo,'compatibility_infrastructure_dependent_count')} ({v(todo,'compatibility_infrastructure_dependent_percentage')}%)",
         "compatibility_container_feasible_count, compatibility_vm_required_count, compatibility_infrastructure_dependent_count",
