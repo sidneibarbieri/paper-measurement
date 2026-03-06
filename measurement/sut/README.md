@@ -46,6 +46,7 @@ After a successful run, these files are regenerated:
 - `results/audit/initial_access_techniques.csv`
 - `results/audit/profile_specificity_software_only.csv`
 - `results/audit/evidence_threshold_curve.csv`
+- `results/audit/delta_sensitivity.csv`
 - `results/audit/platform_distribution.csv`
 - `results/audit/technique_compatibility.csv`
 - `ACM CCS - Paper 2/figs/coverage_template.tex`

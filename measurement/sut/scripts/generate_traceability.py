@@ -45,7 +45,7 @@ def main():
     )
     add_row(
         rows, "RQ1-S1", "Analysis: Software Reference Rate",
-        f"campaigns {v(todo,'enterprise_campaigns_with_software_count')}/{v(todo,'enterprise_active_campaign_count')} ({v(todo,'enterprise_campaigns_with_software_percentage')}%), groups {v(todo,'enterprise_intrusion_sets_with_software_count')}/{v(todo,'enterprise_active_intrusion_set_count')} ({v(todo,'enterprise_intrusion_sets_with_software_percentage')}%)",
+        f"campaigns {v(todo,'enterprise_campaigns_with_software_count')}/{v(todo,'enterprise_active_campaign_count')} ({v(todo,'enterprise_campaigns_with_software_percentage')}%, CI {v(todo,'enterprise_campaigns_with_software_ci_low')}-{v(todo,'enterprise_campaigns_with_software_ci_high')}), groups {v(todo,'enterprise_intrusion_sets_with_software_count')}/{v(todo,'enterprise_active_intrusion_set_count')} ({v(todo,'enterprise_intrusion_sets_with_software_percentage')}%)",
         "enterprise_campaigns_with_software_count, enterprise_campaigns_with_software_percentage, enterprise_intrusion_sets_with_software_count, enterprise_intrusion_sets_with_software_percentage",
         "`results/todo_values.json`, `results/audit/campaign_software.csv`, `results/audit/is_software.csv`",
     )
@@ -63,7 +63,7 @@ def main():
     )
     add_row(
         rows, "RQ1-C2", "Analysis: Campaign/IS CVE coverage",
-        f"campaigns {v(todo,'ent_campaigns_with_cve_count')}/{v(todo,'enterprise_active_campaign_count')} ({v(todo,'ent_campaigns_with_cve_pct')}%), groups {v(todo,'ent_intrusion_sets_with_cve_count')}/{v(todo,'enterprise_active_intrusion_set_count')} ({v(todo,'ent_intrusion_sets_with_cve_pct')}%)",
+        f"campaigns {v(todo,'ent_campaigns_with_cve_count')}/{v(todo,'enterprise_active_campaign_count')} ({v(todo,'ent_campaigns_with_cve_pct')}%, CI {v(todo,'ent_campaigns_with_cve_ci_low')}-{v(todo,'ent_campaigns_with_cve_ci_high')}), groups {v(todo,'ent_intrusion_sets_with_cve_count')}/{v(todo,'enterprise_active_intrusion_set_count')} ({v(todo,'ent_intrusion_sets_with_cve_pct')}%)",
         "ent_campaigns_with_cve_count, ent_campaigns_with_cve_pct, ent_intrusion_sets_with_cve_count, ent_intrusion_sets_with_cve_pct",
         "`results/todo_values.json`, `results/audit/campaign_cves.csv`, `results/audit/is_cves.csv`",
     )
@@ -102,6 +102,12 @@ def main():
         f"k>=1 confusion={v(todo,'threshold_k_one_confusion_pct')}%, k>=3={v(todo,'threshold_k_three_confusion_pct')}% (n={v(todo,'threshold_k_three_sample')}), k>=5={v(todo,'threshold_k_five_confusion_pct')}% (n={v(todo,'threshold_k_five_sample')})",
         "threshold_k_one_confusion_pct, threshold_k_three_confusion_pct, threshold_k_five_confusion_pct, threshold_k_three_sample, threshold_k_five_sample",
         "`results/todo_values.json`, `results/audit/evidence_threshold_curve.csv`, `results/audit/profile_specificity_software_only.csv`",
+    )
+    add_row(
+        rows, "RQ3-J3", "Analysis/Discussion: delta sensitivity",
+        f"delta=0.05 -> {v(todo,'delta_zero_zero_five_confusion_pct')}%, delta=0.10 -> {v(todo,'delta_zero_ten_confusion_pct')}%, delta=0.15 -> {v(todo,'delta_zero_fifteen_confusion_pct')}%",
+        "delta_zero_zero_five_confusion_pct, delta_zero_ten_confusion_pct, delta_zero_fifteen_confusion_pct",
+        "`results/todo_values.json`, `results/audit/delta_sensitivity.csv`",
     )
     add_row(
         rows, "AUX-OS1", "Analysis: Campaign OS-family table",

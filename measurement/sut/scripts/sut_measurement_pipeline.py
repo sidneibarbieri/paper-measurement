@@ -25,6 +25,7 @@ import os
 import re
 import csv
 import sys
+import math
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -117,6 +118,21 @@ def pct(count, total, decimals=1):
     if val < 1.0 and val > 0:
         return round(val, 2)  # More precision for < 1%
     return round(val, decimals)
+
+
+def proportion_ci_wilson(count, total, z=1.96):
+    """
+    Wilson score interval (95% default) for binomial proportions, in percent.
+    """
+    if total <= 0:
+        return (0.0, 0.0)
+    p = count / total
+    denom = 1 + (z * z) / total
+    center = (p + (z * z) / (2 * total)) / denom
+    margin = (z / denom) * math.sqrt((p * (1 - p) / total) + ((z * z) / (4 * total * total)))
+    low = max(0.0, (center - margin) * 100)
+    high = min(100.0, (center + margin) * 100)
+    return (round(low, 1), round(high, 1))
 
 
 def normalize_os_family(platform_label):
@@ -993,6 +1009,23 @@ def analyze_min_evidence_threshold(per_is_rows, threshold_delta):
     }
 
 
+def analyze_delta_sensitivity(per_is_rows, deltas):
+    """
+    Confusion sensitivity for multiple Jaccard thresholds using same IS set.
+    """
+    rows = []
+    total = len(per_is_rows)
+    for delta in deltas:
+        confused = sum(1 for row in per_is_rows if row['nearest_distance'] <= delta)
+        rows.append({
+            'delta': delta,
+            'sample_size': total,
+            'confused_count': confused,
+            'confusion_pct': pct(confused, total),
+        })
+    return rows
+
+
 # ─────────────────────────────────────────────────────────────────
 # 7. Cross-domain coverage (for Figure 1)
 # ─────────────────────────────────────────────────────────────────
@@ -1189,10 +1222,17 @@ def main():
         specificity_results['software_only']['per_is_rows'],
         JACCARD_DELTA,
     )
+    delta_sensitivity = analyze_delta_sensitivity(
+        specificity_results['software_only']['per_is_rows'],
+        [0.05, 0.10, 0.15],
+    )
     print("  Confusion by minimum software count:")
     print(f"    k>=1: {threshold_results['k1_confusion_pct']}%")
     print(f"    k>=3: {threshold_results['k3_confusion_pct']}% (n={threshold_results['k3_sample']})")
     print(f"    k>=5: {threshold_results['k5_confusion_pct']}% (n={threshold_results['k5_sample']})")
+    print("  Delta sensitivity (software-only):")
+    for row in delta_sensitivity:
+        print(f"    delta={row['delta']:.2f}: {row['confusion_pct']}% (n={row['sample_size']})")
 
     # ── Cross-domain coverage ──
     print("\n[8/8] Computing cross-domain coverage...")
@@ -1240,6 +1280,14 @@ def main():
         # RQ1/RQ2 Software
         'enterprise_campaigns_with_software_count': software_results['campaigns_with_software'],
         'enterprise_campaigns_with_software_percentage': software_results['campaigns_with_software_pct'],
+        'enterprise_campaigns_with_software_ci_low': proportion_ci_wilson(
+            software_results['campaigns_with_software'],
+            software_results['total_usable_campaigns'],
+        )[0],
+        'enterprise_campaigns_with_software_ci_high': proportion_ci_wilson(
+            software_results['campaigns_with_software'],
+            software_results['total_usable_campaigns'],
+        )[1],
         'enterprise_active_campaign_count': software_results['total_usable_campaigns'],
         'enterprise_campaigns_with_platform_signal_count': software_results['campaigns_with_platform_signal'],
         'enterprise_campaigns_with_platform_signal_pct': software_results['campaigns_with_platform_signal_pct'],
@@ -1255,6 +1303,14 @@ def main():
         'enterprise_active_malware_count': len(malware),
         'enterprise_active_tool_count': len(tools),
         'software_with_version_signal_percentage': software_results['software_with_version_pct'],
+        'software_with_version_signal_ci_low': proportion_ci_wilson(
+            software_results['software_with_version'],
+            software_results['total_software'],
+        )[0],
+        'software_with_version_signal_ci_high': proportion_ci_wilson(
+            software_results['software_with_version'],
+            software_results['total_software'],
+        )[1],
         'software_with_cpe_percentage': software_results['software_with_cpe_pct'],
 
         # RQ1/RQ2 CVE
@@ -1267,6 +1323,14 @@ def main():
         'campaign_linked_cve_count': len(cve_results['cves_from_campaigns']),
         'ent_campaigns_with_cve_count': cve_results['campaigns_with_cve'],
         'ent_campaigns_with_cve_pct': cve_results['campaigns_with_cve_pct'],
+        'ent_campaigns_with_cve_ci_low': proportion_ci_wilson(
+            cve_results['campaigns_with_cve'],
+            software_results['total_usable_campaigns'],
+        )[0],
+        'ent_campaigns_with_cve_ci_high': proportion_ci_wilson(
+            cve_results['campaigns_with_cve'],
+            software_results['total_usable_campaigns'],
+        )[1],
         'ent_intrusion_sets_with_cve_count': cve_results['is_with_cve'],
         'ent_intrusion_sets_with_cve_pct': cve_results['is_with_cve_pct'],
 
@@ -1274,6 +1338,14 @@ def main():
         'initial_access_technique_count': initial_access_results['initial_access_technique_count'],
         'campaigns_with_initial_access_count': initial_access_results['campaigns_with_initial_access_count'],
         'campaigns_with_initial_access_pct': initial_access_results['campaigns_with_initial_access_pct'],
+        'campaigns_with_initial_access_ci_low': proportion_ci_wilson(
+            initial_access_results['campaigns_with_initial_access_count'],
+            software_results['total_usable_campaigns'],
+        )[0],
+        'campaigns_with_initial_access_ci_high': proportion_ci_wilson(
+            initial_access_results['campaigns_with_initial_access_count'],
+            software_results['total_usable_campaigns'],
+        )[1],
         'campaigns_with_social_initial_access_count': initial_access_results['campaigns_with_social_initial_access_count'],
         'campaigns_with_social_initial_access_pct': initial_access_results['campaigns_with_social_initial_access_pct'],
         'campaigns_with_initial_access_and_cve_count': initial_access_results['campaigns_with_initial_access_and_cve_count'],
@@ -1293,11 +1365,31 @@ def main():
         'sut_profile_unique_software_percentage': sw_only['unique_pct'],
         'sut_profile_unique_software_cve_percentage': sw_cve['unique_pct'],
         'sut_profile_confusion_software_cve_percentage': sw_cve['confused_pct'],
+        'sut_profile_confusion_software_cve_ci_low': proportion_ci_wilson(
+            sw_cve['confused_count'],
+            sw_cve['total_is'],
+        )[0],
+        'sut_profile_confusion_software_cve_ci_high': proportion_ci_wilson(
+            sw_cve['confused_count'],
+            sw_cve['total_is'],
+        )[1],
         'threshold_k_one_confusion_pct': threshold_results['k1_confusion_pct'],
         'threshold_k_three_confusion_pct': threshold_results['k3_confusion_pct'],
         'threshold_k_five_confusion_pct': threshold_results['k5_confusion_pct'],
         'threshold_k_three_sample': threshold_results['k3_sample'],
         'threshold_k_five_sample': threshold_results['k5_sample'],
+        'delta_zero_zero_five_confusion_pct': next(
+            (row['confusion_pct'] for row in delta_sensitivity if abs(row['delta'] - 0.05) < 1e-9),
+            0.0,
+        ),
+        'delta_zero_ten_confusion_pct': next(
+            (row['confusion_pct'] for row in delta_sensitivity if abs(row['delta'] - 0.10) < 1e-9),
+            0.0,
+        ),
+        'delta_zero_fifteen_confusion_pct': next(
+            (row['confusion_pct'] for row in delta_sensitivity if abs(row['delta'] - 0.15) < 1e-9),
+            0.0,
+        ),
     }
 
     # ── Save TODO values as JSON ──
@@ -1552,6 +1644,16 @@ def main():
         )
         writer.writeheader()
         for row in threshold_results['curve']:
+            writer.writerow(row)
+
+    # Confusion sensitivity across multiple Jaccard deltas
+    with open(AUDIT_DIR / 'delta_sensitivity.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['delta', 'sample_size', 'confused_count', 'confusion_pct']
+        )
+        writer.writeheader()
+        for row in delta_sensitivity:
             writer.writerow(row)
 
     # Platform distribution

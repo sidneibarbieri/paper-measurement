@@ -955,13 +955,16 @@ malware and \enterpriseactivetoolcount{} tool objects
 (\enterpriseactivesoftwarecount{} total). Of the
 \enterpriseactivecampaigncount{} campaigns,
 \enterprisecampaignswithsoftwarecount{} (\enterprisecampaignswithsoftwarepercentage\%) are linked to at
-least one software artifact. Among the
+least one software artifact (95\% confidence interval:
+\enterprisecampaignswithsoftwarecilow{}\% to
+\enterprisecampaignswithsoftwarecihigh{}\%). Among the
 \enterpriseactiveintrusionsetcount{} active intrusion sets,
 \enterpriseintrusionsetswithsoftwarecount{} (\enterpriseintrusionsetswithsoftwarepercentage\%) carry at least one software association. Of
 all \enterpriseactivesoftwarecount{} software objects,
 only \softwarewithversionsignalpercentage\% contain any form of version specifier in their
 \texttt{name}, \texttt{aliases}, or \texttt{external\_references}
-fields. CPE identifiers, which directly enable
+fields (95\% confidence interval: \softwarewithversionsignalcilow{}\% to
+\softwarewithversionsignalcihigh{}\%). CPE identifiers, which directly enable
 version-pinned installation, are present in \softwarewithcpepercentage\% of
 software objects. While software \emph{presence} is broadly
 documented, the specificity required for automated SUT
@@ -997,7 +1000,9 @@ these are not campaign-specific. The remaining
 \cveactionablecount{} are
 \emph{actionable}: linked to specific software, campaign, or
 intrusion-set objects. Only \entcampaignswithcvecount{} campaigns
-(\entcampaignswithcvepct\%) carry any CVE reference, and only
+(\entcampaignswithcvepct\%, 95\% confidence interval:
+\entcampaignswithcvecilow{}\% to \entcampaignswithcvecihigh{}\%)
+carry any CVE reference, and only
 \entintrusionsetswithcvecount{} intrusion
 sets (\entintrusionsetswithcvepct\%) are associated with at least one CVE\@. These
 numbers are substantially lower than the 31.6\% CVE coverage
@@ -1048,7 +1053,9 @@ The Enterprise corpus contains \initialaccesstechniquecount{}
 active techniques in the Initial Access tactic. At campaign level,
 \campaignswithinitialaccesscount{} of
 \enterpriseactivecampaigncount{} campaigns
-(\campaignswithinitialaccesspct\%) are linked to at least one
+(\campaignswithinitialaccesspct\%, 95\% confidence interval:
+\campaignswithinitialaccesscilow{}\% to
+\campaignswithinitialaccesscihigh{}\%) are linked to at least one
 Initial Access technique.
 
 To avoid over-interpretation, we report a conservative
@@ -1184,6 +1191,10 @@ software-only profile setting, confusion is
 software links ($n=\thresholdkthreesample$), and reaches
 \thresholdkfiveconfusionpct\% for profiles with at least five links
 ($n=\thresholdkfivesample$).
+The delta sensitivity check follows the same direction:
+\deltazerozerofiveconfusionpct\% at $\delta=0.05$,
+\deltazerotenconfusionpct\% at $\delta=0.10$, and
+\deltazerofifteenconfusionpct\% at $\delta=0.15$.
 
 \subsection{Path Toward Machine-Actionable SUT Specifications}
 

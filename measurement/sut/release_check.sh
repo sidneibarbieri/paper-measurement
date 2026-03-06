@@ -45,6 +45,7 @@ required=(
   "results/audit/initial_access_techniques.csv"
   "results/audit/profile_specificity_software_only.csv"
   "results/audit/evidence_threshold_curve.csv"
+  "results/audit/delta_sensitivity.csv"
   "results/audit/platform_distribution.csv"
   "results/audit/technique_compatibility.csv"
 )
@@ -69,6 +70,11 @@ checks.append((d['ent_campaigns_with_cve_count'] == 5, 'campaigns_with_cve_count
 checks.append((d['compatibility_container_feasible_count'] + d['compatibility_vm_required_count'] + d['compatibility_infrastructure_dependent_count'] == d['enterprise_platform_count'], 'CF+VMR+ID must equal enterprise_platform_count'))
 checks.append((d['threshold_k_one_confusion_pct'] >= d['threshold_k_three_confusion_pct'], 'confusion should not increase from k>=1 to k>=3'))
 checks.append((d['threshold_k_three_confusion_pct'] >= d['threshold_k_five_confusion_pct'], 'confusion should not increase from k>=3 to k>=5'))
+checks.append((d['delta_zero_zero_five_confusion_pct'] <= d['delta_zero_ten_confusion_pct'], 'confusion should not decrease when delta goes 0.05 -> 0.10'))
+checks.append((d['delta_zero_ten_confusion_pct'] <= d['delta_zero_fifteen_confusion_pct'], 'confusion should not decrease when delta goes 0.10 -> 0.15'))
+checks.append((d['enterprise_campaigns_with_software_ci_low'] <= d['enterprise_campaigns_with_software_percentage'] <= d['enterprise_campaigns_with_software_ci_high'], 'campaign software CI must bound point estimate'))
+checks.append((d['ent_campaigns_with_cve_ci_low'] <= d['ent_campaigns_with_cve_pct'] <= d['ent_campaigns_with_cve_ci_high'], 'campaign CVE CI must bound point estimate'))
+checks.append((d['campaigns_with_initial_access_ci_low'] <= d['campaigns_with_initial_access_pct'] <= d['campaigns_with_initial_access_ci_high'], 'initial access CI must bound point estimate'))
 
 unknown_names = []
 with open(base/'audit'/'campaign_platform_unknown.csv', newline='', encoding='utf-8') as f:
