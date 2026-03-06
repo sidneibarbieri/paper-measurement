@@ -979,12 +979,12 @@ practice.
 
 \myparagraph{Campaign-linked exploited CVEs}
 Among the 12 actionable CVEs, 8 are explicitly tied to campaign
-objects in Enterprise STIX\@. These CVEs appear in five campaigns and
+objects in the Enterprise STIX dataset. These CVEs appear in five campaigns and
 represent the strongest structured vulnerability evidence for SUT
 instantiation in the current bundle.
 
 \begin{table}[!htb]
-\caption{Campaign-linked exploited CVEs in Enterprise STIX (v18.1).}\label{tab:campaign_linked_cves}
+\caption{Campaign-linked exploited CVEs in Enterprise STIX, version 18.1.}\label{tab:campaign_linked_cves}
 \centering\scriptsize
 \begin{tabular}{>{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}p{3.0cm}}
 \toprule
@@ -1139,7 +1139,7 @@ in structured \texttt{vulnerability} SDOs or
 \texttt{external\_references} entries with the
 \texttt{cve} source name. This means automated extraction
 requires NLP pipelines whose error rate compounds across a
-multi-step SUT derivation workflow. Remediation: LLM-based
+multi-step SUT derivation workflow; remediation uses LLM-based
 enrichment pipelines, operating on the existing corpus of
 threat reports that authors cite but do not structure, could
 extract CVE identifiers and attach them as structured
