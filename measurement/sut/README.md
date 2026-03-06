@@ -28,11 +28,12 @@ python3 render_figures.py
 python3 generate_traceability.py
 ```
 
-### Expected outputs
+### Expected outputs (canonical release artifacts)
 After a successful run, these files are regenerated:
 - `results/todo_values.json`
 - `results/todo_values_latex.tex`
 - `results/figures_data.json`
+- `results/claim_evidence_map.csv`
 - `results/audit/all_cves.csv`
 - `results/audit/campaign_cves.csv`
 - `results/audit/campaign_software.csv`
@@ -40,6 +41,7 @@ After a successful run, these files are regenerated:
 - `results/audit/campaign_os_family_counts.csv`
 - `results/audit/campaign_non_os_platform_counts.csv`
 - `results/audit/campaign_platform_unknown.csv`
+- `results/audit/campaign_profile_completeness.csv`
 - `results/audit/is_cves.csv`
 - `results/audit/is_software.csv`
 - `results/audit/initial_access_campaigns.csv`
@@ -49,14 +51,23 @@ After a successful run, these files are regenerated:
 - `results/audit/evidence_threshold_curve.csv`
 - `results/audit/delta_sensitivity.csv`
 - `results/audit/bootstrap_confusion_distribution.csv`
+- `results/audit/null_model_confusion_distribution.csv`
 - `results/audit/platform_distribution.csv`
 - `results/audit/technique_compatibility.csv`
+- `results/audit/compatibility_default_sensitivity.csv`
 - `ACM CCS - Paper 2/figs/coverage_template.tex`
 - `ACM CCS - Paper 2/figs/software_specificity_template.tex`
 - `ACM CCS - Paper 2/figs/cve_location_template.tex`
 - `ACM CCS - Paper 2/figs/jaccard_cdf_template.tex`
 - `ACM CCS - Paper 2/figs/ablation_template.tex`
 - `measurement/sut/TRACEABILITY.md`
+
+## Non-canonical exploratory outputs
+- Pilot report-parsing artifacts are intentionally excluded from the canonical release package.
+- If generated locally, they should not be committed:
+  - `results/report_gap_pilot.json`
+  - `results/audit/report_gap_object_level.csv`
+  - `results/audit/report_gap_reference_level.csv`
 
 ## Link to the manuscript
 The LaTeX manuscript uses these outputs as the source of truth for reported values and figure data.
