@@ -78,7 +78,7 @@ def render_coverage(d):
   \\node at (11.3,-8) {{CAPEC}};
   \\node at (14.3,-8) {{FiGHT}};
   \\node[text=gray,font=\\scriptsize,align=center] at (11.3,11.0) {{Schema-driven zeros:\\\\no platform/software/CVE signal}};
-  \\node[anchor=north east,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.0pt] at (16.5,118.0) {{
+  \\node[anchor=north east,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (16.5,118.0) {{
     \\begin{{tabular}}{{@{{}}l@{{}}}}
       \\textcolor{{acmBlue}}{{\\rule{{0.95em}}{{0.72em}}}}\\ \\ $\\rho_P$: platform\\\\[1pt]
       \\textcolor{{acmTeal}}{{\\rule{{0.95em}}{{0.72em}}}}\\ \\ $\\rho_S$: software\\\\[1pt]
@@ -98,16 +98,15 @@ def render_software_specificity(d):
 \\begin{{tikzpicture}}[x=0.073cm,y=0.55cm,font=\\footnotesize]
   \\draw[->] (0,0) -- (112,0) node[right] {{\\% of software objects ($N={s['total_software']}$)}};
   \\foreach \\x in {{0,20,40,60,80,100}} {{
-    \\draw[acmGrid] (\\x,0) -- (\\x,7.0);
+    \\draw[acmGrid] (\\x,0) -- (\\x,8.0);
     \\node[below] at (\\x,0) {{\\x}};
   }}
   \\fill[acmGrayFill] (0,2.4) rectangle ({s['no_version_no_cpe_pct']},5.2);
   \\fill[acmTeal] ({s['no_version_no_cpe_pct']},2.4) rectangle (100,5.2);
   \\node at ({s['no_version_no_cpe_pct']/2:.2f},3.8) {{No version, no CPE ({s['no_version_no_cpe']})}};
-  \\node[anchor=west] at (100.5,3.8) {{{fmt(s['version_no_cpe_pct'])}\\%}};
   \\node at ({s['no_version_no_cpe_pct']/2:.2f},5.9) {{{fmt(s['no_version_no_cpe_pct'])}\\%}};
-  \\node[anchor=west] at (100.5,5.9) {{v.~only ({s['version_no_cpe']})}};
-  \\node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (55.0,6.9) {{
+  \\node[anchor=west] at (100.5,4.2) {{Version-only: {fmt(s['version_no_cpe_pct'])}\\% ({s['version_no_cpe']})}};
+  \\node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (55.0,7.8) {{
     \\begin{{tabular}}{{@{{}}l@{{}}}}
       \\textcolor{{acmGrayFill}}{{\\rule{{0.95em}}{{0.72em}}}}\\ \\ No version, no CPE\\\\[1pt]
       \\textcolor{{acmTeal}}{{\\rule{{0.95em}}{{0.72em}}}}\\ \\ Textual version only\\\\[1pt]
@@ -123,7 +122,7 @@ def render_cve_location(d):
     s_pct = round(100 * c["structured_count"] / c["total"], 1) if c["total"] else 0
     f_pct = round(100 * c["freetext_only_count"] / c["total"], 1) if c["total"] else 0
     return f"""\\definecolor{{acmBlue}}{{HTML}}{{1F77B4}}
-\\definecolor{{acmRust}}{{HTML}}{{D55E00}}
+\\definecolor{{acmSand}}{{HTML}}{{D55E00}}
 \\definecolor{{acmGrid}}{{HTML}}{{D9DDE2}}
 \\begin{{tikzpicture}}[x=0.073cm,y=0.68cm,font=\\footnotesize]
   \\draw[->] (0,0) -- (112,0) node[right] {{CVE count ($N={c['total']}$)}};
@@ -134,7 +133,7 @@ def render_cve_location(d):
   \\node[anchor=east] at (-1.0,5.8) {{Structured fields}};
   \\node[anchor=east] at (-1.0,2.6) {{Free-text only}};
   \\fill[acmBlue] (0,5.0) rectangle ({c['structured_count']*4},6.6);
-  \\fill[acmRust]  (0,1.8) rectangle ({c['freetext_only_count']*4},3.4);
+  \\fill[acmSand]  (0,1.8) rectangle ({c['freetext_only_count']*4},3.4);
   \\node[anchor=west] at ({c['structured_count']*4 + 1.0},5.8) {{{c['structured_count']} ({s_pct}\\%)}};
   \\node[anchor=west] at ({c['freetext_only_count']*4 + 1.0},2.6) {{{c['freetext_only_count']} ({f_pct}\\%)}};
 \\end{{tikzpicture}}
@@ -151,7 +150,7 @@ def render_jaccard(d):
     return f"""\\definecolor{{acmBlue}}{{HTML}}{{1F77B4}}
 \\definecolor{{acmTeal}}{{HTML}}{{009E73}}
 \\definecolor{{acmGrid}}{{HTML}}{{D9DDE2}}
-\\definecolor{{acmDelta}}{{HTML}}{{8A8F99}}
+\\definecolor{{acmGray}}{{HTML}}{{8A8F99}}
 \\begin{{tikzpicture}}[x=7.6cm,y=4.7cm,font=\\footnotesize]
   \\draw[->] (0,0) -- (1.05,0) node[right] {{Nearest-neighbor Jaccard distance}};
   \\draw[->] (0,0) -- (0,1.05) node[above] {{Cumulative fraction of groups}};
@@ -165,9 +164,9 @@ def render_jaccard(d):
   }}
   \\draw[line width=0.9pt,acmBlue] {pts_sw};
   \\draw[line width=0.9pt,acmTeal,densely dashed] {pts_sc};
-  \\draw[densely dashed,acmDelta] ({j['delta_threshold']},0) -- ({j['delta_threshold']},1.0);
-  \\node[anchor=south west,text=acmDelta] at ({j['delta_threshold'] + 0.005:.3f},0.10) {{$\\delta={j['delta_threshold']}$}};
-  \\node[anchor=north west,text=acmDelta] at ({j['delta_threshold'] + 0.005:.3f},0.085) {{{round(100*confused,1)}\\% confused}};
+  \\draw[densely dashed,acmGray] ({j['delta_threshold']},0) -- ({j['delta_threshold']},1.0);
+  \\node[anchor=south west,text=acmGray] at ({j['delta_threshold'] + 0.005:.3f},0.10) {{$\\delta={j['delta_threshold']}$}};
+  \\node[anchor=north west,text=acmGray] at ({j['delta_threshold'] + 0.005:.3f},0.085) {{{round(100*confused,1)}\\% confused}};
   \\node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (0.56,0.98) {{
     \\begin{{tabular}}{{@{{}}l@{{}}}}
       \\textcolor{{acmBlue}}{{\\rule{{0.95em}}{{0.72em}}}}\\ \\ Software only\\\\[1pt]
@@ -180,6 +179,7 @@ def render_jaccard(d):
 
 def render_ablation(d):
     a = d["ablation_summary"]
+    baseline = a["software_only"]["confused_pct"]
     rows = [
         ("Software only", a["software_only"]["confused_pct"], "acmBlue"),
         ("Software + CVE", a["software_cve"]["confused_pct"], "acmTeal"),
@@ -190,12 +190,16 @@ def render_ablation(d):
     ]
     lines = []
     y = 12.0
+    first_y = y
     for label, val, color in rows:
         lines.append(f"  \\node[anchor=east] at (0,{y:.1f}) {{{label}}};")
         lines.append(f"  \\fill[{color}] (0.8,{y-0.6:.1f}) rectangle ({0.8 + val*2.0:.2f},{y+0.2:.1f});")
         lines.append(f"  \\node[anchor=west] at ({1.0 + val*2.0:.2f},{y-0.2:.1f}) {{{fmt(val)}\\%}};")
+        last_y = y
         y -= 1.8
     bars = "\n".join(lines)
+    # Baseline reference line at software-only confusion rate
+    bx = 0.8 + baseline * 2.0
     return f"""\\definecolor{{acmBlue}}{{HTML}}{{1F77B4}}
 \\definecolor{{acmTeal}}{{HTML}}{{009E73}}
 \\definecolor{{acmGray}}{{HTML}}{{8A8F99}}
@@ -207,6 +211,8 @@ def render_ablation(d):
     \\draw[acmGrid] (\\xp,0) -- (\\xp,12.8);
     \\node[below] at (\\xp,0) {{\\x}};
   }}
+  \\draw[densely dashed,acmGray!60,line width=0.6pt] ({bx:.2f},{last_y - 0.8:.1f}) -- ({bx:.2f},{first_y + 0.5:.1f});
+  \\node[anchor=south,font=\\scriptsize,text=acmGray] at ({bx:.2f},{first_y + 0.6:.1f}) {{baseline}};
 {bars}
 \\end{{tikzpicture}}
 """

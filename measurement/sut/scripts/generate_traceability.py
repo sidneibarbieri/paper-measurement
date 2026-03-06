@@ -4,11 +4,13 @@ Generate a claim-to-evidence appendix from measured outputs.
 """
 
 import json
+import csv
 from pathlib import Path
 
 ROOT = Path(__file__).resolve().parents[2]
 RESULTS = Path(__file__).resolve().parent / "results"
 OUT = Path(__file__).resolve().parents[1] / "TRACEABILITY.md"
+CSV_OUT = RESULTS / "claim_evidence_map.csv"
 
 
 def v(d, k):
@@ -17,7 +19,13 @@ def v(d, k):
 
 def add_row(rows, claim_id, paper_anchor, metric_value, metric_key, evidence_files):
     rows.append(
-        f"| {claim_id} | {paper_anchor} | {metric_value} | `{metric_key}` | {evidence_files} |"
+        {
+            "claim_id": claim_id,
+            "paper_anchor": paper_anchor,
+            "measured_value": metric_value,
+            "metric_keys": metric_key,
+            "evidence_artifacts": evidence_files.replace("`", ""),
+        }
     )
 
 
@@ -144,7 +152,11 @@ def main():
     md.append("")
     md.append("| Claim ID | Paper Anchor | Measured Value | Metric Key(s) | Evidence Artifact(s) |")
     md.append("|---|---|---|---|---|")
-    md.extend(rows)
+    for row in rows:
+        md.append(
+            f"| {row['claim_id']} | {row['paper_anchor']} | {row['measured_value']} | "
+            f"`{row['metric_keys']}` | `{row['evidence_artifacts']}` |"
+        )
     md.append("")
     md.append("## Reproduction Order")
     md.append("")
@@ -155,7 +167,22 @@ def main():
     md.append("")
 
     OUT.write_text("\n".join(md), encoding="utf-8")
+    CSV_OUT.parent.mkdir(parents=True, exist_ok=True)
+    with CSV_OUT.open("w", newline="", encoding="utf-8") as f:
+        w = csv.DictWriter(
+            f,
+            fieldnames=[
+                "claim_id",
+                "paper_anchor",
+                "measured_value",
+                "metric_keys",
+                "evidence_artifacts",
+            ],
+        )
+        w.writeheader()
+        w.writerows(rows)
     print(f"Wrote {OUT}")
+    print(f"Wrote {CSV_OUT}")
 
 
 if __name__ == "__main__":

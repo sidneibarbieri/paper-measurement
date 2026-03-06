@@ -28,6 +28,7 @@ import sys
 import math
 import random
 from collections import Counter, defaultdict
+from datetime import datetime
 from pathlib import Path
 
 # Optional: numpy/scipy for Jaccard (fallback to pure Python)
@@ -349,30 +350,23 @@ def analyze_software_references(campaigns, intrusion_sets, software_objects,
         re.IGNORECASE
     )
 
-    software_with_version = 0
-    software_with_cpe = 0
-    total_software = len(software_objects)
-
-    for sw in software_objects:
-        # Check version signal
-        name = sw.get('name', '')
-        aliases = sw.get('aliases', []) or []
-        ext_refs = sw.get('external_references', []) or []
+    def software_precision_flags(sw_obj):
+        """Return precision flags for one malware/tool object."""
+        name = sw_obj.get('name', '')
+        aliases = sw_obj.get('aliases', []) or []
+        ext_refs = sw_obj.get('external_references', []) or []
 
         has_version = False
         has_cpe = False
 
-        # Check name
         if version_pattern.search(name):
             has_version = True
 
-        # Check aliases
         for alias in aliases:
             if version_pattern.search(alias):
                 has_version = True
                 break
 
-        # Check external_references
         for ref in ext_refs:
             ref_str = json.dumps(ref)
             if version_pattern.search(ref_str):
@@ -380,10 +374,42 @@ def analyze_software_references(campaigns, intrusion_sets, software_objects,
             if 'cpe:' in ref_str.lower() or ref.get('source_name', '').lower() == 'cpe':
                 has_cpe = True
 
+        return {
+            'has_version': has_version,
+            'has_cpe': has_cpe,
+            'has_precision_anchor': has_version or has_cpe,
+        }
+
+    software_with_version = 0
+    software_with_cpe = 0
+    total_software = len(software_objects)
+    software_precision_by_id = {}
+
+    for sw in software_objects:
+        flags = software_precision_flags(sw)
+        has_version = flags['has_version']
+        has_cpe = flags['has_cpe']
+        software_precision_by_id[sw['id']] = flags
+
         if has_version:
             software_with_version += 1
         if has_cpe:
             software_with_cpe += 1
+
+    # Add campaign-level precision anchors based on linked software.
+    for row in campaign_platform_details:
+        linked_software_ids = row.get('software_ids', [])
+        has_version_anchor = any(
+            software_precision_by_id.get(sw_id, {}).get('has_version', False)
+            for sw_id in linked_software_ids
+        )
+        has_cpe_anchor = any(
+            software_precision_by_id.get(sw_id, {}).get('has_cpe', False)
+            for sw_id in linked_software_ids
+        )
+        row['has_version_anchor'] = has_version_anchor
+        row['has_cpe_anchor'] = has_cpe_anchor
+        row['has_precision_anchor'] = has_version_anchor or has_cpe_anchor
 
     n_usable = len(usable_campaigns)
     return {
@@ -410,6 +436,7 @@ def analyze_software_references(campaigns, intrusion_sets, software_objects,
         'campaign_os_family_counts': dict(campaign_os_family_counts.most_common()),
         'campaign_non_os_platform_counts': dict(campaign_non_os_platform_counts.most_common()),
         'is_details': is_software_details,
+        'software_precision_by_id': software_precision_by_id,
     }
 
 
@@ -537,6 +564,7 @@ def analyze_vulnerability_references(campaigns, intrusion_sets, software_objects
             campaigns_with_cve += 1
         campaign_cve_details.append({
             'campaign_name': camp.get('name', ''),
+            'campaign_id': camp.get('id', ''),
             'cve_count': len(camp_cves),
             'cves': sorted(camp_cves),
         })
@@ -640,10 +668,12 @@ def analyze_initial_access(campaigns, techniques, rel_fwd, cve_results, excluded
     usable_campaigns = [c for c in campaigns if c['id'] not in excluded_campaign_ids]
     n_campaigns = len(usable_campaigns)
 
-    # Map campaign name -> CVE count from existing vulnerability analysis.
+    # Map campaign id -> CVE count from existing vulnerability analysis.
     campaign_cve_count = {}
     for row in cve_results.get('campaign_cve_details', []):
-        campaign_cve_count[row['campaign_name']] = int(row.get('cve_count', 0))
+        campaign_id = row.get('campaign_id')
+        if campaign_id:
+            campaign_cve_count[campaign_id] = int(row.get('cve_count', 0))
 
     campaigns_with_ia = 0
     campaigns_with_social_proxy = 0
@@ -661,7 +691,7 @@ def analyze_initial_access(campaigns, techniques, rel_fwd, cve_results, excluded
 
         has_ia = len(ia_tids) > 0
         has_social_proxy = len(ia_tids & social_proxy_ids) > 0
-        cve_count = campaign_cve_count.get(cname, 0)
+        cve_count = campaign_cve_count.get(cid, 0)
         has_cve = cve_count > 0
 
         if has_ia:
@@ -702,6 +732,67 @@ def analyze_initial_access(campaigns, techniques, rel_fwd, cve_results, excluded
     }
 
 
+def analyze_campaign_profile_completeness(software_results, cve_results):
+    """
+    Operational SUT profile completeness at campaign level.
+
+    T1 (coarse): has software linkage + platform signal.
+    T2 (anchored): T1 + (version or CPE anchor in linked software OR campaign-level CVE).
+    T3 (exploit-pinned): T1 + campaign-level CVE.
+    """
+    rows = []
+    campaigns_with_cve = {
+        row.get('campaign_id')
+        for row in cve_results.get('campaign_cve_details', [])
+        if int(row.get('cve_count', 0)) > 0 and row.get('campaign_id')
+    }
+    total = int(software_results.get('total_usable_campaigns', 0))
+    t1_count = 0
+    t2_count = 0
+    t3_count = 0
+
+    for row in software_results.get('campaign_platform_details', []):
+        campaign_id = row.get('campaign_id', '')
+        has_software = int(row.get('software_count', 0)) > 0
+        has_platform = bool(row.get('platform_signal', False))
+        has_precision_anchor = bool(row.get('has_precision_anchor', False))
+        has_campaign_cve = campaign_id in campaigns_with_cve
+
+        t1 = has_software and has_platform
+        t2 = t1 and (has_precision_anchor or has_campaign_cve)
+        t3 = t1 and has_campaign_cve
+
+        if t1:
+            t1_count += 1
+        if t2:
+            t2_count += 1
+        if t3:
+            t3_count += 1
+
+        rows.append({
+            'campaign_name': row.get('campaign_name', ''),
+            'campaign_id': campaign_id,
+            'has_software': has_software,
+            'has_platform_signal': has_platform,
+            'has_precision_anchor': has_precision_anchor,
+            'has_campaign_cve': has_campaign_cve,
+            'tier_t1_coarse': t1,
+            'tier_t2_anchored': t2,
+            'tier_t3_exploit_pinned': t3,
+        })
+
+    return {
+        'total_campaigns': total,
+        'tier_t1_count': t1_count,
+        'tier_t1_pct': pct(t1_count, total),
+        'tier_t2_count': t2_count,
+        'tier_t2_pct': pct(t2_count, total),
+        'tier_t3_count': t3_count,
+        'tier_t3_pct': pct(t3_count, total),
+        'rows': rows,
+    }
+
+
 # ─────────────────────────────────────────────────────────────────
 # 5. SUT Compatibility Classification
 # ─────────────────────────────────────────────────────────────────
@@ -738,7 +829,7 @@ def get_technique_tactics(technique, tactic_objects):
     return tactics
 
 
-def classify_technique_compatibility(technique, rel_fwd, by_id):
+def classify_technique_compatibility(technique, rel_fwd, by_id, default_class='VMR'):
     """
     Classify a technique as CF, VMR, or ID.
     Rules (in order of precedence, matching paper methodology):
@@ -809,18 +900,21 @@ def classify_technique_compatibility(technique, rel_fwd, by_id):
                 return 'VMR'
         return 'CF'
 
-    # Rule 4: Default → VMR
-    return 'VMR'
+    # Rule 4: Default → configurable class (VMR in main analysis).
+    # If default_class is None, keep as unresolved for sensitivity checks.
+    if default_class is None:
+        return 'UNRESOLVED'
+    return default_class
 
 
-def analyze_compatibility(techniques, rel_fwd, by_id):
+def analyze_compatibility(techniques, rel_fwd, by_id, default_class='VMR'):
     """
     RQ2: Classify all techniques into CF/VMR/ID.
     """
-    classification = {'CF': [], 'VMR': [], 'ID': []}
+    classification = defaultdict(list)
 
     for tech in techniques:
-        cls = classify_technique_compatibility(tech, rel_fwd, by_id)
+        cls = classify_technique_compatibility(tech, rel_fwd, by_id, default_class=default_class)
         classification[cls].append({
             'id': tech['id'],
             'name': tech.get('name', ''),
@@ -830,16 +924,67 @@ def analyze_compatibility(techniques, rel_fwd, by_id):
         })
 
     total = len(techniques)
+    cf_count = len(classification.get('CF', []))
+    vmr_count = len(classification.get('VMR', []))
+    id_count = len(classification.get('ID', []))
+    unresolved_count = len(classification.get('UNRESOLVED', []))
+    resolved_count = cf_count + vmr_count + id_count
+
     return {
-        'cf_count': len(classification['CF']),
-        'cf_pct': pct(len(classification['CF']), total),
-        'vmr_count': len(classification['VMR']),
-        'vmr_pct': pct(len(classification['VMR']), total),
-        'id_count': len(classification['ID']),
-        'id_pct': pct(len(classification['ID']), total),
+        'cf_count': cf_count,
+        'cf_pct': pct(cf_count, total),
+        'vmr_count': vmr_count,
+        'vmr_pct': pct(vmr_count, total),
+        'id_count': id_count,
+        'id_pct': pct(id_count, total),
+        'unresolved_count': unresolved_count,
+        'unresolved_pct': pct(unresolved_count, total),
+        'resolved_count': resolved_count,
+        'resolved_pct': pct(resolved_count, total),
         'total': total,
         'details': classification,
     }
+
+
+def analyze_compatibility_default_sensitivity(techniques, rel_fwd, by_id):
+    """
+    Sensitivity check for the compatibility taxonomy under alternative
+    fallback defaults. The rule body remains fixed; only the final
+    unresolved default class changes.
+    """
+    rows = []
+    scenarios = [
+        ('CF', 'CF'),
+        ('VMR', 'VMR'),
+        ('ID', 'ID'),
+        ('UNRESOLVED', None),
+    ]
+    for label, default_class in scenarios:
+        res = analyze_compatibility(
+            techniques, rel_fwd, by_id, default_class=default_class
+        )
+        non_cf_pct = round(res['vmr_pct'] + res['id_pct'], 1)
+        non_cf_resolved_pct = pct(
+            res['vmr_count'] + res['id_count'],
+            res['resolved_count'],
+        )
+        rows.append({
+            'default_class': label,
+            'cf_count': res['cf_count'],
+            'cf_pct': res['cf_pct'],
+            'vmr_count': res['vmr_count'],
+            'vmr_pct': res['vmr_pct'],
+            'id_count': res['id_count'],
+            'id_pct': res['id_pct'],
+            'unresolved_count': res['unresolved_count'],
+            'unresolved_pct': res['unresolved_pct'],
+            'resolved_count': res['resolved_count'],
+            'resolved_pct': res['resolved_pct'],
+            'non_cf_pct': non_cf_pct,
+            'non_cf_resolved_pct': non_cf_resolved_pct,
+            'total': res['total'],
+        })
+    return rows
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -949,6 +1094,36 @@ def jaccard_distance(set_a, set_b):
     return 1.0 - len(intersection) / len(union)
 
 
+def compute_confusion_from_profiles(profiles, delta):
+    """
+    Compute nearest-neighbor confusion over a dict is_id -> feature-set.
+    Returns (confused_count, confusion_pct, nearest_distances).
+    """
+    is_ids = list(profiles.keys())
+    n = len(is_ids)
+    if n == 0:
+        return 0, 0.0, []
+
+    confused_count = 0
+    nearest_distances = []
+    for i in range(n):
+        prof_i = profiles[is_ids[i]]
+        min_dist = float('inf')
+        for j in range(n):
+            if i == j:
+                continue
+            prof_j = profiles[is_ids[j]]
+            dist = jaccard_distance(prof_i, prof_j)
+            if dist < min_dist:
+                min_dist = dist
+        if min_dist == float('inf'):
+            min_dist = 1.0
+        nearest_distances.append(min_dist)
+        if min_dist <= delta:
+            confused_count += 1
+    return confused_count, pct(confused_count, n), nearest_distances
+
+
 def analyze_profile_specificity(
     intrusion_sets, software_objects, rel_fwd, by_id, compatibility_by_technique=None
 ):
@@ -978,11 +1153,9 @@ def analyze_profile_specificity(
 
         is_ids = list(profiles.keys())
         n = len(is_ids)
-
-        # Compute pairwise Jaccard distances
-        # Find nearest neighbor for each IS
-        nearest_distances = []
-        confused_count = 0  # IS with at least one neighbor within delta
+        confused_count, confused_pct, nearest_distances = compute_confusion_from_profiles(
+            profiles, JACCARD_DELTA
+        )
         per_is_rows = []
 
         for i in range(n):
@@ -1004,9 +1177,6 @@ def analyze_profile_specificity(
             if min_dist == float('inf'):
                 min_dist = 1.0
 
-            nearest_distances.append(min_dist)
-            if min_dist <= JACCARD_DELTA:
-                confused_count += 1
             per_is_rows.append({
                 'intrusion_set_id': is_ids[i],
                 'feature_count': len(prof_i),
@@ -1017,7 +1187,6 @@ def analyze_profile_specificity(
 
         unique_count = n - confused_count
         unique_pct = pct(unique_count, n)
-        confused_pct = pct(confused_count, n)
 
         results[setting] = {
             'unique_count': unique_count,
@@ -1031,6 +1200,70 @@ def analyze_profile_specificity(
         }
 
     return results
+
+
+def analyze_sparsity_null_model(
+    intrusion_sets, software_objects, rel_fwd, by_id, delta=JACCARD_DELTA, n_iter=1000, seed=42
+):
+    """
+    Robustness check for RQ3:
+    Null model preserving profile cardinality per intrusion set.
+    Feature identities are re-sampled uniformly from the active software universe.
+    """
+    observed_profiles, _ = build_sut_profiles(
+        intrusion_sets, software_objects, rel_fwd, by_id,
+        include_cve=False,
+        platform_mode='none',
+    )
+    observed_confused_count, observed_confusion_pct, _ = compute_confusion_from_profiles(
+        observed_profiles, delta
+    )
+
+    software_universe = [s['id'] for s in software_objects]
+    is_ids = list(observed_profiles.keys())
+    feature_counts = {is_id: len(observed_profiles[is_id]) for is_id in is_ids}
+    rng = random.Random(seed)
+
+    samples = []
+    rows = []
+    universe_size = len(software_universe)
+    for idx in range(1, n_iter + 1):
+        randomized_profiles = {}
+        for is_id in is_ids:
+            k = feature_counts[is_id]
+            if k <= 0:
+                randomized_profiles[is_id] = set()
+            elif k >= universe_size:
+                randomized_profiles[is_id] = set(software_universe)
+            else:
+                randomized_profiles[is_id] = set(rng.sample(software_universe, k))
+
+        confused_count, confusion_pct, _ = compute_confusion_from_profiles(randomized_profiles, delta)
+        samples.append(confusion_pct)
+        rows.append({
+            'iteration': idx,
+            'confused_count': confused_count,
+            'confusion_pct': confusion_pct,
+        })
+
+    samples_sorted = sorted(samples)
+    n = len(samples_sorted)
+    p05_idx = max(0, int(round(0.05 * n)) - 1)
+    p50_idx = max(0, int(round(0.50 * n)) - 1)
+    p95_idx = max(0, int(round(0.95 * n)) - 1)
+    mean_val = round(sum(samples_sorted) / n, 1) if n else 0.0
+
+    return {
+        'iterations': n_iter,
+        'observed_confused_count': observed_confused_count,
+        'observed_confusion_pct': observed_confusion_pct,
+        'null_confusion_mean_pct': mean_val,
+        'null_confusion_p05_pct': round(samples_sorted[p05_idx], 1) if n else 0.0,
+        'null_confusion_p50_pct': round(samples_sorted[p50_idx], 1) if n else 0.0,
+        'null_confusion_p95_pct': round(samples_sorted[p95_idx], 1) if n else 0.0,
+        'delta_observed_minus_null_mean_pp': round(observed_confusion_pct - mean_val, 1),
+        'distribution_rows': rows,
+    }
 
 
 def analyze_min_evidence_threshold(per_is_rows, threshold_delta):
@@ -1302,6 +1535,18 @@ def main():
     print(f"  IS with CVE: {cve_results['is_with_cve']}/{software_results['total_intrusion_sets']} "
           f"({cve_results['is_with_cve_pct']}%)")
 
+    # ── Campaign-level profile completeness ──
+    profile_completeness = analyze_campaign_profile_completeness(
+        software_results, cve_results
+    )
+    print("  Campaign SUT profile completeness tiers:")
+    print(f"    T1 (coarse: software+platform): {profile_completeness['tier_t1_count']}/{profile_completeness['total_campaigns']} "
+          f"({profile_completeness['tier_t1_pct']}%)")
+    print(f"    T2 (anchored: T1 + version/CPE or campaign CVE): {profile_completeness['tier_t2_count']}/{profile_completeness['total_campaigns']} "
+          f"({profile_completeness['tier_t2_pct']}%)")
+    print(f"    T3 (exploit-pinned: T1 + campaign CVE): {profile_completeness['tier_t3_count']}/{profile_completeness['total_campaigns']} "
+          f"({profile_completeness['tier_t3_pct']}%)")
+
     # ── Initial Access analysis ──
     print("\n[5/7] Analyzing Initial Access signals...")
     initial_access_results = analyze_initial_access(
@@ -1324,6 +1569,25 @@ def main():
     print(f"  VMR: {compat_results['vmr_count']} ({compat_results['vmr_pct']}%)")
     print(f"  ID: {compat_results['id_count']} ({compat_results['id_pct']}%)")
     print(f"  Total: {compat_results['cf_count'] + compat_results['vmr_count'] + compat_results['id_count']}")
+    compatibility_sensitivity = analyze_compatibility_default_sensitivity(
+        techniques, rel_fwd, by_id
+    )
+    non_cf_values = [
+        row['non_cf_pct']
+        for row in compatibility_sensitivity
+        if row['default_class'] in {'CF', 'VMR', 'ID'}
+    ]
+    unresolved_scenario = next(
+        row for row in compatibility_sensitivity if row['default_class'] == 'UNRESOLVED'
+    )
+    print("  Compatibility default sensitivity (non-CF share):")
+    for row in compatibility_sensitivity:
+        print(
+            f"    default={row['default_class']}: overall non-CF={row['non_cf_pct']}%, "
+            f"resolved non-CF={row['non_cf_resolved_pct']}%, "
+            f"unresolved={row['unresolved_pct']}% "
+            f"(CF={row['cf_pct']}%, VMR={row['vmr_pct']}%, ID={row['id_pct']}%)"
+        )
     compatibility_by_technique = {}
     for cls_name, cls_list in compat_results['details'].items():
         for tech in cls_list:
@@ -1377,6 +1641,12 @@ def main():
         n_boot=5000,
         seed=42,
     )
+    null_model_results = analyze_sparsity_null_model(
+        intrusion_sets, software_objects, rel_fwd, by_id,
+        delta=JACCARD_DELTA,
+        n_iter=1000,
+        seed=42,
+    )
     print("  Confusion by minimum software count:")
     print(f"    k>=1: {threshold_results['k1_confusion_pct']}%")
     print(f"    k>=3: {threshold_results['k3_confusion_pct']}% (n={threshold_results['k3_sample']})")
@@ -1388,6 +1658,13 @@ def main():
         "  Bootstrap (delta=0.10): "
         f"confusion {bootstrap_results['confusion_pct']}% "
         f"[{bootstrap_results['confusion_ci_low']}, {bootstrap_results['confusion_ci_high']}]"
+    )
+    print(
+        "  Null model (cardinality-preserving): "
+        f"mean confusion {null_model_results['null_confusion_mean_pct']}% "
+        f"[p05={null_model_results['null_confusion_p05_pct']}%, "
+        f"p95={null_model_results['null_confusion_p95_pct']}%], "
+        f"observed={null_model_results['observed_confusion_pct']}%"
     )
 
     # ── Cross-domain coverage ──
@@ -1452,6 +1729,36 @@ def main():
         'campaign_os_windows_count': software_results['campaign_os_family_counts'].get('Windows', 0),
         'campaign_os_linux_count': software_results['campaign_os_family_counts'].get('Linux', 0),
         'campaign_os_macos_count': software_results['campaign_os_family_counts'].get('macOS', 0),
+        'campaign_os_windows_pct_signal': pct(
+            software_results['campaign_os_family_counts'].get('Windows', 0),
+            software_results['campaigns_with_platform_signal'],
+        ),
+        'campaign_os_linux_pct_signal': pct(
+            software_results['campaign_os_family_counts'].get('Linux', 0),
+            software_results['campaigns_with_platform_signal'],
+        ),
+        'campaign_os_macos_pct_signal': pct(
+            software_results['campaign_os_family_counts'].get('macOS', 0),
+            software_results['campaigns_with_platform_signal'],
+        ),
+        'campaign_os_windows_pct_total': pct(
+            software_results['campaign_os_family_counts'].get('Windows', 0),
+            software_results['total_usable_campaigns'],
+        ),
+        'campaign_os_linux_pct_total': pct(
+            software_results['campaign_os_family_counts'].get('Linux', 0),
+            software_results['total_usable_campaigns'],
+        ),
+        'campaign_os_macos_pct_total': pct(
+            software_results['campaign_os_family_counts'].get('macOS', 0),
+            software_results['total_usable_campaigns'],
+        ),
+        'campaign_sut_tier_coarse_count': profile_completeness['tier_t1_count'],
+        'campaign_sut_tier_coarse_pct': profile_completeness['tier_t1_pct'],
+        'campaign_sut_tier_anchored_count': profile_completeness['tier_t2_count'],
+        'campaign_sut_tier_anchored_pct': profile_completeness['tier_t2_pct'],
+        'campaign_sut_tier_exploit_pinned_count': profile_completeness['tier_t3_count'],
+        'campaign_sut_tier_exploit_pinned_pct': profile_completeness['tier_t3_pct'],
         'enterprise_intrusion_sets_with_software_count': software_results['is_with_software'],
         'enterprise_intrusion_sets_with_software_percentage': software_results['is_with_software_pct'],
         'enterprise_active_intrusion_set_count': software_results['total_intrusion_sets'],
@@ -1516,6 +1823,13 @@ def main():
         'compatibility_vm_required_percentage': compat_results['vmr_pct'],
         'compatibility_infrastructure_dependent_count': compat_results['id_count'],
         'compatibility_infrastructure_dependent_percentage': compat_results['id_pct'],
+        'compatibility_non_cf_floor_percentage': min(non_cf_values),
+        'compatibility_non_cf_ceiling_percentage': max(non_cf_values),
+        'compatibility_non_cf_baseline_percentage': round(
+            compat_results['vmr_pct'] + compat_results['id_pct'], 1
+        ),
+        'compatibility_rule_coverage_percentage': unresolved_scenario['resolved_pct'],
+        'compatibility_non_cf_resolved_percentage': unresolved_scenario['non_cf_resolved_pct'],
 
         # RQ3 Specificity
         'sut_profile_unique_software_percentage': sw_only['unique_pct'],
@@ -1561,6 +1875,12 @@ def main():
         'bootstrap_unique_pct': bootstrap_results['unique_pct'],
         'bootstrap_unique_ci_low': bootstrap_results['unique_ci_low'],
         'bootstrap_unique_ci_high': bootstrap_results['unique_ci_high'],
+        'null_model_iterations': null_model_results['iterations'],
+        'null_model_observed_confusion_pct': null_model_results['observed_confusion_pct'],
+        'null_model_confusion_mean_pct': null_model_results['null_confusion_mean_pct'],
+        'null_model_confusion_plow_pct': null_model_results['null_confusion_p05_pct'],
+        'null_model_confusion_phigh_pct': null_model_results['null_confusion_p95_pct'],
+        'null_model_observed_minus_mean_pp': null_model_results['delta_observed_minus_null_mean_pp'],
     }
 
     # ── Save TODO values as JSON ──
@@ -1571,7 +1891,7 @@ def main():
     # ── Save as LaTeX newcommands ──
     with open(RESULTS_DIR / 'todo_values_latex.tex', 'w') as f:
         f.write("% Auto-generated extracted values\n")
-        f.write(f"% Generated: 2026-03-05\n")
+        f.write(f"% Generated: {datetime.now().strftime('%Y-%m-%d')}\n")
         f.write(f"% Bundle: ATT&CK Enterprise v18.1\n\n")
         for key, val in todo_values.items():
             latex_key = key.replace('_', '')
@@ -1668,21 +1988,21 @@ def main():
     # Compute segments properly: need to know overlap between version and CPE
     # For simplicity, treat as: with_cpe (strongest), version_only (has version but no CPE), neither
     sw_with_both = 0
+    ver_pat = re.compile(r'(?:v?\d+\.\d+|\bversion\s+\d+|\b\d+\.\d+\.\d+)', re.IGNORECASE)
     for sw in software_objects:
         has_v = False
         has_c = False
         name = sw.get('name', '')
         aliases = sw.get('aliases', []) or []
         ext_refs = sw.get('external_references', []) or []
-        version_pattern = re.compile(r'(?:v?\d+\.\d+|\bversion\s+\d+|\b\d+\.\d+\.\d+)', re.IGNORECASE)
-        if version_pattern.search(name):
+        if ver_pat.search(name):
             has_v = True
         for a in aliases:
-            if version_pattern.search(a):
+            if ver_pat.search(a):
                 has_v = True
         for ref in ext_refs:
             ref_str = json.dumps(ref)
-            if version_pattern.search(ref_str):
+            if ver_pat.search(ref_str):
                 has_v = True
             if 'cpe:' in ref_str.lower():
                 has_c = True
@@ -1758,14 +2078,29 @@ def main():
 
     # Campaign CVE details
     with open(AUDIT_DIR / 'campaign_cves.csv', 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['campaign_name', 'cve_count', 'cves'])
+        writer = csv.DictWriter(f, fieldnames=['campaign_name', 'campaign_id', 'cve_count', 'cves'])
         writer.writeheader()
         for row in cve_results['campaign_cve_details']:
             writer.writerow({
                 'campaign_name': row['campaign_name'],
+                'campaign_id': row.get('campaign_id', ''),
                 'cve_count': row['cve_count'],
                 'cves': ';'.join(row['cves']),
             })
+
+    # Campaign-level SUT profile completeness tiers
+    with open(AUDIT_DIR / 'campaign_profile_completeness.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'campaign_name', 'campaign_id', 'has_software', 'has_platform_signal',
+                'has_precision_anchor', 'has_campaign_cve', 'tier_t1_coarse',
+                'tier_t2_anchored', 'tier_t3_exploit_pinned'
+            ]
+        )
+        writer.writeheader()
+        for row in profile_completeness['rows']:
+            writer.writerow(row)
 
     # IS CVE details
     with open(AUDIT_DIR / 'is_cves.csv', 'w', newline='') as f:
@@ -1819,6 +2154,21 @@ def main():
                     'platforms': ';'.join(tech['platforms'] or []),
                     'permissions': ';'.join(tech['permissions'] or []),
                 })
+
+    # Compatibility sensitivity under alternative defaults
+    with open(AUDIT_DIR / 'compatibility_default_sensitivity.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'default_class', 'cf_count', 'cf_pct', 'vmr_count', 'vmr_pct',
+                'id_count', 'id_pct', 'unresolved_count', 'unresolved_pct',
+                'resolved_count', 'resolved_pct', 'non_cf_pct',
+                'non_cf_resolved_pct', 'total'
+            ]
+        )
+        writer.writeheader()
+        for row in compatibility_sensitivity:
+            writer.writerow(row)
 
     # IS software details
     with open(AUDIT_DIR / 'is_software.csv', 'w', newline='') as f:
@@ -1891,6 +2241,16 @@ def main():
         )
         writer.writeheader()
         for row in bootstrap_results['bootstrap_summary_rows']:
+            writer.writerow(row)
+
+    # Null-model confusion distribution (cardinality-preserving)
+    with open(AUDIT_DIR / 'null_model_confusion_distribution.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['iteration', 'confused_count', 'confusion_pct']
+        )
+        writer.writeheader()
+        for row in null_model_results['distribution_rows']:
             writer.writerow(row)
 
     # Platform distribution
