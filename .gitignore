@@ -1,0 +1,35 @@
+# macOS / editor
+.DS_Store
+.vscode/
+
+# Python
+__pycache__/
+*.pyc
+
+# LaTeX build artifacts
+*.aux
+*.bbl
+*.bcf
+*.blg
+*.fdb_latexmk
+*.fls
+*.lof
+*.log
+*.lot
+*.nav
+*.out
+*.run.xml
+*.snm
+*.synctex.gz
+*.toc
+*.xdv
+
+# R / temp
+.Rhistory
+
+# Keep repository focused on manuscript + measurement pipeline
+papers repo/
+ACM CCS - Paper 1/
+_pesquisa/
+generic_project_metodology/
+master_dataset.csv

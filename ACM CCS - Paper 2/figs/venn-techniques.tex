@@ -1,0 +1,57 @@
+\begin{tikzpicture}[
+    font=\footnotesize,
+    vennlabel/.style={align=center,font=\normalsize},
+    countnum/.style={font=\bfseries\large}
+]
+
+% --- geometry (elliptical sets, right > left) ---
+\def\rxC{2.3}  % campaign: x-radius
+\def\ryC{2.0}  % campaign: y-radius
+\def\rxI{2.5}  % intrusion set: x-radius (larger)
+\def\ryI{2.5}  % intrusion set: y-radius
+
+\coordinate (C) at (-2.0,0);          % campaign center
+\coordinate (I) at (-0.4,0);          % intrusion-set center
+\coordinate (M) at ($(C)!0.5!(I)$);   % midpoint (shared)
+
+% --- ellipses (same palette, smooth blend) ---
+\begin{scope}[blend group=multiply]
+  \fill[loopgreen!45, draw=loopgreen!80, line width=0.9pt]
+    (C) ellipse (\rxC cm and \ryC cm);
+  \fill[execblue!45, draw=execblue!85, line width=0.9pt]
+    (I) ellipse (\rxI cm and \ryI cm);
+\end{scope}
+
+% --- global title ---
+\node[font=\bfseries\large]
+  at ($(M)+(0,\ryI+1.2)$)
+  {Total Techniques: 835};
+
+% --- set titles ---
+\node[vennlabel, text=loopgreen!80]
+  at ($(C)+(-1.0,\ryC+0.4)$)
+  {Campaign Techniques\\(297 total)};
+
+\node[vennlabel, text=execblue!80]
+  at ($(I)+(1.0,\ryI+0.4)$)
+  {Intrusion Set Techniques\\(488 total)};
+
+% --- counts in each region ---
+% Campaign only
+\node[countnum]  at ($(C)+(-1.59,0.25)$) {29};
+\node[vennlabel] at ($(C)+(-1.59,-0.25)$) {Campaign\\Only};
+
+% Shared
+\node[countnum]  at ($(M)+(-0.2,0.25)$) {268};
+\node[vennlabel] at ($(M)+(-0.2,-0.25)$) {Shared\\};
+
+% Intrusion set only
+\node[countnum]  at ($(I)+(1.6,0.25)$) {220};
+\node[vennlabel] at ($(I)+(1.6,-0.25)$) {Intrusion Set\\Only};
+
+% --- unused techniques (below) ---
+\node[vennlabel]
+  at ($(M)+(0,-\ryI-0.5)$)
+  {Unused Techniques: 318};
+
+\end{tikzpicture}

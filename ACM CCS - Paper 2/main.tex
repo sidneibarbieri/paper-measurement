@@ -1,0 +1,1235 @@
+% chktex-file 8
+%%
+%% This is file `sample-sigconf-authordraft.tex',
+%% generated with the docstrip utility.
+%%
+%% The original source files were:
+%%
+%% samples.dtx  (with options: `all,proceedings,bibtex,authordraft')
+%%
+%% IMPORTANT NOTICE:
+%%
+%% For the copyright, see the source file.
+%%
+%% Any modified versions of this file must be renamed
+%% with new filenames distinct from sample-sigconf-authordraft.tex.
+%%
+%% For distribution of the original source, see the terms
+%% for copying and modification in the file samples.dtx.
+%%
+%% This generated file may be distributed as long as the
+%% original source files, as listed above, are part of the
+%% same distribution. (The sources need not necessarily be
+%% in the same archive or directory.)
+%%
+%%
+%% Commands for TeXCount
+%TC:macro \citep [option:text,text]
+%TC:macro \citet [option:text,text]
+%TC:envir table 0 1
+%TC:envir table* 0 1
+%TC:envir tabular [ignore] word
+%TC:envir displaymath 0 word
+%TC:envir math 0 word
+%TC:envir comment 0 0
+%%
+%% The first command in your LaTeX source must be the \documentclass
+%% command.
+%%
+%% For submission and review of your manuscript please change the
+%% command to \documentclass[manuscript, screen, review]{acmart}.
+%%
+%% When submitting camera ready or to TAPS, please change the command
+%% to \documentclass[sigconf]{acmart} or whichever template is required
+%% for your publication.
+%%
+%%
+\documentclass[sigconf]{acmart}
+%\documentclass[sigconf,anonymous,review]{acmart}
+%%
+%%
+%% Additional packages
+\usepackage{enumitem}
+\usepackage{booktabs}
+\usepackage{pifont}
+\usepackage{xspace}
+\usepackage{listings}
+\usepackage{tikz}
+\usepackage[table]{xcolor}
+\lstdefinestyle{stixxml}{
+  language=XML,
+  basicstyle=\ttfamily\small,
+  numbers=left,
+  numberstyle=\tiny,
+  stepnumber=1,
+  numbersep=5pt,
+  showstringspaces=false,
+  breaklines=true,
+  columns=fullflexible,
+  frame=single,
+  rulecolor=\color{black},
+  backgroundcolor=\color{blue!5}
+}
+%%
+%%
+\newcommand{\stix}{STIX\xspace}
+\newcommand{\mitre}{MITRE\xspace}
+\newcommand{\attack}{ATT\&CK\xspace}
+\newcommand{\caldera}{Caldera\xspace}
+\newcommand{\sticks}{STICKS\xspace}
+\newcommand{\stepone}{\ding{172}\xspace}
+\newcommand{\steptwo}{\ding{173}\xspace}
+\newcommand{\stepthree}{\ding{174}\xspace}
+\newcommand{\stepfour}{\ding{175}\xspace}
+\newcommand{\stepfive}{\ding{176}\xspace}
+%%
+\newcommand{\myparagraph}[1]{\textbf{#1.}\hspace{0.5em}}
+\newcommand{\TODO}[1]{\textbf{[TBD]}}
+%%
+\definecolor{grayheader}{HTML}{E0E0E0}
+\makeatletter
+\@ACM@balancefalse%
+\makeatother
+% Local build workaround: disable microtype expansion/protrusion when
+% non-scalable fallback fonts are selected by the local TeX setup.
+\microtypesetup{expansion=false, protrusion=false}
+% Reduce underfull hbox warnings in narrow ACM columns during drafting.
+\setlength{\emergencystretch}{2em}
+% Suppress non-essential box warnings (common with acronyms, URLs, and TODO placeholders).
+\hbadness=10000
+% Keep bibliography URLs and long venue strings from generating editor noise.
+\AtBeginEnvironment{thebibliography}{%
+  \sloppy
+  \emergencystretch=2em
+  \hbadness=10000
+  \Urlmuskip=0mu plus 3mu
+}
+%%
+%%
+%%
+%% \BibTeX command to typeset BibTeX logo in the docs
+\AtBeginDocument{%
+  \providecommand\BibTeX{{%
+    Bib\TeX}}}
+
+%% Rights management information.  This information is sent to you
+%% when you complete the rights form.  These commands have SAMPLE
+%% values in them; it is your responsibility as an author to replace
+%% the commands and values with those provided to you when you
+%% complete the rights form.
+\setcopyright{acmlicensed}
+\copyrightyear{2026}
+\acmYear{2026}
+\acmDOI{10.1145/0000000.0000000}
+%% These commands are for a PROCEEDINGS abstract or paper.
+\acmConference[ASIACCS '26]{Proceedings of the 21st ACM Asia Conference on Computer and Communications Security (ASIACCS 2026)}{June 1--5, 2026}{Bangalore, India}
+%%
+%%  Uncomment \acmBooktitle if the title of the proceedings is different
+%%  from ``Proceedings of ...''!
+%%
+%%\acmBooktitle{Woodstock '18: ACM Symposium on Neural Gaze Detection,
+%%  June 03-05, 2018, Woodstock, NY}
+% chktex 8
+\acmISBN{978-1-4503-0000-0/26/06}
+
+%%
+%% Submission ID.
+%% Use this when submitting an article to a sponsored event. You'll
+%% receive a unique submission ID from the organizers
+%% of the event, and this ID should be used as the parameter to this command.
+%%\acmSubmissionID{123-A56-BU3}
+
+%%
+%% For managing citations, it is recommended to use bibliography
+%% files in BibTeX format.
+%%
+%% You can then either use BibTeX with the ACM-Reference-Format style,
+%% or BibLaTeX with the acmnumeric or acmauthoryear sytles, that include
+%% support for advanced citation of software artefact from the
+%% biblatex-software package, also separately available on CTAN.
+%%
+%% Look at the sample-*-biblatex.tex files for templates showcasing
+%% the biblatex styles.
+%%
+
+%%
+%% The majority of ACM publications use numbered citations and
+%% references.  The command \citestyle{authoryear} switches to the
+%% ``author year'' style.
+%%
+%% If you are preparing content for an event
+%% sponsored by ACM SIGGRAPH, you must use the ``author year'' style of
+%% citations and references.
+%% Uncommenting
+%% the next command will enable that style.
+%%\citestyle{acmauthoryear}
+
+%%
+%% end of the preamble, start of the body of the document source.
+\begin{document}
+
+%%
+%% The ``title'' command has an optional parameter,
+%% allowing the author to define a ``short title'' to be used in page headers.
+\title{Measuring System Under Test Requirements for APT Emulation Using MITRE ATT\&CK}
+% \subtitle{}
+%%
+%% The ``author'' command and its associated commands are used to define
+%% the authors and their affiliations.
+%% Of note is the shared affiliation of the first two authors, and the
+%% ``authornote'' and ``authornotemark'' commands
+%% used to denote shared contribution to the research.
+
+
+%\author{double blind}
+% chktex 8
+ \author{Ágney Lopes Roth Ferraz}
+ \authornote{These authors contributed equally to this work.}
+ \orcid{0009-0009-1202-6447}
+ \affiliation{%
+   \institution{Aeronautics Institute of Technology}
+   \city{São José dos Campos}
+   \state{SP}
+   \country{Brazil}
+ }
+ \email{roth@ita.br}
+
+ \author{Sidnei Barbieri}
+ \authornotemark[1]
+ \orcid{0000-0001-9090-9469}
+
+ \affiliation{%
+   \institution{Carnegie Mellon University}
+   \city{Pittsburgh}
+   \state{PA}
+   \country{USA}
+ }
+
+ \additionalaffiliation{%
+   \institution{Aeronautics Institute of Technology}
+   \city{São José dos Campos}
+   \state{SP}
+   \country{Brazil}
+ }
+
+ \email{sbarbier@andrew.cmu.edu}
+
+ \author{Murray Evangelista de Souza}
+ \orcid{0009-0000-8113-5190}
+ \affiliation{%
+   \institution{Aeronautics Institute of Technology}
+   \city{São José dos Campos}
+   \state{SP}
+   \country{Brazil}
+ }
+ \email{murraymes@ita.br}
+
+
+ \author{Lourenço Alves Pereira Júnior}
+ \orcid{0000-0002-9682-0075}
+ \affiliation{%
+   \institution{Aeronautics Institute of Technology}
+   \city{São José dos Campos}
+   \state{SP}
+   \country{Brazil}
+ }
+ \email{ljr@ita.br}
+
+%%
+%% By default, the full list of authors will be used in the page
+%% headers. Often, this list is too long, and will overlap
+%% other information printed in the page headers. This command allows
+%% the author to define a more concise list
+%% of authors' names for this purpose.
+\renewcommand{\shortauthors}{Roth et al.}
+
+%%
+%% The abstract is a short summary of the work to be presented in the
+%% article.
+\begin{abstract}
+
+Emulating Advanced Persistent Threat (APT) campaigns in controlled
+environments requires behavioral knowledge of the adversary and the
+correct configuration of the \emph{System Under Test} (SUT), the
+target environment where procedures will run.
+Despite the broad adoption of the \mitre{} \attack{} framework,
+encoded in \stix{} bundles, the information necessary to derive
+concrete SUT requirements (software versions, dependencies,
+exploitable vulnerabilities, and infrastructure topology) is
+rarely expressed in structured form.
+In this work, we perform a systematic measurement analysis of the
+\attack{} Enterprise, Mobile, ICS, CAPEC, and FiGHT datasets to
+quantify the availability, completeness, and specificity of
+SUT-relevant information.
+We define a SUT-centric requirements model and coverage, sparsity,
+and deployment compatibility metrics that classify technique,
+software, and vulnerability constraints according to their
+feasibility in containers, virtual machines, or full
+infrastructure.
+Our results show that platform constraints are broadly present
+but coarse, software references rarely include specific
+versions, and vulnerability information is sparse and
+often buried in free text. This makes automated SUT
+generation infeasible from structured CTI alone. These results
+define the boundary between descriptive behavioral intelligence
+and the environment specifications needed for reproducible
+emulation.
+
+\end{abstract}
+
+%%
+%% The code below is generated by the tool at http://dl.acm.org/ccs.cfm.
+%% Please copy and paste the code instead of the example below.
+%%
+
+\begin{CCSXML}
+<ccs2012>
+   <concept>
+       <concept_id>10002978.10003006.10011634.10011633</concept_id>
+       <concept_desc>Security and privacy~Penetration testing</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10002978.10002997</concept_id>
+       <concept_desc>Security and privacy~Intrusion/anomaly detection and malware mitigation</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+   <concept>
+       <concept_id>10002944.10011123.10010916</concept_id>
+       <concept_desc>General and reference~Measurement</concept_desc>
+       <concept_significance>500</concept_significance>
+       </concept>
+ </ccs2012>
+\end{CCSXML}
+
+\ccsdesc[500]{Security and privacy~Penetration testing}
+\ccsdesc[500]{Security and privacy~Intrusion/anomaly detection and malware mitigation}
+\ccsdesc[500]{General and reference~Measurement}
+
+% \ccsdesc[500]{Security and privacy~Intrusion/anomaly detection}
+% \ccsdesc[300]{Security and privacy~Social aspects of security}
+% \ccsdesc[300]{Computing methodologies~Simulation tools and environments}
+
+%%
+%% Keywords. The author(s) should pick words that accurately describe
+%% the work being presented. Separate the keywords with commas.
+\keywords{Cyber Threat Intelligence, STIX, MITRE ATT\&CK, System Under Test,
+APT Emulation, Adversary Emulation, Measurement}
+%% A ``teaser'' image appears between the author and affiliation
+%% information and the body of the document, and typically spans the
+%% page.
+%\begin{teaserfigure}
+%  \includegraphics[width=\textwidth]{sampleteaser}
+%  \caption{Seattle Mariners at Spring Training, 2010.}
+%  \Description{Enjoying the baseball game from the third-base
+%  seats. Ichiro Suzuki preparing to bat.}
+%  \label{fig:teaser}
+%\end{teaserfigure}
+
+% ljr: pacify column width limits
+\sloppy
+%%
+%% This command processes the author and affiliation and title
+%% information and builds the first part of the formatted document.
+\maketitle
+% sidnei: pacify section spaces
+\raggedbottom%
+
+% ===============================================================
+\section{Introduction}\label{sec:introduction}
+
+Controlled APT emulation requires two things: a description of
+\emph{what} an adversary does, and a concrete environment in which
+to do it. The first is increasingly well served by the \mitre{} \attack{}
+knowledge base, which now catalogues 835 Enterprise techniques across 187
+documented groups and 52 campaigns, all encoded in
+machine-readable \stix{} bundles~\cite{strom2018mitre,apurva2024mitre}.
+The second remains an open problem. Every emulation run requires a
+\emph{System Under Test (SUT)}: a configured environment whose OS
+family, installed software, exposed services, trust relationships,
+and vulnerable package versions must be specified before a single
+technique can execute. SUT choice determines which procedures are
+reachable, which privilege escalation paths exist, and which CVEs
+are exploitable. Without a correct SUT, even a perfectly faithful
+procedure description produces either a silent no-op or an
+unreproducible result.
+
+The central question this paper asks is simple:
+\emph{Can structured CTI provide enough information to derive
+SUT requirements automatically, and if not, where exactly does it
+fall short?} We answer this question by measuring
+every SUT-relevant field across the full \attack{} Enterprise,
+Mobile, ICS, CAPEC, and FiGHT corpora. Our findings are clear:
+platform constraints are broadly present but coarse; software
+references rarely carry version specificity or CPE identifiers;
+and CVE linkages are sparse and predominantly buried in free text.
+Automated SUT generation from structured CTI alone is not feasible
+under current encoding practices.
+
+The gap has practical consequences for the evaluation stack.
+Red team platforms such as \caldera{} provide execution logic but
+leave SUT instantiation entirely to the
+analyst~\cite{applebaum2016caldera,redcanary2023art,orbinato2024laccolith,damodaran2025automated,wang2024sands}. APT detection systems are
+meaningfully evaluated only for techniques that can actually reach a
+target~\cite{milajerdi2019holmes,han2020unicorn,DBLP:conf/uss/Dong0NS0LLX23,DBLP:conf/uss/YangXXLZ23,Li_2024,DBLP:conf/ccs/LvGQCZCJ24,DBLP:conf/sp/RehmanAH24,Cheng_2024,DBLP:conf/uss/JiaXN0ZW24,DBLP:conf/ccs/Aly0Y25,DBLP:conf/uss/Zhang0YK0KF25}. Attribution research shows
+that robust actor-level conclusions remain difficult under TTP overlap,
+heterogeneous evidence quality, and incomplete reporting~\cite{DBLP:conf/uss/SahaMBCVL25,DBLP:conf/ccs/YuldoshkhujaevJ25}.
+Together, these observations increase dependence on richer contextual
+evidence (especially software and vulnerability context), precisely
+the signals most often missing from structured encoding. The same
+operational tension appears in recent analyses of ATT\&CK-oriented
+evaluation practice and operational deployment constraints in
+industry~\cite{apurva2024mitre,10.1145/3634737.3645012,DBLP:conf/ccs/DongLJLWHXCLGC23}.
+
+A CTI standard that names malware but not its version, or
+references a CVE only in a prose description, cannot drive
+automated SUT construction. That is the problem this paper
+measures.
+
+\myparagraph{Where structured CTI falls short}
+CTI encodes \emph{what} was observed: which techniques appeared
+in a campaign, which malware was used, which groups were involved.
+It does not encode \emph{where} it ran. Translating a \stix{}
+bundle into a deployable environment requires knowing which OS
+version hosts a service, which package version carries a
+vulnerability, and which network topology enables lateral movement.
+None of these are structured fields in current \attack{} encoding.
+
+The \attack{} framework is the natural target for this measurement: it is widely
+adopted as a structured CTI standard and used as input by red
+team platforms, detection evaluations, and threat hunting
+programs~\cite{strom2018mitre,apurva2024mitre,DBLP:conf/uss/VirkudIR00024}. Its design as a behavioral
+taxonomy rather than an environment
+specification~\cite{strom2018mitre,ferraz2026proceduralsemanticsgapstructured}
+is correct and intentional, but it creates a gap when
+practitioners treat it as sufficient input for emulation
+workflows that require both. We measure that gap.
+
+Our companion study measured the procedural axis, that is, whether
+structured CTI encodes enough detail to execute attack steps in order.
+This paper isolates the environment axis: whether structured CTI encodes
+enough detail to build the target environment in which those steps can run.
+Separating these axes avoids conflating missing procedure details with
+missing SUT requirements.
+
+\myparagraph{Research questions}
+
+\noindent\hangindent=2.7em\hangafter=1
+\textbf{RQ1 (Coverage):} How much SUT-relevant information is
+present in structured CTI objects and relationships, and how
+complete is it for deriving environment prerequisites such as
+platforms, software dependencies, and vulnerabilities?
+
+\noindent\hangindent=2.7em\hangafter=1
+\textbf{RQ2 (Deployability):} To what extent can software references and
+vulnerability references be translated into deployable SUT
+specifications for containers, VMs, or IaC, and what classes
+of requirements remain unmappable?
+
+\noindent\hangindent=2.7em\hangafter=1
+\textbf{RQ3 (Specificity):} How specific are SUT requirement
+profiles with respect to known intrusion sets and campaigns, and
+how reliably can they support susceptibility assessment without
+over-claiming attribution?
+
+\myparagraph{Contributions}
+
+\stepone~We define a SUT-centric measurement model that
+operationalizes CTI into environment prerequisites, covering
+platform, software, and vulnerability constraints.
+
+\steptwo~A corpus-scale measurement quantifies the availability, sparsity, and ambiguity of
+SUT-relevant signals across \stix{} objects and relationships in
+the \mitre{} \attack{} Enterprise, Mobile, ICS, CAPEC, and FiGHT
+datasets.
+
+\stepthree~A compatibility taxonomy classifies
+techniques by their minimum virtualization backend requirement
+(container-feasible, VM-required, or infrastructure-dependent).
+
+\stepfour~We analyze SUT profile specificity across intrusion sets
+and discuss the limitations imposed by under-reporting and shared
+commodity behaviors~\cite{DBLP:conf/uss/SahaMBCVL25}.
+
+\myparagraph{Organization}
+The remainder of this paper is organized as follows.
+Section~\ref{sec:background} presents ATT\&CK and STIX background;
+Section~\ref{sec:related} reviews related work;
+Section~\ref{sec:definitions} defines the SUT measurement model;
+Section~\ref{sec:dataset} describes the datasets;
+Section~\ref{sec:methodology} details the measurement pipeline;
+Section~\ref{sec:analysis} reports the results;
+Section~\ref{sec:discussion} discusses implications and threats to validity;
+and Section~\ref{sec:conclusion} concludes.
+
+% ===============================================================
+\section{Background}\label{sec:background}
+
+\subsection{The MITRE ATT\&CK Framework}
+
+The \mitre{} \attack{} framework is a curated knowledge base
+documenting adversary tactics and techniques observed in real-world
+cyber operations. It organizes adversary behavior into a matrix of
+tactics (attacker objectives) and techniques (concrete methods),
+with sub-techniques capturing more specific procedural variants.
+The framework is divided into three domains: Enterprise (Windows,
+Linux, macOS, cloud, network infrastructure), Mobile, and
+Industrial Control Systems (ICS). The Enterprise domain is the
+most extensively documented, containing 835 techniques and
+sub-techniques across 14 tactics as of v18.1~\cite{strom2018mitre,apurva2024mitre}.
+
+\subsection{CTI Representation in STIX}
+
+ATT\&CK content is distributed as \stix{} 2.x
+bundles~\cite{stixspec}.
+STIX defines a graph-based
+interchange format in which entities are typed STIX Domain Objects
+(SDOs) and connections are STIX Relationship Objects (SROs). The
+objects most relevant to SUT construction are
+\texttt{attack-pattern} (techniques), \texttt{campaign},
+\texttt{intrusion-set}, \texttt{malware}, \texttt{tool}, and
+\texttt{relationship}. SROs encode semantic associations such as
+\emph{uses}, \emph{attributed-to}, and \emph{targets}, without
+specifying execution order, preconditions, or environment bindings.
+
+The \stix{} schema does not define a structured procedure object.
+Ordering, environmental requirements, and parameter flows appear
+only in natural-language \texttt{description} fields and are not
+machine-readable. This design reflects the role of \attack{} as a
+behavioral taxonomy rather than a machine-actionable execution
+specification~\cite{strom2018mitre,ferraz2026proceduralsemanticsgapstructured}.
+
+\subsection{Key Entities and SUT Relevance}
+
+Table~\ref{tab:entities} summarizes the \attack{} entity types
+most relevant to SUT construction.
+
+\begin{table}[!htb]
+\caption{ATT\&CK entity types and their SUT relevance.}\label{tab:entities}
+\centering\small
+\begin{tabular}{>{\raggedright\arraybackslash}p{2.0cm} >{\raggedright\arraybackslash}p{5.6cm}}
+\toprule
+\textbf{Entity} & \textbf{SUT relevance} \\
+\midrule
+\texttt{attack-pattern} &
+  Platform hints via \texttt{x\_mitre\_platforms};
+  system requirements in \texttt{x\_mitre\_system\_requirements}
+  (rarely populated). \\
+\texttt{malware} /
+\texttt{tool} &
+  Implies OS dependency; version rarely specified;
+  CPE mappings largely absent. \\
+\texttt{campaign} &
+  Scopes operation to time window and target set;
+  links to techniques and intrusion set. \\
+\texttt{intrusion-set} &
+  Aggregates TTP profile; useful for SUT susceptibility
+  profiling but not for single-campaign instantiation. \\
+\texttt{vulnerability} &
+  CVE-mapped objects present in some bundles;
+  rarely linked directly to campaigns. \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{ATT\&CK in Adversary Emulation}
+
+Red team platforms such as \caldera{} provide an execution
+substrate for adversary emulation but assume a compatible SUT
+already exists. They do not derive environment configurations from
+CTI\@. Every ability requires a concrete command, and execution
+failures expose missing assumptions in the CTI-derived
+representation rather than framework
+deficiencies~\cite{applebaum2016caldera}.
+
+SUT construction therefore remains a manual step that precedes
+emulation, and the quality of that SUT determines whether emulated
+procedures can succeed.
+This background motivates the core question of this paper:
+which parts of SUT construction are already supported by structured CTI,
+and which parts still require manual inference.
+
+% ===============================================================
+\section{Related Work}\label{sec:related}
+% Note: poster papers are tracked for ideation only and are intentionally
+% excluded from citation claims in this manuscript.
+% Citation governance note (quality scope):
+% - Core evidence is top-4, arXiv, or standards.
+% - The following non-top4 citations are intentionally retained because they
+%   are either companion/internal baseline, foundational tooling, or
+%   high-quality adjacent venues directly supporting specific claims:
+%   10.1145/3634737.3645012, cheng2025ctinexus, shen2025pentestagent,
+%   savat2021extractor, vermeer2022evolution, applebaum2016caldera,
+%   orbinato2024laccolith, strom2018mitre, redcanary2023art,
+%   ferraz2026proceduralsemanticsgapstructured.
+
+\myparagraph{CTI completeness and measurement}
+Jin et al.\ show that CTI sharing provides limited operational
+value partly because shared feeds exhibit inconsistent field usage
+and low structural completeness~\cite{DBLP:conf/ndss/JinKLBKK24}.
+Vermeer et al.\ measure gaps in STIX-encoded
+sources~\cite{vermeer2022evolution}. Prior work surveys ATT\&CK's
+design, adoption, and known
+limitations~\cite{strom2018mitre,apurva2024mitre}; they identify sparse
+software versioning as an open problem but do not quantify it.
+Recent provenance-graph APT detection systems also show that
+operational coverage depends on what telemetry and ATT\&CK-linked
+behaviors are representable in the underlying datasets, and not just on
+model architecture~\cite{milajerdi2019holmes,han2020unicorn,DBLP:conf/uss/Dong0NS0LLX23,DBLP:conf/uss/YangXXLZ23,Li_2024,DBLP:conf/uss/JiaXN0ZW24,DBLP:conf/uss/Zhang0YK0KF25}. All of these works measure
+\emph{behavioral} completeness. None asks whether the encoded
+data is sufficient to instantiate the environment where emulation
+must run.
+
+\myparagraph{CTI extraction pipelines and machine-actionability}
+Recent CTI extraction pipelines improve structured recovery of
+behavioral intelligence from reports, including TTP extraction and
+graph construction~\cite{savat2021extractor,DBLP:journals/corr/abs-2412-10872,cheng2025ctinexus,DBLP:conf/uss/BuchelPLCZBE0GC25}.
+However, these lines of work still prioritize \emph{what} happened
+over \emph{where} execution should occur. As a result, they do not
+provide a measurement framework for SUT derivation quality.
+
+\myparagraph{Behavioral profiling and attribution specificity}
+Practitioner-centered attribution research reports that analysts often
+prioritize understanding adversary TTPs, intent, and operational context
+over confidently naming a specific actor, due to ambiguity in available
+evidence and collaboration frictions~\cite{DBLP:conf/uss/SahaMBCVL25}. Longitudinal
+analysis of public APT dossiers likewise highlights heterogeneity in report
+quality and evidence granularity across sources and periods~\cite{DBLP:conf/ccs/YuldoshkhujaevJ25}.
+Complementary evidence from ATT\&CK-oriented behavior specificity analysis
+reinforces this ambiguity at the group-discrimination
+level~\cite{saha2026kittenpandameasuringspecificity}.
+These findings motivate our focus on \emph{deployability}: whether
+software and CVE references carry enough structured information to
+instantiate a runnable target environment, independent of hard
+attribution claims.
+
+\myparagraph{Adversary emulation frameworks}
+Tools such as \caldera{}~\cite{applebaum2016caldera}, Atomic Red
+Team~\cite{redcanary2023art}, and planning-based systems such as
+AURORA~\cite{wang2024sands} assume a compatible SUT and provide
+execution logic. None derives environment specifications from
+CTI automatically. Laccolith~\cite{orbinato2024laccolith} and
+LLM-driven proposals~\cite{singer2025incalmo,deng2024pentestgpt,shen2025pentestagent} specify SUTs manually
+or rely on fixed lab topologies. Our work characterizes what CTI
+can contribute to this automation gap.
+
+\myparagraph{Cyber range and testbed design}
+Cyber range frameworks rely on reproducible environment
+definitions that specify OS images, service configurations, network
+topology, and vulnerable software. These specifications are authored
+manually and not derived from
+CTI~\cite{Chen_2020,orbinato2024laccolith,damodaran2025automated}. Our findings quantify which CTI
+fields could, in principle, feed such specifications and which
+cannot, thereby bounding the scope of automated SUT derivation.
+Poster-scale studies in adjacent venues also explore ATT\&CK-grounded
+automation for specialized environments (e.g., ICS malware analysis),
+but without structured SUT derivation from CTI
+bundles~\cite{DBLP:conf/asiaccs/KurtSKT25}. We use these results as
+contextual signals, not as primary evidence.
+
+\myparagraph{The gap this paper fills}
+The studies above collectively characterize CTI quality from a
+\emph{behavioral} perspective, including coverage of techniques,
+attribution specificity, TTP extraction. To the best of our knowledge,
+prior studies do not explicitly measure whether
+structured CTI contains the environmental information required to
+instantiate the target system where emulation runs. The
+compatibility class of a technique (container, VM, or full
+infrastructure), the version specificity of referenced software,
+and the deployability of CVE constraints are not systematically measured
+in this problem setting. This paper provides those measurements for the
+first time, across five ATT\&CK-derived corpora, establishing a
+quantitative foundation for the design of CTI standards that
+support automated SUT generation.
+Section~\ref{sec:definitions} turns this gap into an explicit
+measurement model and operational metrics.
+
+% ===============================================================
+\section{SUT Measurement Model}\label{sec:definitions}
+
+We use a SUT-centric measurement model that operationalizes structured
+CTI objects into environment prerequisites. The model is intentionally
+minimal: it defines which constraints are required to instantiate an
+environment, and how those constraints are measured across datasets.
+
+\subsection{SUT Constraint Types}
+
+\myparagraph{Platform constraints}
+A technique carries a platform constraint when
+\texttt{x\_mitre\_platforms} lists a supported OS family, cloud
+provider, or device type. This is the coarsest SUT signal: it
+indicates compatibility class, but not version, configuration, or
+privilege model.
+
+\myparagraph{Software constraints}
+A software constraint is induced when a \texttt{malware}
+or \texttt{tool} object is linked to a technique or campaign via a
+\emph{uses} relationship. Software constraints imply the presence
+of an installable artifact in the SUT\@. Their specificity depends
+on whether the object carries a version identifier or CPE
+reference; absent these fields, the constraint is satisfiable only
+at the family level.
+
+\myparagraph{Vulnerability constraints}
+A vulnerability constraint is induced when a CVE
+identifier appears in object descriptions or when a
+\texttt{vulnerability} object is linked to a campaign, technique,
+or software artifact. Vulnerability constraints are the most
+specific: they identify a product, affected version range, and
+attack surface. They are also the most actionable for SUT
+construction: deploying the vulnerable product at the specified
+version directly satisfies the constraint.
+
+\subsection{SUT Requirement Profile}
+
+For each campaign (and analogously for each intrusion set), we define a
+SUT requirement profile as the union of three components:
+(i) platform constraints induced by associated techniques,
+(ii) software constraints induced by linked malware/tool objects, and
+(iii) vulnerability constraints induced by CVE evidence.
+This profile is used only as an analysis artifact for coverage and
+specificity comparisons; it is not presented as an execution plan.
+
+\subsection{SUT Compatibility Classes}
+
+We classify each technique by the minimum virtualization backend
+required to satisfy its constraints:
+
+\begin{itemize}
+  \item \textbf{Container-feasible (CF):} user-space artifacts
+    with no kernel-module, firmware, or Active Directory dependency.
+  \item \textbf{VM-required (VMR):} techniques involving kernel
+    interactions, process injection, or boot-level persistence.
+  \item \textbf{Infrastructure-dependent (ID):} behaviors
+    presupposing multi-host topology, domain controllers, or
+    enterprise identity services.
+\end{itemize}
+
+\subsection{Measurement Metrics}
+
+\myparagraph{Platform coverage}
+Fraction of techniques with at least one entry in
+\texttt{x\_mitre\_platforms}.
+
+\myparagraph{Software reference rate}
+Fraction of campaigns and intrusion sets linked to at least one
+\texttt{malware} or \texttt{tool} object.
+
+\myparagraph{Vulnerability reference rate}
+Fraction of campaigns and intrusion sets with at least one CVE
+linkage (direct or via associated software).
+
+\myparagraph{SUT profile specificity}
+Fraction of intrusion sets whose SUT profiles are unique under Jaccard
+distance threshold $\delta = 0.1$ when compared to all other
+intrusion set profiles.
+
+% ===============================================================
+\section{Dataset}\label{sec:dataset}
+
+\subsection{Primary Dataset}
+
+Following the measurement model in Section~\ref{sec:definitions},
+we select datasets that expose the same core STIX structures while
+covering different ATT\&CK scopes.
+We use the \mitre{} \attack{} Enterprise bundle v18.1 as the
+primary source for all quantitative analyses. This bundle is the
+most extensively documented domain and is evaluated jointly with
+the companion study on procedural
+semantics~\cite{ferraz2026proceduralsemanticsgapstructured},
+which uses the same bundle version.
+
+Table~\ref{tab:dataset} summarizes object counts across all
+evaluated sources.
+
+\begin{table}[!htb]
+\caption{STIX object counts across ATT\&CK domains and sources
+         (total bundle counts; active counts after deprecation
+         filtering are reported in Section~\ref{sec:methodology}).}\label{tab:dataset}
+\centering\footnotesize
+\begin{tabular}{lrrrrr}
+\toprule
+\textbf{Source} &
+\textbf{Techniques} &
+\textbf{Camp.} &
+\textbf{IS} &
+\textbf{Malware} &
+\textbf{Tools} \\
+\midrule
+Enterprise & 835 & 52  & 187 & 696 & 91 \\
+Mobile     & 190 & 3   & 17  & 121 & 2  \\
+ICS        & 95  & 8   & 16  & 30  & 0  \\
+CAPEC      & 615 & n/a & n/a & n/a & n/a\\
+FiGHT      & 707 & n/a & 136 & 475 & 73 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+The Enterprise bundle contains 20,048 relationship objects.
+After excluding 144 deprecated or revoked \texttt{attack-pattern}
+objects, 15 deprecated \texttt{intrusion-set} objects, and
+3 deprecated \texttt{malware} objects, our analysis covers
+691 active techniques, 52 campaigns, 172 intrusion sets, and
+784 software artifacts (693 malware~$+$~91 tools).
+The same bundle version and object-filtering conventions are used
+in the companion
+study~\cite{ferraz2026proceduralsemanticsgapstructured}.
+
+\subsection{Extracted Fields}
+
+For each \texttt{attack-pattern} object, we extract
+\texttt{x\_mitre\_platforms},
+\texttt{x\_mitre\_system\_requirements},
+\texttt{x\_mitre\_permissions\_required}, and
+\texttt{x\_mitre\_defense\_bypassed}. For \texttt{malware} and
+\texttt{tool} objects, we extract \texttt{name}, \texttt{aliases},
+\texttt{x\_mitre\_platforms}, and any CPE or version strings in
+\texttt{external\_references}. CVE identifiers are extracted from
+\texttt{description} fields and from linked
+\texttt{vulnerability} objects.
+
+% ===============================================================
+\section{Measurement Methodology}\label{sec:methodology}
+
+\subsection{Extraction Pipeline}
+
+We parse all \stix{} bundles as JSON and
+normalize object identifiers. Objects marked as deprecated
+(\texttt{x\_mitre\_deprecated}) or revoked (\texttt{revoked}) are
+excluded; this removes 144 of the 835 \texttt{attack-pattern}
+objects in the Enterprise bundle, leaving 691 active techniques.
+To preserve comparability with the companion paper, we keep the same
+bundle version, object-filtering rules, and relationship traversal
+strategy used in the procedural-gap baseline~\cite{ferraz2026proceduralsemanticsgapstructured}.
+Relationships are indexed by
+(\textit{source\_ref}, \textit{relationship\_type},
+\textit{target\_ref}) triples to enable bidirectional traversal.
+For each campaign, the technique set is collected from all
+\texttt{attack-pattern} objects reachable via \emph{uses}
+relationships; software and CVE associations are derived
+analogously.
+For campaign-level target platform inference, we use a conservative
+rule: platforms are derived only from \texttt{x\_mitre\_platforms}
+attached to software (\texttt{malware}/\texttt{tool}) linked to the
+campaign. Technique-level platforms are excluded from this step
+because they encode where a technique can run in general, not what a
+specific campaign targeted.
+
+\subsection{SUT Compatibility Classification}
+
+Each technique is assigned a compatibility class in order of
+precedence:
+\begin{enumerate}[leftmargin=1.2em,itemsep=0.2em,topsep=0.2em]
+\item If \texttt{x\_mitre\_platforms} contains only
+      \texttt{Containers} or \texttt{Linux} and the technique does not
+      belong to kernel-interaction or boot-persistence clusters:
+      \textbf{CF}.
+\item If \texttt{x\_mitre\_permissions\_required} contains
+      \texttt{Administrator}, \texttt{SYSTEM}, or \texttt{root}, or the
+      technique falls in privilege-escalation or boot/firmware
+      defense-evasion: \textbf{VMR}.
+\item If \texttt{x\_mitre\_platforms} references
+      \texttt{Windows Domain} or \texttt{Identity Provider}, or the
+      technique is Lateral Movement with an Active Directory software
+      dependency: \textbf{ID}.
+\item Default: \textbf{VMR}.
+\end{enumerate}
+
+\subsection{Profile Specificity Analysis}
+
+For each intrusion set $g$ we encode its SUT profile as a binary vector
+over all software and CVE identifiers in the corpus. Pairwise
+Jaccard distances are computed and the fraction of groups with at
+least one neighbor within $\delta = 0.1$ is reported as the SUT
+profile confusion rate.
+
+% ===============================================================
+\section{Analysis}\label{sec:analysis}
+% LTeX: enabled=false
+
+% ── Pipeline output (2026-03-05, ATT&CK Enterprise v18.1) ──────────
+% Fixed denominators (active, non-deprecated/revoked objects):
+% - Enterprise techniques: 691  (835 total minus 144 deprecated/revoked)
+% - Campaigns: 52               (all active; C0033 has 1 uses relationship)
+% - Intrusion sets: 172         (187 total minus 15 deprecated/revoked)
+% - Software (malware+tools): 784  (693 malware + 91 tools)
+% Always report count and percentage together.
+% Quick check before submission:
+% - CF + VMR + ID = 691    ✓ (19 + 526 + 146 = 691)
+% - Partition percentages ≈ 100%  ✓ (2.7 + 76.1 + 21.1 = 99.9)
+% Keep one decimal place for percentages, except when value < 1.0%.
+% Pipeline script: ../measurement/sut/scripts/sut_measurement_pipeline.py
+% Audit CSVs:     ../measurement/sut/scripts/results/audit/
+
+Results are reported in the same order as the research questions:
+coverage first (RQ1), deployability and compatibility second (RQ2),
+and profile specificity last (RQ3).
+
+\subsection{Platform Constraint Coverage (RQ1)}
+% TASK (RQ1/platform):
+% 1) Compute rho_P for each corpus (Enterprise/Mobile/ICS/CAPEC/FiGHT).
+% 2) Compute fill rate of x_mitre_system_requirements.
+% 3) Confirm filters (deprecated/revoked) match Methods.
+
+Of the 691 active Enterprise techniques, all 691 (100.0\%) carry at
+least one entry in \texttt{x\_mitre\_platforms}---platform annotation
+is effectively mandatory in current ATT\&CK curation. However, the
+\texttt{x\_mitre\_system\_requirements} field, the most
+specific platform annotation, is populated in zero
+techniques (0.0\%), confirming that fine-grained OS and
+software version constraints are entirely absent from the structured
+representation. Platform coverage is similarly complete in the Mobile
+(100.0\%) and ICS (98.8\%) domains. The CAPEC bundle does not use
+\texttt{x\_mitre\_platforms}, reflecting its focus on abstract attack
+patterns rather than platform-bound behaviors.
+Figure~\ref{fig:coverage} compares these rates across all corpora.
+
+\begin{figure}[!htb]
+\centering
+\resizebox{\columnwidth}{!}{\input{figs/coverage_template.tex}}
+% FIGURE NOTE:
+% - Keep Y-axis fixed at 0 to 100.
+% - Add value labels.
+\caption{Coverage of structured SUT-relevant signals across corpora.}\label{fig:coverage}
+\Description{Grouped bar chart template for Enterprise, Mobile, ICS, CAPEC, and FiGHT showing three metrics per corpus: platform coverage, software-link coverage, and CVE-link coverage. The template emphasizes high platform coverage and lower CVE coverage.}
+\end{figure}
+
+\myparagraph{Campaign-level platform signal under software-only inference}
+Applying the software-only platform rule to all 52 Enterprise
+campaigns yields a platform signal for 47 campaigns (90.4\%); the
+remaining 5 campaigns (9.6\%) are genuinely unknown under structured
+fields alone: \emph{FrostyGoop Incident}, \emph{KV Botnet Activity},
+\emph{Leviathan Australian Intrusions}, \emph{SPACEHOP Activity}, and
+\emph{ShadowRay}. Table~\ref{tab:campaign_os_families} summarizes the
+OS-family distribution among campaigns with signal. Campaigns can map
+to multiple families.
+
+\begin{table}[!htb]
+\caption{Software-derived OS-family evidence across Enterprise campaigns (multi-label counts).}\label{tab:campaign_os_families}
+\centering\scriptsize
+\begin{tabular}{lr}
+\toprule
+\textbf{OS family} & \textbf{Campaigns} \\
+\midrule
+Windows & 42 \\
+Linux   & 23 \\
+macOS   & 21 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\subsection{Software Reference Rate (RQ1, RQ2)}
+% TASK (RQ1/RQ2 software):
+% 1) Measure software-link rates for campaigns and intrusion sets.
+% 2) Detect version signal from name/alias/external_references.
+% 3) Count software objects that include CPE.
+
+The Enterprise bundle contains 693 active malware and 91 tool objects
+(784 total). Of the 52 campaigns,
+47 (90.4\%) are linked to at
+least one software artifact. Among the 172 active intrusion sets,
+158 (91.9\%) carry at least one software association. Of
+all 784 software objects,
+only 2.4\% contain any form of version specifier in their
+\texttt{name}, \texttt{aliases}, or \texttt{external\_references}
+fields. CPE identifiers, which directly enable
+version-pinned installation, are present in 0.0\% of
+software objects. While software \emph{presence} is broadly
+documented, the specificity required for automated SUT
+construction is entirely absent.
+The distribution of specificity levels is summarized in
+Figure~\ref{fig:software_specificity}.
+
+\begin{figure}[!htb]
+\centering
+\resizebox{\columnwidth}{!}{\input{figs/software_specificity_template.tex}}
+% FIGURE NOTE:
+% - Stacked bar must sum to 100%.
+% - Include total N in caption or legend.
+\caption{Specificity of software references linked to campaigns and intrusion sets.}\label{fig:software_specificity}
+\Description{Stacked bar template with three segments: software references without version and without CPE, with textual version but no CPE, and with CPE\@. Segment labels show percentages that should be replaced with measured values.}
+\end{figure}
+
+\subsection{Vulnerability Reference Rate (RQ1, RQ2)}
+% TASK (RQ1/RQ2 CVE):
+% 1) Extract CVEs from structured fields and free text with one parser.
+% 2) Deduplicate CVE IDs before counting.
+% 3) Report campaign/group coverage and structured vs text split.
+
+CVE identifiers extracted from the Enterprise bundle total
+26 unique CVEs. The bundle contains zero dedicated
+\texttt{vulnerability} SDOs; all CVE evidence resides either in
+\texttt{external\_references} entries or in free-text
+\texttt{description} fields. Of the 26~CVEs, 14 appear only
+as illustrative examples inside technique descriptions (e.g.,
+\emph{Exploit Public-Facing Application} citing CVE-2016-6662);
+these are not campaign-specific. The remaining 12 are
+\emph{actionable}: linked to specific software, campaign, or
+intrusion-set objects. Only 5 campaigns
+(9.6\%) carry any CVE reference, and only 4 intrusion
+sets (2.3\%) are associated with at least one CVE\@. These
+numbers are substantially lower than the 31.6\% CVE coverage
+reported for ATT\&CK groups by Saha et al., who relied on
+downloading and parsing full threat reports rather than structured
+STIX fields alone~\cite{DBLP:conf/uss/SahaMBCVL25}, confirming the
+structural gap between referenced intelligence and encoded
+intelligence.
+Figure~\ref{fig:cve_location} shows where CVE evidence is found in
+practice.
+
+\myparagraph{Campaign-linked exploited CVEs}
+Among the 12 actionable CVEs, 8 are explicitly tied to campaign
+objects in Enterprise STIX. These CVEs appear in five campaigns and
+represent the strongest structured vulnerability evidence for SUT
+instantiation in the current bundle.
+
+\begin{table}[!htb]
+\caption{Campaign-linked exploited CVEs in Enterprise STIX (v18.1).}\label{tab:campaign_linked_cves}
+\centering\scriptsize
+\begin{tabular}{>{\raggedright\arraybackslash}p{4.2cm} >{\raggedright\arraybackslash}p{3.0cm}}
+\toprule
+\textbf{Campaign} & \textbf{CVE(s)} \\
+\midrule
+APT28 Nearest Neighbor Campaign & CVE-2022-38028 \\
+ShadowRay & CVE-2023-48022 \\
+Operation MidnightEclipse & CVE-2024-3400 \\
+Versa Director Zero Day Exploitation & CVE-2024-39717 \\
+SharePoint ToolShell Exploitation & CVE-2025-49704; CVE-2025-49706; CVE-2025-53770; CVE-2025-53771 \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\begin{figure}[!htb]
+\centering
+\resizebox{\columnwidth}{!}{\input{figs/cve_location_template.tex}}
+% FIGURE NOTE:
+% - Show count and percentage on bars.
+% - Keep parser version in script header.
+\caption{Location of CVE evidence in the Enterprise corpus.}\label{fig:cve_location}
+\Description{Two horizontal bar template comparing CVE evidence found in structured fields versus free-text descriptions. The free-text bar is longer in the template to illustrate expected imbalance.}
+\end{figure}
+
+\subsection{SUT Compatibility Classification (RQ2)}
+% TASK (RQ2 compatibility):
+% 1) Apply CF/VMR/ID rules exactly as in Methodology.
+% 2) Export class per technique for audit.
+% 3) Confirm totals and percentages match Table~\ref{tab:compat}.
+
+Table~\ref{tab:compat} reports the distribution of the 691 active
+Enterprise techniques across SUT compatibility classes.
+
+\begin{table}[!htb]
+\caption{SUT compatibility classification of Enterprise techniques
+         (n = 691).}\label{tab:compat}
+\centering\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Class} & \textbf{Techniques} & \textbf{Fraction} \\
+\midrule
+Container-feasible (CF)        & 19 & 2.7\% \\
+VM-required (VMR)              & 526 & 76.1\% \\
+Infrastructure-dependent (ID)  & 146 & 21.1\% \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+Techniques classified as VMR or ID cannot be faithfully reproduced
+in a container-only environment. Campaigns involving Lateral
+Movement, boot-level persistence, or Credential Access through
+domain services consistently fall into VMR or ID classes, limiting
+the applicability of container-based cyber ranges for full-campaign
+emulation.
+
+\subsection{SUT Profile Specificity (RQ3)}
+% TASK (RQ3 specificity):
+% 1) Build profiles in two settings: software-only and software+CVE.
+% 2) Compute nearest-neighbor Jaccard distance and confusion at delta=0.1.
+% 3) Recompute unique-profile percentages from the same matrix.
+
+Of the 172 active intrusion sets, 90.7\% possess a unique SUT profile
+under Jaccard distance $\delta = 0.1$ when profiles are built from
+software constraints alone. This fraction remains at 90.7\%
+when CVE constraints are added---unsurprising given that only
+4 intrusion sets carry any CVE linkage. The remaining 9.3\% of groups still
+share their SUT profile with at least one other group. A SUT built
+to satisfy the profile of group $g$ therefore also satisfies the
+profiles of all groups within distance $\delta$, making it
+impossible to claim that a successful emulation is specific to the
+targeted adversary. This SUT profile confusion parallels the
+attribution ambiguity documented at the behavioral level by Saha
+et al.~\cite{DBLP:conf/uss/SahaMBCVL25}, but operates at the
+\emph{environmental} level.
+Figure~\ref{fig:jaccard_cdf} visualizes the full confusion
+distribution.
+
+\begin{figure}[!htb]
+\centering
+\resizebox{\columnwidth}{!}{\input{figs/jaccard_cdf_template.tex}}
+% FIGURE NOTE:
+% - Plot both curves using the same intrusion-set population.
+% - Mark delta=0.1 with a vertical line and label.
+\caption{Nearest-neighbor profile confusion under software-only and software+CVE constraints.}\label{fig:jaccard_cdf}
+\Description{CDF template of nearest-neighbor Jaccard distance with two curves: software-only profile and software-plus-CVE profile. A vertical line marks delta equals 0.1.}
+\end{figure}
+% LTeX: enabled=true
+
+% ===============================================================
+\section{Discussion}\label{sec:discussion}
+
+\subsection{Implications for Reproducible APT Emulation}
+
+Our results establish that structured CTI provides only partial
+information for SUT construction. Platform constraints are broadly
+populated but coarse; software constraints identify artifacts but
+rarely specify versions; and CVE constraints are sparse and buried
+in free text. Automated SUT generation from CTI alone is therefore
+not feasible. The minimum viable workflow requires at least one
+analyst-driven enrichment step that pins software versions and maps
+platform hints to concrete OS images. This enrichment step is
+separate from the procedural gap identified in the companion
+study~\cite{ferraz2026proceduralsemanticsgapstructured}: while
+that work shows CTI lacks \emph{how-to-execute} semantics, our
+work shows it also lacks \emph{where-to-execute} specifications.
+
+\subsection{Container vs.\ VM Trade-offs}
+
+The compatibility classification reveals that a non-trivial
+fraction of Enterprise techniques require VM or full infrastructure
+backends beyond what containers provide. Research groups designing
+cyber ranges exclusively around container orchestration will
+systematically exclude entire tactic clusters, in particular,
+boot-level persistence, kernel injection, and enterprise identity
+attacks. VM-based environments cover a substantially larger
+fraction of the technique space at the cost of greater
+infrastructure complexity.
+
+\subsection{SUT Susceptibility and Attribution}
+
+The SUT profile confusion analysis shows that environment-level
+profiles are not specific enough to uniquely identify a single
+threat actor. A defender who builds a SUT matching the CVE and
+software profile of a particular APT group is also building a SUT
+susceptible to many other groups. Claims of ``APT-X-specific
+emulation'' should therefore be qualified by reporting the SUT
+confusion rate at a stated distance threshold.
+
+\subsection{Path Toward Machine-Actionable SUT Specifications}
+
+Our measurements identify three concrete gaps and a corresponding
+remediation for each.
+
+\myparagraph{Gap 1: software presence without version}
+The vast majority of software objects linked to campaigns carry
+no version specifier and no CPE identifier. An analyst receiving
+a STIX bundle with a \texttt{malware} object named
+\emph{Cobalt Strike} cannot derive which server version to
+deploy, which listener profile to configure, or which CVEs are
+in scope.\ \emph{Remediation:} extend \stix{} \texttt{malware}
+and \texttt{tool} objects with optional
+\texttt{x\_mitre\_version\_range} and \texttt{cpe23uri} fields,
+mirroring the pattern already used by the NVD\@. Adding these two
+fields to existing objects requires no schema break and would
+directly enable version-pinned SUT construction for the fraction
+of software already encoded.
+
+\myparagraph{Gap 2: CVEs buried in free text}
+The majority of CVE identifiers in the Enterprise corpus appear
+inside natural-language \texttt{description} fields rather than
+in structured \texttt{vulnerability} SDOs or
+\texttt{external\_references} entries with the
+\texttt{cve} source name. This means automated extraction
+requires NLP pipelines whose error rate compounds across a
+multi-step SUT derivation workflow. \emph{Remediation:} LLM-based
+enrichment pipelines, operating on the existing corpus of
+threat reports that authors cite but do not structure, could
+extract CVE identifiers and attach them as structured
+\texttt{external\_reference} entries to existing \stix{} objects.
+This is a contained, verifiable task suitable for human-in-the-loop
+validation at scale.
+
+\myparagraph{Gap 3: no SUT compatibility signal}
+The \attack{} schema carries no field indicating whether a
+technique requires a container, a VM, or a full enterprise
+topology. Our CF/VMR/ID classification is derived heuristically
+from platform strings and permission fields, and inherits their
+incompleteness.\ \emph{Remediation:} a standardized
+\texttt{x\_mitre\_sut\_class} field, populated by the ATT\&CK
+team using the same curation process as
+\texttt{x\_mitre\_permissions\_required}, would make SUT
+feasibility machine-readable and enable cyber range designers to
+filter technique sets by deployment cost before planning an
+emulation campaign.
+
+\subsection{Threats to Validity}
+
+Construct validity is limited because our measurements reflect
+only what is explicitly encoded in STIX fields; version and
+configuration information present in referenced threat reports but
+not in structured fields is not captured. Internal validity is
+constrained by the asynchronous update pipeline between the
+ATT\&CK website and downloadable STIX bundles, which may cause
+our extracted counts to underestimate true association rates;
+the same asynchrony was observed in the companion
+study~\cite{ferraz2026proceduralsemanticsgapstructured}. External
+validity is bounded by the focus on public ATT\&CK datasets;
+commercial CTI feeds may carry richer software version data.
+Finally, because this study and its companion analysis share the same
+data baseline and extraction conventions, any upstream corpus bias
+propagates to both axes; this strengthens comparability but also
+couples sensitivity to ATT\&CK curation artifacts.
+
+% ===============================================================
+\section{Conclusion}\label{sec:conclusion}
+
+We presented, to the best of our knowledge, the first measurement of \mitre{} \attack{} structured
+CTI from the perspective of the \emph{System Under Test}: the
+environment that must exist before any emulation procedure can run.
+Across the Enterprise, Mobile, ICS, CAPEC, and FiGHT corpora,
+platform constraints are broadly present but coarse; software
+references rarely carry version specificity; and CVE linkages are
+sparse and buried in free text. These findings answer our three
+research questions directly: SUT-relevant coverage is incomplete
+(RQ1); a significant fraction of techniques require VM or full
+infrastructure backends beyond what containers can provide (RQ2);
+and SUT profiles built from software and CVE constraints are not
+specific enough to distinguish individual threat actors (RQ3).
+
+The companion study showed that structured CTI does not encode
+\emph{how} to execute an adversary procedure. This paper shows it
+also does not encode \emph{where}. Together, they bound the two
+axes of the automation gap between current CTI standards and
+reproducible adversary emulation, and identify the concrete
+schema extensions needed to close it.
+
+%%
+%% Acknowledgments
+%%
+%% The acknowledgments section is defined using the ``acks'' environment
+%% (and NOT an unnumbered section). This ensures the proper
+%% identification of the section in the article metadata, and the
+%% consistent spelling of the heading.
+\begin{acks}
+This work was supported in part by the Coordenação de Aperfeiçoamento de Pessoal de Nível Superior (CAPES), National Council for Scientific and Technological Development (CNPq), and by the Programa de Pós-Graduação em Aplicações Operacionais (PPGAO), Aeronautics Institute of Technology (Instituto Tecnológico de Aeronáutica – ITA). It also received support from the São Paulo Research Foundation (FAPESP), Grants \#2020/09850-0 and \#2022/00741-0. We thank the C2-DC Laboratory for providing the experimental infrastructure.
+\end{acks}
+%%
+%% The next two lines define the bibliography style to be used, and
+%% the bibliography file.
+\bibliographystyle{ACM-Reference-Format}
+%\bibliography{sample-base}
+\bibliography{references,references_official_downloaded}
+%%
+%%
+%%
+%% If your work has an appendix, this is the place to put it.
+%%\appendix
+%%
+\renewcommand{\thesection}{\Alph{section}}
+\setcounter{section}{0}
+\renewcommand{\thetable}{\thesection.\arabic{table}}
+\setcounter{table}{0}
+%%
+%%
+\end{document}
+%% \endinput
+%%
+%% End of file `sample-sigconf-biblatex.tex'.

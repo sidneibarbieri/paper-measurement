@@ -1,0 +1,105 @@
+\begin{tikzpicture}[
+    font=\footnotesize,
+    node distance=1.25cm,
+    hex/.style={
+      thick,
+      shape=regular polygon,
+      regular polygon sides=6,
+      shape border rotate=30,
+      minimum width=2.15cm,
+      align=center,
+      inner sep=3pt,
+      fill=midgray,
+      draw=midgray,
+      text=white,
+      font=\bfseries\footnotesize
+    },
+    hexfirst/.style={hex, fill=ctired, draw=ctired},
+    hexexec/.style={hex, fill=execblue, draw=execblue},
+    arrow/.style={
+      -{Latex[length=10pt,width=10pt]},
+      line width=4pt,
+      draw=black
+    },
+    flow/.style={
+      thick,
+      draw=dashgray,
+      dashed,
+      postaction={decorate},
+      decoration={
+        markings,
+        mark=at position 0.125 with {\arrow{Stealth}},
+        mark=at position 0.375 with {\arrow{Stealth}},
+        mark=at position 0.625 with {\arrow{Stealth}},
+        mark=at position 0.875 with {\arrow{Stealth}}
+      }
+    }
+]
+
+% --- Hexagons (Stages) ---
+\node[hexfirst] (cti)  {Structured\\CTI};
+\node[hex]      (model) [right=of cti]  {Stage 1:\\Automated\\Structural\\Modeling};
+\node[hex]      (trans) [right=of model]{Stage 2:\\Technique\\Translation\\Layer};
+\node[hex]      (emu)   [right=of trans]{Stage 3:\\Emulation\\Integration};
+\node[hexexec]  (exec)  [right=of emu]  {Executable\\Multi-stage\\Adversary\\Emulation};
+
+% --- Background pill ---
+\coordinate (pillL) at (cti.center);
+\coordinate (pillR) at (exec.center);
+\def\pillH{1.0cm}
+
+\begin{scope}[on background layer]
+  \draw[rounded corners=14pt, fill=stagefill, draw=dashgray!35, thick]
+    ($(pillL)+(0,\pillH)$) rectangle
+    ($(pillR)+(0,-\pillH)$);
+
+  % Main arrows between stages
+  \draw[arrow] ([xshift=2pt]cti.east)   -- ([xshift=-2pt]model.west);
+  \draw[arrow] ([xshift=2pt]model.east) -- ([xshift=-2pt]trans.west);
+  \draw[arrow] ([xshift=2pt]trans.east) -- ([xshift=-2pt]emu.west);
+  \draw[arrow] ([xshift=2pt]emu.east)   -- ([xshift=-2pt]exec.west);
+\end{scope}
+
+\def\flowdist{3.6mm}
+
+% --- Top flow ---
+\draw[flow]
+  ([yshift=\flowdist]cti.north) --
+  ([yshift=\flowdist]exec.north)
+    node[pos=0.25,above=3pt,text width=3.1cm,align=center]
+      {Normalize structured CTI\\into typed behavioral entities}
+    node[pos=0.50,above=3pt,text width=3.0cm,align=center]
+      {Human-curated minimal\\executable steps}
+    node[pos=0.75,above=3pt,text width=3.1cm,align=center]
+      {Execute and orchestrate plans\\in emulation environment};
+
+% --- Bottom flow ---
+\draw[flow]
+  ([yshift=-\flowdist]cti.south) --
+  ([yshift=-\flowdist]exec.south)
+    node[pos=0.00,below=3pt,text width=3.1cm,align=center]
+      {{Structured CTI without\\execution semantics}}
+    node[pos=0.25,below=3pt,text width=3.2cm,align=center]
+      {Automation limited to\\structural modeling}
+    node[pos=0.75,below=3pt,text width=3.2cm,align=center]
+      {Automation limited to\\deployment}
+    node[pos=1.00,below=3pt,text width=3.2cm,align=center]
+      {Reproducible multi-stage\\adversary emulation};
+
+% --- Green bar: Human-in-the-loop (Stage 1 -> Stage 3 span) ---
+\def\arrowdist{27mm}
+
+\draw[
+  -{Latex[length=10pt,width=10pt]},
+  line width=4pt,
+  draw=loopgreen
+]
+  ([yshift=-\arrowdist]$(cti.east)!0.5!(model.west)$) --
+  ([yshift=-\arrowdist]$(emu.east)!0.5!(exec.west)$)
+    node[midway,
+         below=4pt,
+         text=black,
+         font=\footnotesize\bfseries]
+      {Human-in-the-loop};
+
+\end{tikzpicture}

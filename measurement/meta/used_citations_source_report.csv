@@ -1,0 +1,39 @@
+key,source_used,doi,url,category,status,title,error
+10.1145/3634737.3645012,doi,10.1145/3634737.3645012,https://doi.org/10.1145/3634737.3645012,other,ok,Decoding the MITRE Engenuity ATT\&CK Enterprise Evaluation: An Analysis of EDR Performance in Real-World Environments,
+10646673,doi,10.1109/SP54263.2024.00005,,top4,ok,Kairos: Practical Intrusion Detection and Investigation using Whole-system Provenance,
+10646725,doi,10.1109/SP54263.2024.00139,,top4,ok,Flash: A Comprehensive Approach to Intrusion Detection via Provenance Graph Representation Learning,
+aly2025ocrapt,doi,10.1145/3719027.3765219,https://doi.org/10.1145/3719027.3765219,top4,ok,OCR-APT: Reconstructing APT Stories from Audit Logs Using Subgraph Anomaly Detection and LLMs,
+applebaum2016caldera,doi,10.1145/2996758.2996762,,other,ok,"Intelligent, Automated Red Team Emulation",
+apurva2024mitre,dblp,,https://www.usenix.org/conference/usenixsecurity24/presentation/virkud,top4,ok,How Does Endpoint Detection Use the {MITRE,
+cheng2025ctinexus,doi,10.1109/EuroSP63326.2025.00057,,other,ok,CTINexus: Automatic Cyber Threat Intelligence Knowledge Graph Construction Using Large Language Models,
+damodaran2025automated,arxiv,,,arxiv,ok,Automated Repeatable Adversary Threat Emulation with Effects Language ({EL,
+deng2024pentestgpt,arxiv,,,top4,ok,PENTESTGPT: Evaluating and Harnessing Large Language Models for Automated Penetration Testing,
+dong2023arewe,doi,10.1145/3576915.3616580,https://doi.org/10.1145/3576915.3616580,top4,ok,Are we there yet? An Industrial Viewpoint on Provenance-based Endpoint Detection and Response Tools,
+fanyang2023prographer,dblp,,https://www.usenix.org/conference/usenixsecurity23/presentation/yang-fan,top4,ok,PROGRAPHER: An Anomaly Detection System Based on Provenance Graph Embedding,
+feng2023distdet,dblp,,https://www.usenix.org/conference/usenixsecurity23/presentation/dong-feng,top4,ok,DISTDET: A Cost-Effective Distributed Cyber Threat Detection System,
+ferraz2026proceduralsemanticsgapstructured,arxiv,,,other,ok,The Procedural Semantics Gap in Structured CTI,
+han2020unicorn,arxiv,,https://arxiv.org/abs/2001.01525,arxiv,ok,UNICORN: Runtime Provenance-Based Detector for Advanced Persistent Threats,
+jin2024sharing,dblp,,,top4,ok,Sharing Cyber Threat Intelligence: Does It Really Help?,
+li2024nodlink,doi,10.14722/ndss.2024.23204,,top4,ok,NODLINK: An Online System for Fine-Grained APT Attack Detection and Investigation,
+lv2024trec,doi,10.1145/3658644.3690221,https://doi.org/10.1145/3658644.3690221,top4,ok,TREC: APT Tactic / Technique Recognition via Few-Shot Provenance Subgraph Learning,
+marvin2025sokttp,local,,,top4,ok,SoK: Automated TTP Extraction from CTI Reports -- Are We There Yet?,"curl: (56) Recv failure: Connection reset by peer
+"
+milajerdi2019holmes,doi,10.1109/SP.2019.00026,,top4,ok,HOLMES: Real-Time APT Detection through Correlation of Suspicious Information Flows,
+orbinato2024laccolith,local,,,other,ok,Laccolith: Hypervisor-based Adversary Emulation with Anti-detection,"curl: (56) Recv failure: Connection reset by peer
+"
+redcanary2023art,local,,https://github.com/redcanaryco/atomic-red-team,other,ok,Atomic Red Team,
+saha2025expert,local,,,top4,ok,"Expert Insights into Advanced Persistent Threats: Analysis, Attribution, and Challenges","curl: (56) Recv failure: Connection reset by peer
+"
+savat2021extractor,doi,10.1109/EuroSP51992.2021.00046,,other,ok,Extractor: Extracting Attack Behavior from Threat Reports,
+shen2025pentestagent,doi,10.1145/3708821.3733882,https://doi.org/10.1145/3708821.3733882,other,ok,PentestAgent: Incorporating LLM Agents to Automated Penetration Testing,
+singer2025incalmo,arxiv,,https://arxiv.org/abs/2501.16466,arxiv,ok,On the Feasibility of Using LLMs to Autonomously Execute Multi-host Network Attacks,
+stixspec,local,,https://docs.oasis-open.org/cti/stix/v2.1/cs02/stix-v2.1-cs02.html,standard,ok,{STIX Version 2.1,
+strom2018mitre,local,,,other,ok,{MITRE,
+vermeer2022evolution,doi,10.1145/3488932.3517412,https://doi.org/10.1145/3488932.3517412,other,ok,"Ruling the Rules: Quantifying the Evolution of Rulesets, Alerts and Incidents in Network Intrusion Detection",
+wang2024sands,arxiv,,,arxiv,ok,From Sands to Mansions: Towards Automated Cyberattack Emulation with Classical Planning and Large Language Models,
+xu2024intelex,arxiv,,https://arxiv.org/abs/2412.10872,arxiv,ok,IntelEX: A LLM-driven Attack-level Threat Intelligence Extraction Framework,
+yuldoshkhujaev2025decade,doi,10.1145/3719027.3765085,https://doi.org/10.1145/3719027.3765085,top4,ok,A Decade-long Landscape of Advanced Persistent Threats: Longitudinal Analysis and Global Trends,
+zhang2025tapas,local,,,top4,ok,TAPAS: An Efficient Online APT Detection with Task-guided Process Provenance Graph Segmentation and Analysis,"curl: (56) Recv failure: Connection reset by peer
+"
+zian2024magic,local,,https://www.usenix.org/conference/usenixsecurity24/presentation/jia-zian,top4,ok,{MAGIC,"curl: (56) Recv failure: Connection reset by peer
+"

@@ -1,0 +1,17 @@
+Citation Key Diff Report
+Date: 2026-03-05
+
+Compared:
+- /Users/sidneibarbieri/paper measurement/ACM CCS - Paper 2/main.tex
+- /Users/sidneibarbieri/paper measurement/ACM CCS - Paper 2/references.bib
+
+Result:
+- Used cite keys in .tex: 15
+- Defined keys in .bib: 66
+- Missing keys: 0
+
+Missing key list:
+- (none)
+
+Action required in .tex:
+- No % TODO citation comments were added because there are no missing keys.
