@@ -7,7 +7,7 @@ Do not edit manually; run `python3 measurement/sut/scripts/generate_traceability
 
 | Claim ID | Paper Anchor | Measured Value | Metric Key(s) | Evidence Artifact(s) |
 |---|---|---|---|---|
-| RQ1-P1 | Analysis: Platform Constraint Coverage | 691/691 (100.0%) | `enterprise_platform_count, enterprise_platform_pct` | `results/todo_values.json`, `results/audit/platform_distribution.csv` |
+| RQ1-P1 | Analysis: Platform Constraint Coverage | 691/691 active attack-patterns (100.0%) | `enterprise_platform_count, enterprise_platform_pct` | `results/todo_values.json`, `results/audit/platform_distribution.csv` |
 | RQ1-P2 | Analysis: Platform Constraint Coverage | 0 (0.0%) | `enterprise_system_requirements_count, enterprise_system_requirements_pct` | `results/todo_values.json` |
 | RQ1-P3 | Figure 1 coverage by corpus | E=100.0 M=100.0 I=98.8 C=0.0 F=100.0 | `enterprise_platform_pct, mobile_platform_pct, ics_platform_percentage, capec_platform_percentage, fight_platform_percentage` | `results/figures_data.json`, `ACM CCS - Paper 2/figs/coverage_template.tex` |
 | RQ1-S1 | Analysis: Software Reference Rate | campaigns 47/52 (90.4%), groups 158/172 (91.9%) | `enterprise_campaigns_with_software_count, enterprise_campaigns_with_software_percentage, enterprise_intrusion_sets_with_software_count, enterprise_intrusion_sets_with_software_percentage` | `results/todo_values.json`, `results/audit/campaign_software.csv`, `results/audit/is_software.csv` |
@@ -19,6 +19,7 @@ Do not edit manually; run `python3 measurement/sut/scripts/generate_traceability
 | RQ1-IA2 | Analysis: Initial Access social/CVE overlap | social-proxy=14 (26.9%), IA+CVE=5 (9.6%), IA-no-CVE=33 (63.5%) | `campaigns_with_social_initial_access_count, campaigns_with_initial_access_and_cve_count, campaigns_with_initial_access_no_cve_count` | `results/todo_values.json`, `results/audit/initial_access_campaigns.csv` |
 | RQ2-K1 | Analysis: Compatibility table | CF=19 (2.7%), VMR=526 (76.1%), ID=146 (21.1%) | `compatibility_container_feasible_count, compatibility_vm_required_count, compatibility_infrastructure_dependent_count` | `results/todo_values.json`, `results/audit/technique_compatibility.csv` |
 | RQ3-J1 | Analysis: Profile specificity | unique(sw)=90.7% unique(sw+cve)=90.7% confused=9.3% | `sut_profile_unique_software_percentage, sut_profile_unique_software_cve_percentage, sut_profile_confusion_software_cve_percentage` | `results/todo_values.json`, `results/figures_data.json`, `ACM CCS - Paper 2/figs/jaccard_cdf_template.tex` |
+| RQ3-J2 | Discussion: minimum-evidence threshold | k>=1 confusion=1.3%, k>=3=0.0% (n=105), k>=5=0.0% (n=76) | `threshold_k_one_confusion_pct, threshold_k_three_confusion_pct, threshold_k_five_confusion_pct, threshold_k_three_sample, threshold_k_five_sample` | `results/todo_values.json`, `results/audit/evidence_threshold_curve.csv`, `results/audit/profile_specificity_software_only.csv` |
 | AUX-OS1 | Analysis: Campaign OS-family table | Windows=42 Linux=23 macOS=21 | `campaign_os_windows_count, campaign_os_linux_count, campaign_os_macos_count` | `results/todo_values.json`, `results/audit/campaign_os_family_counts.csv` |
 | AUX-OS2 | Analysis: Unknown-platform campaigns | 5 (9.6%) | `enterprise_campaigns_platform_unknown_count, enterprise_campaigns_platform_unknown_pct` | `results/todo_values.json`, `results/audit/campaign_platform_unknown.csv` |
 

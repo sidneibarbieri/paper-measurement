@@ -63,5 +63,10 @@
   "compatibility_infrastructure_dependent_percentage": 21.1,
   "sut_profile_unique_software_percentage": 90.7,
   "sut_profile_unique_software_cve_percentage": 90.7,
-  "sut_profile_confusion_software_cve_percentage": 9.3
+  "sut_profile_confusion_software_cve_percentage": 9.3,
+  "threshold_k_one_confusion_pct": 1.3,
+  "threshold_k_three_confusion_pct": 0.0,
+  "threshold_k_five_confusion_pct": 0.0,
+  "threshold_k_three_sample": 105,
+  "threshold_k_five_sample": 76
 }

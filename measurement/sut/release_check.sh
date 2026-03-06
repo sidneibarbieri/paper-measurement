@@ -43,6 +43,8 @@ required=(
   "results/audit/is_software.csv"
   "results/audit/initial_access_campaigns.csv"
   "results/audit/initial_access_techniques.csv"
+  "results/audit/profile_specificity_software_only.csv"
+  "results/audit/evidence_threshold_curve.csv"
   "results/audit/platform_distribution.csv"
   "results/audit/technique_compatibility.csv"
 )
@@ -65,6 +67,8 @@ checks.append((d['enterprise_campaigns_with_platform_signal_count'] == 47, 'camp
 checks.append((d['enterprise_campaigns_platform_unknown_count'] == 5, 'campaigns_platform_unknown_count must be 5'))
 checks.append((d['ent_campaigns_with_cve_count'] == 5, 'campaigns_with_cve_count must be 5'))
 checks.append((d['compatibility_container_feasible_count'] + d['compatibility_vm_required_count'] + d['compatibility_infrastructure_dependent_count'] == d['enterprise_platform_count'], 'CF+VMR+ID must equal enterprise_platform_count'))
+checks.append((d['threshold_k_one_confusion_pct'] >= d['threshold_k_three_confusion_pct'], 'confusion should not increase from k>=1 to k>=3'))
+checks.append((d['threshold_k_three_confusion_pct'] >= d['threshold_k_five_confusion_pct'], 'confusion should not increase from k>=3 to k>=5'))
 
 unknown_names = []
 with open(base/'audit'/'campaign_platform_unknown.csv', newline='', encoding='utf-8') as f:

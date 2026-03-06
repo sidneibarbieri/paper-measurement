@@ -904,10 +904,12 @@ def analyze_profile_specificity(intrusion_sets, software_objects, rel_fwd, by_id
         # Find nearest neighbor for each IS
         nearest_distances = []
         confused_count = 0  # IS with at least one neighbor within delta
+        per_is_rows = []
 
         for i in range(n):
             min_dist = float('inf')
             prof_i = profiles[is_ids[i]]
+            nearest_neighbor = ""
 
             for j in range(n):
                 if i == j:
@@ -916,6 +918,7 @@ def analyze_profile_specificity(intrusion_sets, software_objects, rel_fwd, by_id
                 dist = jaccard_distance(prof_i, prof_j)
                 if dist < min_dist:
                     min_dist = dist
+                    nearest_neighbor = is_ids[j]
 
             # Handle empty profiles: distance to any non-empty is 1.0
             # distance to another empty is 0.0
@@ -925,6 +928,13 @@ def analyze_profile_specificity(intrusion_sets, software_objects, rel_fwd, by_id
             nearest_distances.append(min_dist)
             if min_dist <= JACCARD_DELTA:
                 confused_count += 1
+            per_is_rows.append({
+                'intrusion_set_id': is_ids[i],
+                'feature_count': len(prof_i),
+                'nearest_neighbor_id': nearest_neighbor,
+                'nearest_distance': round(min_dist, 4),
+                'confused': min_dist <= JACCARD_DELTA,
+            })
 
         unique_count = n - confused_count
         unique_pct = pct(unique_count, n)
@@ -938,9 +948,49 @@ def analyze_profile_specificity(intrusion_sets, software_objects, rel_fwd, by_id
             'total_is': n,
             'nearest_distances': nearest_distances,
             'num_features': len(features),
+            'per_is_rows': per_is_rows,
         }
 
     return results
+
+
+def analyze_min_evidence_threshold(per_is_rows, threshold_delta):
+    """
+    Compute confusion behavior for increasing minimum profile size.
+    """
+    if not per_is_rows:
+        return {
+            'curve': [],
+            'k1_confusion_pct': 0.0,
+            'k3_confusion_pct': 0.0,
+            'k5_confusion_pct': 0.0,
+            'k3_sample': 0,
+            'k5_sample': 0,
+        }
+
+    max_k = max(row['feature_count'] for row in per_is_rows)
+    curve = []
+    for k in range(1, max_k + 1):
+        subset = [row for row in per_is_rows if row['feature_count'] >= k]
+        if not subset:
+            continue
+        confused = sum(1 for row in subset if row['nearest_distance'] <= threshold_delta)
+        curve.append({
+            'min_software_count': k,
+            'sample_size': len(subset),
+            'confused_count': confused,
+            'confusion_pct': pct(confused, len(subset)),
+        })
+
+    by_k = {row['min_software_count']: row for row in curve}
+    return {
+        'curve': curve,
+        'k1_confusion_pct': by_k.get(1, {}).get('confusion_pct', 0.0),
+        'k3_confusion_pct': by_k.get(3, {}).get('confusion_pct', 0.0),
+        'k5_confusion_pct': by_k.get(5, {}).get('confusion_pct', 0.0),
+        'k3_sample': by_k.get(3, {}).get('sample_size', 0),
+        'k5_sample': by_k.get(5, {}).get('sample_size', 0),
+    }
 
 
 # ─────────────────────────────────────────────────────────────────
@@ -1135,6 +1185,15 @@ def main():
     print(f"  Software+CVE confused: {sw_cve['confused_count']}/{sw_cve['total_is']} "
           f"({sw_cve['confused_pct']}%)")
 
+    threshold_results = analyze_min_evidence_threshold(
+        specificity_results['software_only']['per_is_rows'],
+        JACCARD_DELTA,
+    )
+    print("  Confusion by minimum software count:")
+    print(f"    k>=1: {threshold_results['k1_confusion_pct']}%")
+    print(f"    k>=3: {threshold_results['k3_confusion_pct']}% (n={threshold_results['k3_sample']})")
+    print(f"    k>=5: {threshold_results['k5_confusion_pct']}% (n={threshold_results['k5_sample']})")
+
     # ── Cross-domain coverage ──
     print("\n[8/8] Computing cross-domain coverage...")
     cross_domain = analyze_cross_domain_coverage({
@@ -1234,6 +1293,11 @@ def main():
         'sut_profile_unique_software_percentage': sw_only['unique_pct'],
         'sut_profile_unique_software_cve_percentage': sw_cve['unique_pct'],
         'sut_profile_confusion_software_cve_percentage': sw_cve['confused_pct'],
+        'threshold_k_one_confusion_pct': threshold_results['k1_confusion_pct'],
+        'threshold_k_three_confusion_pct': threshold_results['k3_confusion_pct'],
+        'threshold_k_five_confusion_pct': threshold_results['k5_confusion_pct'],
+        'threshold_k_three_sample': threshold_results['k3_sample'],
+        'threshold_k_five_sample': threshold_results['k5_sample'],
     }
 
     # ── Save TODO values as JSON ──
@@ -1468,6 +1532,26 @@ def main():
         writer = csv.DictWriter(f, fieldnames=['is_name', 'is_id', 'software_count'])
         writer.writeheader()
         for row in software_results['is_details']:
+            writer.writerow(row)
+
+    # Per-IS nearest-neighbor specificity rows (software-only)
+    with open(AUDIT_DIR / 'profile_specificity_software_only.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['intrusion_set_id', 'feature_count', 'nearest_neighbor_id', 'nearest_distance', 'confused']
+        )
+        writer.writeheader()
+        for row in specificity_results['software_only']['per_is_rows']:
+            writer.writerow(row)
+
+    # Confusion curve by minimum software evidence threshold
+    with open(AUDIT_DIR / 'evidence_threshold_curve.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['min_software_count', 'sample_size', 'confused_count', 'confusion_pct']
+        )
+        writer.writeheader()
+        for row in threshold_results['curve']:
             writer.writerow(row)
 
     # Platform distribution

@@ -27,7 +27,7 @@ def main():
     rows = []
     add_row(
         rows, "RQ1-P1", "Analysis: Platform Constraint Coverage",
-        f"{v(todo, 'enterprise_platform_count')}/{v(todo, 'enterprise_platform_count')} ({v(todo, 'enterprise_platform_pct')}%)",
+        f"{v(todo, 'enterprise_platform_count')}/{v(todo, 'enterprise_platform_count')} active attack-patterns ({v(todo, 'enterprise_platform_pct')}%)",
         "enterprise_platform_count, enterprise_platform_pct",
         "`results/todo_values.json`, `results/audit/platform_distribution.csv`",
     )
@@ -96,6 +96,12 @@ def main():
         f"unique(sw)={v(todo,'sut_profile_unique_software_percentage')}% unique(sw+cve)={v(todo,'sut_profile_unique_software_cve_percentage')}% confused={v(todo,'sut_profile_confusion_software_cve_percentage')}%",
         "sut_profile_unique_software_percentage, sut_profile_unique_software_cve_percentage, sut_profile_confusion_software_cve_percentage",
         "`results/todo_values.json`, `results/figures_data.json`, `ACM CCS - Paper 2/figs/jaccard_cdf_template.tex`",
+    )
+    add_row(
+        rows, "RQ3-J2", "Discussion: minimum-evidence threshold",
+        f"k>=1 confusion={v(todo,'threshold_k_one_confusion_pct')}%, k>=3={v(todo,'threshold_k_three_confusion_pct')}% (n={v(todo,'threshold_k_three_sample')}), k>=5={v(todo,'threshold_k_five_confusion_pct')}% (n={v(todo,'threshold_k_five_sample')})",
+        "threshold_k_one_confusion_pct, threshold_k_three_confusion_pct, threshold_k_five_confusion_pct, threshold_k_three_sample, threshold_k_five_sample",
+        "`results/todo_values.json`, `results/audit/evidence_threshold_curve.csv`, `results/audit/profile_specificity_software_only.csv`",
     )
     add_row(
         rows, "AUX-OS1", "Analysis: Campaign OS-family table",

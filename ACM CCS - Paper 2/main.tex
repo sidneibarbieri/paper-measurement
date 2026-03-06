@@ -363,7 +363,7 @@ SUT requirements automatically, and if not, where exactly does it
 fall short?} We answer this question by measuring
 every SUT-relevant field across the \attack{} Enterprise, Mobile,
 and ICS corpora, and extend the coverage comparison to CAPEC and
-FiGHT. Our findings are clear:
+FiGHT\@. Our findings are clear:
 platform constraints are broadly present but coarse; software
 references rarely carry version specificity or CPE identifiers;
 and CVE linkages are sparse and split across structured and
@@ -446,7 +446,7 @@ platform, software, and vulnerability constraints.
 \steptwo~A corpus-scale measurement quantifies the availability, sparsity, and ambiguity of
 SUT-relevant signals across \stix{} objects and relationships in
 the \mitre{} \attack{} Enterprise, Mobile, and ICS datasets,
-with cross-corpus coverage also measured for CAPEC and FiGHT.
+with cross-corpus coverage also measured for CAPEC and FiGHT\@.
 
 \stepthree~A compatibility taxonomy classifies
 techniques by their minimum virtualization backend requirement
@@ -1177,7 +1177,13 @@ For attribution-oriented interpretations, a minimum-evidence
 threshold should be made explicit before actor-level conclusions.
 This paper does not set a universal threshold; it shows that sparse
 SUT profiles increase overlap and that threshold selection must be
-calibrated using measured confusion behavior.
+calibrated using measured confusion behavior. Under the
+software-only profile setting, confusion is
+\thresholdkoneconfusionpct\% at $k \geq 1$, drops to
+\thresholdkthreeconfusionpct\% for profiles with at least three
+software links ($n=\thresholdkthreesample$), and reaches
+\thresholdkfiveconfusionpct\% for profiles with at least five links
+($n=\thresholdkfivesample$).
 
 \subsection{Path Toward Machine-Actionable SUT Specifications}
 
