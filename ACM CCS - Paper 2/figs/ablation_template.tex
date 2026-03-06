@@ -1,0 +1,30 @@
+\definecolor{acmBlue}{HTML}{1F77B4}
+\definecolor{acmTeal}{HTML}{009E73}
+\definecolor{acmGray}{HTML}{8A8F99}
+\definecolor{acmGold}{HTML}{B8860B}
+\definecolor{acmGrid}{HTML}{D9DDE2}
+\begin{tikzpicture}[x=0.22cm,y=0.50cm,font=\footnotesize]
+  \draw[->] (0.8,0) -- (22.4,0) node[right] {Confused groups (\%)};
+  \foreach \x/\xp in {0/0.8,2/4.8,4/8.8,6/12.8,8/16.8,10/20.8} {
+    \draw[acmGrid] (\xp,0) -- (\xp,12.8);
+    \node[below] at (\xp,0) {\x};
+  }
+  \node[anchor=east] at (0,12.0) {Software only};
+  \fill[acmBlue] (0.8,11.4) rectangle (19.40,12.2);
+  \node[anchor=west] at (19.60,11.8) {9.3\%};
+  \node[anchor=east] at (0,10.2) {Software + CVE};
+  \fill[acmTeal] (0.8,9.6) rectangle (19.40,10.4);
+  \node[anchor=west] at (19.60,10.0) {9.3\%};
+  \node[anchor=east] at (0,8.4) {Software + platform};
+  \fill[acmGray] (0.8,7.8) rectangle (19.40,8.6);
+  \node[anchor=west] at (19.60,8.2) {9.3\%};
+  \node[anchor=east] at (0,6.6) {Software + CVE + platform};
+  \fill[acmGray] (0.8,6.0) rectangle (19.40,6.8);
+  \node[anchor=west] at (19.60,6.4) {9.3\%};
+  \node[anchor=east] at (0,4.8) {Software + OS family};
+  \fill[acmGray] (0.8,4.2) rectangle (19.40,5.0);
+  \node[anchor=west] at (19.60,4.6) {9.3\%};
+  \node[anchor=east] at (0,3.0) {Software + compat};
+  \fill[acmGold] (0.8,2.4) rectangle (18.20,3.2);
+  \node[anchor=west] at (18.40,2.8) {8.7\%};
+\end{tikzpicture}

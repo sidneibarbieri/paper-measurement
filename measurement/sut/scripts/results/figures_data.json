@@ -1091,5 +1091,31 @@
     "cf": 19,
     "vmr": 526,
     "id": 146
+  },
+  "ablation_summary": {
+    "software_only": {
+      "unique_pct": 90.7,
+      "confused_pct": 9.3
+    },
+    "software_cve": {
+      "unique_pct": 90.7,
+      "confused_pct": 9.3
+    },
+    "software_platform": {
+      "unique_pct": 90.7,
+      "confused_pct": 9.3
+    },
+    "software_cve_platform": {
+      "unique_pct": 90.7,
+      "confused_pct": 9.3
+    },
+    "software_family_only": {
+      "unique_pct": 90.7,
+      "confused_pct": 9.3
+    },
+    "software_compat": {
+      "unique_pct": 91.3,
+      "confused_pct": 8.7
+    }
   }
 }

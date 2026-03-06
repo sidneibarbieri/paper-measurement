@@ -77,7 +77,7 @@ def render_coverage(d):
   \\node at (8.3,-8) {{ICS}};
   \\node at (11.3,-8) {{CAPEC}};
   \\node at (14.3,-8) {{FiGHT}};
-  \\node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (10.9,121.6) {{
+  \\node[anchor=north east,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.0pt] at (16.5,118.0) {{
     \\begin{{tabular}}{{@{{}}l@{{}}}}
       \\textcolor{{acmBlue}}{{\\rule{{0.95em}}{{0.72em}}}}\\ \\ $\\rho_P$: platform\\\\[1pt]
       \\textcolor{{acmTeal}}{{\\rule{{0.95em}}{{0.72em}}}}\\ \\ $\\rho_S$: software\\\\[1pt]
@@ -177,6 +177,40 @@ def render_jaccard(d):
 """
 
 
+def render_ablation(d):
+    a = d["ablation_summary"]
+    rows = [
+        ("Software only", a["software_only"]["confused_pct"], "acmBlue"),
+        ("Software + CVE", a["software_cve"]["confused_pct"], "acmTeal"),
+        ("Software + platform", a["software_platform"]["confused_pct"], "acmGray"),
+        ("Software + CVE + platform", a["software_cve_platform"]["confused_pct"], "acmGray"),
+        ("Software + OS family", a["software_family_only"]["confused_pct"], "acmGray"),
+        ("Software + compat", a["software_compat"]["confused_pct"], "acmGold"),
+    ]
+    lines = []
+    y = 12.0
+    for label, val, color in rows:
+        lines.append(f"  \\node[anchor=east] at (0,{y:.1f}) {{{label}}};")
+        lines.append(f"  \\fill[{color}] (0.8,{y-0.6:.1f}) rectangle ({0.8 + val*2.0:.2f},{y+0.2:.1f});")
+        lines.append(f"  \\node[anchor=west] at ({1.0 + val*2.0:.2f},{y-0.2:.1f}) {{{fmt(val)}\\%}};")
+        y -= 1.8
+    bars = "\n".join(lines)
+    return f"""\\definecolor{{acmBlue}}{{HTML}}{{1F77B4}}
+\\definecolor{{acmTeal}}{{HTML}}{{009E73}}
+\\definecolor{{acmGray}}{{HTML}}{{8A8F99}}
+\\definecolor{{acmGold}}{{HTML}}{{B8860B}}
+\\definecolor{{acmGrid}}{{HTML}}{{D9DDE2}}
+\\begin{{tikzpicture}}[x=0.22cm,y=0.50cm,font=\\footnotesize]
+  \\draw[->] (0.8,0) -- (22.4,0) node[right] {{Confused groups (\\%)}};
+  \\foreach \\x/\\xp in {{0/0.8,2/4.8,4/8.8,6/12.8,8/16.8,10/20.8}} {{
+    \\draw[acmGrid] (\\xp,0) -- (\\xp,12.8);
+    \\node[below] at (\\xp,0) {{\\x}};
+  }}
+{bars}
+\\end{{tikzpicture}}
+"""
+
+
 def main():
     d = json.loads((RESULTS / "figures_data.json").read_text(encoding="utf-8"))
     FIGS.mkdir(parents=True, exist_ok=True)
@@ -184,7 +218,8 @@ def main():
     (FIGS / "software_specificity_template.tex").write_text(render_software_specificity(d), encoding="utf-8")
     (FIGS / "cve_location_template.tex").write_text(render_cve_location(d), encoding="utf-8")
     (FIGS / "jaccard_cdf_template.tex").write_text(render_jaccard(d), encoding="utf-8")
-    print("Rendered 4 figure templates from measured JSON.")
+    (FIGS / "ablation_template.tex").write_text(render_ablation(d), encoding="utf-8")
+    print("Rendered 5 figure templates from measured JSON.")
 
 
 if __name__ == "__main__":

@@ -123,6 +123,9 @@ log "6) Ensuring manuscript imports generated measurement macros"
 rg -n '\\input\{../measurement/sut/scripts/results/todo_values_latex.tex\}' main.tex >/dev/null || \
   fail "main.tex is not importing generated todo_values_latex.tex"
 
+log "6b) Ensuring rendered ablation figure template exists"
+[[ -f "$ROOT/ACM CCS - Paper 2/figs/ablation_template.tex" ]] || fail "missing ablation_template.tex"
+
 log "7) Ensuring traceability appendix exists"
 [[ -f "$ROOT/measurement/sut/TRACEABILITY.md" ]] || fail "missing TRACEABILITY.md"
 

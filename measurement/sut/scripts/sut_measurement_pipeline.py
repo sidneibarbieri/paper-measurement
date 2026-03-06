@@ -1635,6 +1635,32 @@ def main():
             'vmr': compat_results['vmr_count'],
             'id': compat_results['id_count'],
         },
+        'ablation_summary': {
+            'software_only': {
+                'unique_pct': sw_only['unique_pct'],
+                'confused_pct': sw_only['confused_pct'],
+            },
+            'software_cve': {
+                'unique_pct': sw_cve['unique_pct'],
+                'confused_pct': sw_cve['confused_pct'],
+            },
+            'software_platform': {
+                'unique_pct': sw_platform['unique_pct'],
+                'confused_pct': sw_platform['confused_pct'],
+            },
+            'software_cve_platform': {
+                'unique_pct': sw_cve_platform['unique_pct'],
+                'confused_pct': sw_cve_platform['confused_pct'],
+            },
+            'software_family_only': {
+                'unique_pct': sw_family_only['unique_pct'],
+                'confused_pct': sw_family_only['confused_pct'],
+            },
+            'software_compat': {
+                'unique_pct': sw_compat['unique_pct'],
+                'confused_pct': sw_compat['confused_pct'],
+            },
+        },
     }
 
     # Fix software specificity percentages

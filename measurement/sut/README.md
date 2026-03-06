@@ -55,6 +55,7 @@ After a successful run, these files are regenerated:
 - `ACM CCS - Paper 2/figs/software_specificity_template.tex`
 - `ACM CCS - Paper 2/figs/cve_location_template.tex`
 - `ACM CCS - Paper 2/figs/jaccard_cdf_template.tex`
+- `ACM CCS - Paper 2/figs/ablation_template.tex`
 - `measurement/sut/TRACEABILITY.md`
 
 ## Link to the manuscript

@@ -1153,6 +1153,13 @@ Software + compatibility summary & \sutprofileuniquesoftwarecompatpercentage\% &
 \bottomrule
 \end{tabular}
 \end{table}
+
+\begin{figure}[!htb]
+\centering
+\resizebox{\columnwidth}{!}{\input{figs/ablation_template.tex}}
+\caption{RQ3 ablation: confusion rate by profile-setting variant at $\delta=0.10$.}\label{fig:ablation_rq3}
+\Description{Horizontal bar chart of confused-group percentages for six profile settings: software only, software plus CVE, software plus platform, software plus CVE plus platform, software plus OS family, and software plus compatibility summary.}
+\end{figure}
 Figure~\ref{fig:jaccard_cdf} visualizes the full confusion
 distribution.
 
