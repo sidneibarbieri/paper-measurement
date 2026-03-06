@@ -258,9 +258,11 @@ concrete SUT requirements (software versions, dependencies,
 exploitable vulnerabilities, and infrastructure topology) is
 rarely expressed in structured form.
 In this work, we perform a systematic measurement analysis of the
-\attack{} Enterprise, Mobile, ICS, CAPEC, and FiGHT datasets to
-quantify the availability, completeness, and specificity of
-SUT-relevant information.
+\attack{} Enterprise, Mobile, and ICS datasets to quantify the
+availability, completeness, and specificity of SUT-relevant
+information. CAPEC and FiGHT are treated as contextual corpora for
+schema contrast rather than as quantitative measurement inputs in
+this artifact.
 We define a SUT-centric requirements model and coverage, sparsity,
 and deployment compatibility metrics that classify technique,
 software, and vulnerability constraints according to their
@@ -358,8 +360,9 @@ The central question this paper asks is simple:
 \emph{Can structured CTI provide enough information to derive
 SUT requirements automatically, and if not, where exactly does it
 fall short?} We answer this question by measuring
-every SUT-relevant field across the full \attack{} Enterprise,
-Mobile, ICS, CAPEC, and FiGHT corpora. Our findings are clear:
+every SUT-relevant field across the \attack{} Enterprise, Mobile,
+and ICS corpora, with CAPEC and FiGHT used for contextual
+comparison. Our findings are clear:
 platform constraints are broadly present but coarse; software
 references rarely carry version specificity or CPE identifiers;
 and CVE linkages are sparse and predominantly buried in free text.
@@ -440,8 +443,8 @@ platform, software, and vulnerability constraints.
 
 \steptwo~A corpus-scale measurement quantifies the availability, sparsity, and ambiguity of
 SUT-relevant signals across \stix{} objects and relationships in
-the \mitre{} \attack{} Enterprise, Mobile, ICS, CAPEC, and FiGHT
-datasets.
+the \mitre{} \attack{} Enterprise, Mobile, and ICS datasets,
+while CAPEC and FiGHT are handled as contextual schema references.
 
 \stepthree~A compatibility taxonomy classifies
 techniques by their minimum virtualization backend requirement
@@ -765,6 +768,11 @@ FiGHT      & 707 & n/a & 136 & 475 & 73 \\
 \end{tabular}
 \end{table}
 
+For transparency, the quantitative pipeline in this artifact consumes
+Enterprise, Mobile, and ICS bundles only. CAPEC and FiGHT rows in
+Table~\ref{tab:dataset} are reported as contextual catalog counts and
+are not traversed by the current measurement code.
+
 The Enterprise bundle contains 20,048 relationship objects.
 After excluding 144 deprecated or revoked \texttt{attack-pattern}
 objects, 15 deprecated \texttt{intrusion-set} objects, and
@@ -793,7 +801,8 @@ For each \texttt{attack-pattern} object, we extract
 
 \subsection{Extraction Pipeline}
 
-We parse all \stix{} bundles as JSON and
+We parse the locally available \stix{} bundles (Enterprise, Mobile,
+and ICS) as JSON and
 normalize object identifiers. Objects marked as deprecated
 (\texttt{x\_mitre\_deprecated}) or revoked (\texttt{revoked}) are
 excluded; this removes 144 of the 835 \texttt{attack-pattern}
@@ -882,7 +891,10 @@ representation. Platform coverage is similarly complete in the Mobile
 (100.0\%) and ICS (98.8\%) domains. The CAPEC bundle does not use
 \texttt{x\_mitre\_platforms}, reflecting its focus on abstract attack
 patterns rather than platform-bound behaviors.
-Figure~\ref{fig:coverage} compares these rates across all corpora.
+FiGHT is reported as \emph{n/a} in this artifact because the local
+pipeline does not yet include a quantitative FiGHT parser.
+Figure~\ref{fig:coverage} compares measured rates and contextual
+\emph{n/a} entries.
 
 \begin{figure}[!htb]
 \centering
@@ -890,8 +902,8 @@ Figure~\ref{fig:coverage} compares these rates across all corpora.
 % FIGURE NOTE:
 % - Keep Y-axis fixed at 0 to 100.
 % - Add value labels.
-\caption{Coverage of structured SUT-relevant signals across corpora.}\label{fig:coverage}
-\Description{Grouped bar chart template for Enterprise, Mobile, ICS, CAPEC, and FiGHT showing three metrics per corpus: platform coverage, software-link coverage, and CVE-link coverage. The template emphasizes high platform coverage and lower CVE coverage.}
+\caption{Coverage of structured SUT-relevant signals: measured and contextual corpora.}\label{fig:coverage}
+\Description{Grouped bar chart for Enterprise, Mobile, and ICS with measured platform, software-link, and CVE-link rates, plus contextual CAPEC and FiGHT entries marked as not applicable in this artifact.}
 \end{figure}
 
 \myparagraph{Campaign-level platform signal under software-only inference}
@@ -1184,7 +1196,7 @@ couples sensitivity to ATT\&CK curation artifacts.
 We presented, to the best of our knowledge, the first measurement of \mitre{} \attack{} structured
 CTI from the perspective of the \emph{System Under Test}: the
 environment that must exist before any emulation procedure can run.
-Across the Enterprise, Mobile, ICS, CAPEC, and FiGHT corpora,
+Across the quantitatively measured Enterprise, Mobile, and ICS corpora,
 platform constraints are broadly present but coarse; software
 references rarely carry version specificity; and CVE linkages are
 sparse and buried in free text. These findings answer our three
