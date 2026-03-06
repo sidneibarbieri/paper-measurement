@@ -848,11 +848,12 @@ def analyze_compatibility(techniques, rel_fwd, by_id):
 
 def build_sut_profiles(
     intrusion_sets, software_objects, rel_fwd, by_id,
-    include_cve=False, platform_mode='none'
+    include_cve=False, platform_mode='none',
+    include_compat_summary=False, compatibility_by_technique=None
 ):
     """
     Build binary SUT profile vectors for each intrusion set.
-    Profile = set of software IDs (+ optionally CVE IDs, platform labels) linked to the IS.
+    Profile = set of software IDs (+ optionally CVE IDs, platform labels, compatibility summaries) linked to the IS.
     platform_mode: 'none' | 'raw' | 'family'
     """
     software_ids = set(s['id'] for s in software_objects)
@@ -909,6 +910,29 @@ def build_sut_profiles(
                 profile.add(feat)
                 all_features.add(feat)
 
+        # Optionally add compatibility summary from IS-linked techniques.
+        if include_compat_summary and compatibility_by_technique is not None:
+            compat_counts = Counter()
+            for rtype, tgt, _ in rel_fwd.get(is_id, []):
+                if rtype == 'uses' and tgt in by_id:
+                    obj = by_id[tgt]
+                    if obj.get('type') == 'attack-pattern':
+                        cls = compatibility_by_technique.get(tgt)
+                        if cls:
+                            compat_counts[cls] += 1
+            if compat_counts:
+                for cls in sorted(compat_counts.keys()):
+                    feat = f"COMPAT_PRESENT:{cls}"
+                    profile.add(feat)
+                    all_features.add(feat)
+                dominant_cls = max(
+                    sorted(compat_counts.keys()),
+                    key=lambda k: compat_counts[k],
+                )
+                dom_feat = f"COMPAT_DOMINANT:{dominant_cls}"
+                profile.add(dom_feat)
+                all_features.add(dom_feat)
+
         profiles[is_id] = profile
 
     return profiles, sorted(all_features)
@@ -925,25 +949,31 @@ def jaccard_distance(set_a, set_b):
     return 1.0 - len(intersection) / len(union)
 
 
-def analyze_profile_specificity(intrusion_sets, software_objects, rel_fwd, by_id):
+def analyze_profile_specificity(
+    intrusion_sets, software_objects, rel_fwd, by_id, compatibility_by_technique=None
+):
     """
     RQ3: SUT profile specificity analysis.
     Computes for software-only, software+CVE, software+platform, software+CVE+platform,
-    and software+OS-family settings.
+    software+OS-family, and software+compatibility-summary settings.
     """
     results = {}
 
     settings = [
-        ('software_only', False, 'none'),
-        ('software_cve', True, 'none'),
-        ('software_platform', False, 'raw'),
-        ('software_cve_platform', True, 'raw'),
-        ('software_family_only', False, 'family'),
+        ('software_only', False, 'none', False),
+        ('software_cve', True, 'none', False),
+        ('software_platform', False, 'raw', False),
+        ('software_cve_platform', True, 'raw', False),
+        ('software_family_only', False, 'family', False),
+        ('software_compat', False, 'none', True),
     ]
-    for setting, include_cve, platform_mode in settings:
+    for setting, include_cve, platform_mode, include_compat_summary in settings:
         profiles, features = build_sut_profiles(
             intrusion_sets, software_objects, rel_fwd, by_id,
-            include_cve=include_cve, platform_mode=platform_mode
+            include_cve=include_cve,
+            platform_mode=platform_mode,
+            include_compat_summary=include_compat_summary,
+            compatibility_by_technique=compatibility_by_technique,
         )
 
         is_ids = list(profiles.keys())
@@ -1294,17 +1324,22 @@ def main():
     print(f"  VMR: {compat_results['vmr_count']} ({compat_results['vmr_pct']}%)")
     print(f"  ID: {compat_results['id_count']} ({compat_results['id_pct']}%)")
     print(f"  Total: {compat_results['cf_count'] + compat_results['vmr_count'] + compat_results['id_count']}")
+    compatibility_by_technique = {}
+    for cls_name, cls_list in compat_results['details'].items():
+        for tech in cls_list:
+            compatibility_by_technique[tech['id']] = cls_name
 
     # ── Profile Specificity ──
     print("\n[7/7] Computing SUT profile specificity (RQ3)...")
     specificity_results = analyze_profile_specificity(
-        intrusion_sets, software_objects, rel_fwd, by_id
+        intrusion_sets, software_objects, rel_fwd, by_id, compatibility_by_technique
     )
     sw_only = specificity_results['software_only']
     sw_cve = specificity_results['software_cve']
     sw_platform = specificity_results['software_platform']
     sw_cve_platform = specificity_results['software_cve_platform']
     sw_family_only = specificity_results['software_family_only']
+    sw_compat = specificity_results['software_compat']
     print(f"  Software-only unique profiles: {sw_only['unique_count']}/{sw_only['total_is']} "
           f"({sw_only['unique_pct']}%)")
     print(f"  Software+CVE unique profiles: {sw_cve['unique_count']}/{sw_cve['total_is']} "
@@ -1323,6 +1358,10 @@ def main():
           f"({sw_family_only['unique_pct']}%)")
     print(f"  Software+OS-family confused: {sw_family_only['confused_count']}/{sw_family_only['total_is']} "
           f"({sw_family_only['confused_pct']}%)")
+    print(f"  Software+compat unique profiles: {sw_compat['unique_count']}/{sw_compat['total_is']} "
+          f"({sw_compat['unique_pct']}%)")
+    print(f"  Software+compat confused: {sw_compat['confused_count']}/{sw_compat['total_is']} "
+          f"({sw_compat['confused_pct']}%)")
 
     threshold_results = analyze_min_evidence_threshold(
         specificity_results['software_only']['per_is_rows'],
@@ -1484,10 +1523,12 @@ def main():
         'sut_profile_unique_software_platform_percentage': sw_platform['unique_pct'],
         'sut_profile_unique_software_cve_platform_percentage': sw_cve_platform['unique_pct'],
         'sut_profile_unique_software_family_only_percentage': sw_family_only['unique_pct'],
+        'sut_profile_unique_software_compat_percentage': sw_compat['unique_pct'],
         'sut_profile_confusion_software_cve_percentage': sw_cve['confused_pct'],
         'sut_profile_confusion_software_platform_percentage': sw_platform['confused_pct'],
         'sut_profile_confusion_software_cve_platform_percentage': sw_cve_platform['confused_pct'],
         'sut_profile_confusion_software_family_only_percentage': sw_family_only['confused_pct'],
+        'sut_profile_confusion_software_compat_percentage': sw_compat['confused_pct'],
         'sut_profile_confusion_software_cve_ci_low': proportion_ci_wilson(
             sw_cve['confused_count'],
             sw_cve['total_is'],
@@ -1585,6 +1626,7 @@ def main():
             'software_platform_distances': specificity_results['software_platform']['nearest_distances'],
             'software_cve_platform_distances': specificity_results['software_cve_platform']['nearest_distances'],
             'software_family_only_distances': specificity_results['software_family_only']['nearest_distances'],
+            'software_compat_distances': specificity_results['software_compat']['nearest_distances'],
             'delta_threshold': JACCARD_DELTA,
         },
         'compatibility_table': {
@@ -1781,6 +1823,7 @@ def main():
             'software_platform',
             'software_cve_platform',
             'software_family_only',
+            'software_compat',
         ]:
             row = specificity_results[setting]
             writer.writerow({
