@@ -1126,7 +1126,12 @@ impossible to claim that a successful emulation is specific to the
 targeted adversary. This SUT profile confusion parallels the
 attribution ambiguity documented at the behavioral level by Saha
 et al.~\cite{DBLP:conf/uss/SahaMBCVL25}, but operates at the
-\emph{environmental} level.
+\emph{environmental} level. A bootstrap stability check with 5{,}000
+replicates at $\delta = 0.10$ yields a confusion estimate of
+\bootstrapconfusionpct\% (confidence interval:
+\bootstrapconfusioncilow{}\%--\bootstrapconfusioncihigh{}\%) and
+unique-profile estimate of \bootstrapuniquepct\% (confidence interval:
+\bootstrapuniquecilow{}\%--\bootstrapuniquecihigh{}\%).
 Figure~\ref{fig:jaccard_cdf} visualizes the full confusion
 distribution.
 

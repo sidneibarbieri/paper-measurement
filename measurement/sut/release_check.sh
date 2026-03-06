@@ -46,6 +46,7 @@ required=(
   "results/audit/profile_specificity_software_only.csv"
   "results/audit/evidence_threshold_curve.csv"
   "results/audit/delta_sensitivity.csv"
+  "results/audit/bootstrap_confusion_distribution.csv"
   "results/audit/platform_distribution.csv"
   "results/audit/technique_compatibility.csv"
 )
@@ -75,6 +76,8 @@ checks.append((d['delta_zero_ten_confusion_pct'] <= d['delta_zero_fifteen_confus
 checks.append((d['enterprise_campaigns_with_software_ci_low'] <= d['enterprise_campaigns_with_software_percentage'] <= d['enterprise_campaigns_with_software_ci_high'], 'campaign software CI must bound point estimate'))
 checks.append((d['ent_campaigns_with_cve_ci_low'] <= d['ent_campaigns_with_cve_pct'] <= d['ent_campaigns_with_cve_ci_high'], 'campaign CVE CI must bound point estimate'))
 checks.append((d['campaigns_with_initial_access_ci_low'] <= d['campaigns_with_initial_access_pct'] <= d['campaigns_with_initial_access_ci_high'], 'initial access CI must bound point estimate'))
+checks.append((d['bootstrap_confusion_ci_low'] <= d['bootstrap_confusion_pct'] <= d['bootstrap_confusion_ci_high'], 'bootstrap confusion CI must bound point estimate'))
+checks.append((d['bootstrap_unique_ci_low'] <= d['bootstrap_unique_pct'] <= d['bootstrap_unique_ci_high'], 'bootstrap unique CI must bound point estimate'))
 
 unknown_names = []
 with open(base/'audit'/'campaign_platform_unknown.csv', newline='', encoding='utf-8') as f:

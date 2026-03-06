@@ -26,6 +26,7 @@ import re
 import csv
 import sys
 import math
+import random
 from collections import Counter, defaultdict
 from pathlib import Path
 
@@ -1026,6 +1027,60 @@ def analyze_delta_sensitivity(per_is_rows, deltas):
     return rows
 
 
+def bootstrap_confusion_ci(per_is_rows, delta, n_boot=5000, seed=42):
+    """
+    Bootstrap CI for confusion and unique rates at a fixed delta.
+    Sampling unit: intrusion-set row (nearest-distance summary), with replacement.
+    """
+    total = len(per_is_rows)
+    if total == 0:
+        return {
+            'confusion_pct': 0.0,
+            'unique_pct': 0.0,
+            'confusion_ci_low': 0.0,
+            'confusion_ci_high': 0.0,
+            'unique_ci_low': 0.0,
+            'unique_ci_high': 0.0,
+            'bootstrap_rows': [],
+        }
+
+    rng = random.Random(seed)
+    confusion_samples = []
+    unique_samples = []
+
+    for _ in range(n_boot):
+        sample = [per_is_rows[rng.randrange(total)] for _ in range(total)]
+        confused = sum(1 for row in sample if row['nearest_distance'] <= delta)
+        confusion_rate = 100.0 * confused / total
+        unique_rate = 100.0 - confusion_rate
+        confusion_samples.append(confusion_rate)
+        unique_samples.append(unique_rate)
+
+    confusion_samples.sort()
+    unique_samples.sort()
+    lo_idx = int(0.025 * n_boot)
+    hi_idx = int(0.975 * n_boot) - 1
+    if hi_idx < 0:
+        hi_idx = 0
+
+    point_confused = sum(1 for row in per_is_rows if row['nearest_distance'] <= delta)
+    point_conf_pct = pct(point_confused, total)
+    point_unique_pct = pct(total - point_confused, total)
+
+    return {
+        'confusion_pct': point_conf_pct,
+        'unique_pct': point_unique_pct,
+        'confusion_ci_low': round(confusion_samples[lo_idx], 1),
+        'confusion_ci_high': round(confusion_samples[hi_idx], 1),
+        'unique_ci_low': round(unique_samples[lo_idx], 1),
+        'unique_ci_high': round(unique_samples[hi_idx], 1),
+        'bootstrap_rows': [
+            {'replicate': i + 1, 'confusion_pct': round(confusion_samples[i], 4), 'unique_pct': round(unique_samples[i], 4)}
+            for i in range(n_boot)
+        ],
+    }
+
+
 # ─────────────────────────────────────────────────────────────────
 # 7. Cross-domain coverage (for Figure 1)
 # ─────────────────────────────────────────────────────────────────
@@ -1226,6 +1281,12 @@ def main():
         specificity_results['software_only']['per_is_rows'],
         [0.05, 0.10, 0.15],
     )
+    bootstrap_results = bootstrap_confusion_ci(
+        specificity_results['software_only']['per_is_rows'],
+        JACCARD_DELTA,
+        n_boot=5000,
+        seed=42,
+    )
     print("  Confusion by minimum software count:")
     print(f"    k>=1: {threshold_results['k1_confusion_pct']}%")
     print(f"    k>=3: {threshold_results['k3_confusion_pct']}% (n={threshold_results['k3_sample']})")
@@ -1233,6 +1294,11 @@ def main():
     print("  Delta sensitivity (software-only):")
     for row in delta_sensitivity:
         print(f"    delta={row['delta']:.2f}: {row['confusion_pct']}% (n={row['sample_size']})")
+    print(
+        "  Bootstrap (delta=0.10): "
+        f"confusion {bootstrap_results['confusion_pct']}% "
+        f"[{bootstrap_results['confusion_ci_low']}, {bootstrap_results['confusion_ci_high']}]"
+    )
 
     # ── Cross-domain coverage ──
     print("\n[8/8] Computing cross-domain coverage...")
@@ -1390,6 +1456,12 @@ def main():
             (row['confusion_pct'] for row in delta_sensitivity if abs(row['delta'] - 0.15) < 1e-9),
             0.0,
         ),
+        'bootstrap_confusion_pct': bootstrap_results['confusion_pct'],
+        'bootstrap_confusion_ci_low': bootstrap_results['confusion_ci_low'],
+        'bootstrap_confusion_ci_high': bootstrap_results['confusion_ci_high'],
+        'bootstrap_unique_pct': bootstrap_results['unique_pct'],
+        'bootstrap_unique_ci_low': bootstrap_results['unique_ci_low'],
+        'bootstrap_unique_ci_high': bootstrap_results['unique_ci_high'],
     }
 
     # ── Save TODO values as JSON ──
@@ -1654,6 +1726,16 @@ def main():
         )
         writer.writeheader()
         for row in delta_sensitivity:
+            writer.writerow(row)
+
+    # Bootstrap distribution for confusion/unique rates at delta=0.10
+    with open(AUDIT_DIR / 'bootstrap_confusion_distribution.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['replicate', 'confusion_pct', 'unique_pct']
+        )
+        writer.writeheader()
+        for row in bootstrap_results['bootstrap_rows']:
             writer.writerow(row)
 
     # Platform distribution

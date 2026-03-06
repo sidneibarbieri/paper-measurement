@@ -81,5 +81,11 @@
   "threshold_k_five_sample": 76,
   "delta_zero_zero_five_confusion_pct": 9.3,
   "delta_zero_ten_confusion_pct": 9.3,
-  "delta_zero_fifteen_confusion_pct": 9.3
+  "delta_zero_fifteen_confusion_pct": 9.3,
+  "bootstrap_confusion_pct": 9.3,
+  "bootstrap_confusion_ci_low": 5.2,
+  "bootstrap_confusion_ci_high": 14.0,
+  "bootstrap_unique_pct": 90.7,
+  "bootstrap_unique_ci_low": 86.0,
+  "bootstrap_unique_ci_high": 94.8
 }

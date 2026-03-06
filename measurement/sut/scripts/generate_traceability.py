@@ -110,6 +110,12 @@ def main():
         "`results/todo_values.json`, `results/audit/delta_sensitivity.csv`",
     )
     add_row(
+        rows, "RQ3-J4", "Analysis/Discussion: bootstrap stability",
+        f"confusion={v(todo,'bootstrap_confusion_pct')}% (CI {v(todo,'bootstrap_confusion_ci_low')}-{v(todo,'bootstrap_confusion_ci_high')}), unique={v(todo,'bootstrap_unique_pct')}% (CI {v(todo,'bootstrap_unique_ci_low')}-{v(todo,'bootstrap_unique_ci_high')})",
+        "bootstrap_confusion_pct, bootstrap_confusion_ci_low, bootstrap_confusion_ci_high, bootstrap_unique_pct, bootstrap_unique_ci_low, bootstrap_unique_ci_high",
+        "`results/todo_values.json`, `results/audit/bootstrap_confusion_distribution.csv`",
+    )
+    add_row(
         rows, "AUX-OS1", "Analysis: Campaign OS-family table",
         f"Windows={v(todo,'campaign_os_windows_count')} Linux={v(todo,'campaign_os_linux_count')} macOS={v(todo,'campaign_os_macos_count')}",
         "campaign_os_windows_count, campaign_os_linux_count, campaign_os_macos_count",
