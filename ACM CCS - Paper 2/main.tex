@@ -1146,8 +1146,8 @@ platform augmentations do not change nearest-neighbor outcomes.
 
 \begin{table}[!htb]
 \caption{RQ3 feature ablation at $\delta=0.10$ (n = \enterpriseactiveintrusionsetcount{} intrusion sets).}\label{tab:ablation_rq3}
-\centering\small
-\begin{tabular}{>{\raggedright\arraybackslash}p{3.8cm}rr}
+\centering\scriptsize
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.15cm}rr@{}}
 \toprule
 \textbf{Profile Setting} & \textbf{Unique (\%)} & \textbf{Confused (\%)} \\
 \midrule
@@ -1156,7 +1156,7 @@ Software + CVE & \sutprofileuniquesoftwarecvepercentage\% & \sutprofileconfusion
 Software + platform & \sutprofileuniquesoftwareplatformpercentage\% & \sutprofileconfusionsoftwareplatformpercentage\% \\
 Software + CVE + platform & \sutprofileuniquesoftwarecveplatformpercentage\% & \sutprofileconfusionsoftwarecveplatformpercentage\% \\
 Software + OS family & \sutprofileuniquesoftwarefamilyonlypercentage\% & \sutprofileconfusionsoftwarefamilyonlypercentage\% \\
-Software + compatibility summary & \sutprofileuniquesoftwarecompatpercentage\% & \sutprofileconfusionsoftwarecompatpercentage\% \\
+Software + compatibility & \sutprofileuniquesoftwarecompatpercentage\% & \sutprofileconfusionsoftwarecompatpercentage\% \\
 \bottomrule
 \end{tabular}
 \end{table}
