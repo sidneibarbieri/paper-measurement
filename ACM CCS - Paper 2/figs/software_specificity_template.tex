@@ -8,20 +8,13 @@
     \draw[acmGrid] (\x,0) -- (\x,7.0);
     \node[below] at (\x,0) {\x};
   }
-
-  % 97.6 / 2.4 / 0.0 (measured)
   \fill[acmGrayFill] (0,2.4) rectangle (97.6,5.2);
   \fill[acmTeal] (97.6,2.4) rectangle (100,5.2);
-  % CPE segment is 0% — no bar
-
-  \node at (48.8,3.8) {No version, no CPE (765)};
+  \node at (48.80,3.8) {No version, no CPE (765)};
   \node[anchor=west] at (100.5,3.8) {2.4\%};
-
-  \node at (48.8,5.9) {97.6\%};
+  \node at (48.80,5.9) {97.6\%};
   \node[anchor=west] at (100.5,5.9) {v.~only (19)};
-
-  % Legend in a dedicated box above the bar region.
-  \node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (55.0,6.9) {%
+  \node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (55.0,6.9) {
     \begin{tabular}{@{}l@{}}
       \textcolor{acmGrayFill}{\rule{0.95em}{0.72em}}\ \ No version, no CPE\\[1pt]
       \textcolor{acmTeal}{\rule{0.95em}{0.72em}}\ \ Textual version only\\[1pt]

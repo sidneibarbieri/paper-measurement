@@ -9,45 +9,39 @@
     \draw[acmGrid] (0,\yy) -- (16.8,\yy);
     \node[left] at (0,\yy) {\yy};
   }
-
-  % Enterprise: platform=100.0, sw_link=68.2, cve_link=0.7
-  \fill[acmBlue]   (1.0,0) rectangle (1.8,100);
+  \fill[acmBlue]   (1.0,0) rectangle (1.8,100.0);
   \fill[acmTeal]   (1.9,0) rectangle (2.7,68.2);
-  \fill[acmSand]   (2.8,0) rectangle (3.6,0.7);
-  \node[above] at (1.4,100) {100};
-  \node[above] at (2.3,68.2) {68};
-  \node[above] at (3.2,2.0) {0.7};
-  % Mobile: platform=100.0, sw_link=87.1, cve_link=0.0
-  \fill[acmBlue]   (4.0,0) rectangle (4.8,100);
+  \fill[acmSand]   (2.8,0) rectangle (3.6,2.3);
+  \node[above] at (1.4,100.0) {100};
+  \node[above] at (2.3,68.2) {68.2};
+  \node[above] at (3.2,2.70) {2.3};
+  \fill[acmBlue]   (4.0,0) rectangle (4.8,100.0);
   \fill[acmTeal]   (4.9,0) rectangle (5.7,87.1);
-  \fill[acmSand]   (5.8,0) rectangle (6.6,0);
-  \node[above] at (4.4,100) {100};
-  \node[above] at (5.3,87.1) {87};
-  % ICS: platform=98.8, sw_link=80.7, cve_link=0.0
+  \fill[acmSand]   (5.8,0) rectangle (6.6,0.0);
+  \node[above] at (4.4,100.0) {100};
+  \node[above] at (5.3,87.1) {87.1};
   \fill[acmBlue]   (7.0,0) rectangle (7.8,98.8);
   \fill[acmTeal]   (7.9,0) rectangle (8.7,80.7);
-  \fill[acmSand]   (8.8,0) rectangle (9.6,0);
-  \node[above] at (7.4,98.8) {99};
-  \node[above] at (8.3,80.7) {81};
-  % CAPEC: no x_mitre_platforms (0/0/0)
-  \fill[acmBlue!20]   (10.0,0) rectangle (10.8,0);
-  \fill[acmTeal!20]   (10.9,0) rectangle (11.7,0);
-  \fill[acmSand!20]   (11.8,0) rectangle (12.6,0);
-  \node[above,text=gray] at (11.3,2) {n/a};
-  % FiGHT: pending
-  \fill[acmBlue!20]   (13.0,0) rectangle (13.8,0);
-  \fill[acmTeal!20]   (13.9,0) rectangle (14.7,0);
-  \fill[acmSand!20]   (14.8,0) rectangle (15.6,0);
-  \node[above,text=gray] at (14.3,2) {n/a};
-
+  \fill[acmSand]   (8.8,0) rectangle (9.6,1.2);
+  \node[above] at (7.4,98.8) {98.8};
+  \node[above] at (8.3,80.7) {80.7};
+  \node[above] at (9.2,1.70) {1.2};
+  \fill[acmBlue!40]   (10.0,0) rectangle (10.8,0.0);
+  \fill[acmTeal!40]   (10.9,0) rectangle (11.7,0.0);
+  \fill[acmSand!40]   (11.8,0) rectangle (12.6,0.0);
+  \node[above,text=gray] at (11.3,2) {0};
+  \fill[acmBlue]   (13.0,0) rectangle (13.8,100.0);
+  \fill[acmTeal]   (13.9,0) rectangle (14.7,63.1);
+  \fill[acmSand]   (14.8,0) rectangle (15.6,1.2);
+  \node[above] at (13.4,100.0) {100};
+  \node[above] at (14.3,63.1) {63.1};
+  \node[above] at (15.2,1.70) {1.2};
   \node at (2.3,-8) {Enterprise};
   \node at (5.3,-8) {Mobile};
   \node at (8.3,-8) {ICS};
   \node at (11.3,-8) {CAPEC};
   \node at (14.3,-8) {FiGHT};
-
-  % Legend in a fixed-typography box between the 100% line and top limit.
-  \node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (10.9,121.6) {%
+  \node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (10.9,121.6) {
     \begin{tabular}{@{}l@{}}
       \textcolor{acmBlue}{\rule{0.95em}{0.72em}}\ \ $\rho_P$: platform\\[1pt]
       \textcolor{acmTeal}{\rule{0.95em}{0.72em}}\ \ $\rho_S$: software\\[1pt]

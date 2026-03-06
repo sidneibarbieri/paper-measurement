@@ -7,15 +7,10 @@
     \draw[acmGrid] (\x*4,0) -- (\x*4,8.2);
     \node[below] at (\x*4,0) {\x};
   }
-
   \node[anchor=east] at (-1.0,5.8) {Structured fields};
   \node[anchor=east] at (-1.0,2.6) {Free-text only};
-
-  % Structured: 21 of 26 = 80.8% → bar width = 21*4 = 84
   \fill[acmBlue] (0,5.0) rectangle (84,6.6);
-  % Free-text only: 5 of 26 = 19.2% → bar width = 5*4 = 20
   \fill[acmRust]  (0,1.8) rectangle (20,3.4);
-
   \node[anchor=west] at (85.0,5.8) {21 (80.8\%)};
   \node[anchor=west] at (21.0,2.6) {5 (19.2\%)};
 \end{tikzpicture}

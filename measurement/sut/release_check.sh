@@ -15,6 +15,18 @@ python3 sut_measurement_pipeline.py >/tmp/measurement_pipeline_release.log 2>&1 
   fail "pipeline execution failed"
 }
 
+log "1b) Rendering TikZ figures from measured outputs"
+python3 render_figures.py >/tmp/measurement_render_release.log 2>&1 || {
+  tail -n 120 /tmp/measurement_render_release.log >&2
+  fail "figure rendering failed"
+}
+
+log "1c) Generating traceability appendix"
+python3 generate_traceability.py >/tmp/measurement_traceability_release.log 2>&1 || {
+  tail -n 120 /tmp/measurement_traceability_release.log >&2
+  fail "traceability generation failed"
+}
+
 log "2) Checking required output artifacts"
 required=(
   "results/todo_values.json"
@@ -86,5 +98,12 @@ if rg -n 'TODO\{|\[TBD\]' main.tex | rg -v '^87:' >/tmp/measurement_todo_hits.lo
   cat /tmp/measurement_todo_hits.log >&2
   fail "found unresolved TODO/TBD markers"
 fi
+
+log "6) Ensuring manuscript imports generated measurement macros"
+rg -n '\\input\{../measurement/sut/scripts/results/todo_values_latex.tex\}' main.tex >/dev/null || \
+  fail "main.tex is not importing generated todo_values_latex.tex"
+
+log "7) Ensuring traceability appendix exists"
+[[ -f "$ROOT/measurement/sut/TRACEABILITY.md" ]] || fail "missing TRACEABILITY.md"
 
 log "PASS: pipeline + data + paper build are consistent"

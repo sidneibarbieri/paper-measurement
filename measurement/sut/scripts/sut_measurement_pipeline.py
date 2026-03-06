@@ -47,6 +47,8 @@ AUDIT_DIR = RESULTS_DIR / "audit"
 ENTERPRISE_FILE = DATA_DIR / "enterprise-attack.json"
 MOBILE_FILE = DATA_DIR / "mobile-attack.json"
 ICS_FILE = DATA_DIR / "ics-attack.json"
+CAPEC_FILE = DATA_DIR / "stix-capec.json"
+FIGHT_FILE = DATA_DIR / "fight-enterprise-10.1.json"
 
 # Fixed denominators (from paper methodology)
 ENTERPRISE_TECHNIQUES = 835
@@ -178,18 +180,35 @@ def analyze_platform_coverage(techniques):
     }
 
 
-def analyze_domain_platform_coverage(filepath, domain_name):
-    """Analyze platform coverage for a non-Enterprise domain."""
+def analyze_domain_bundle(filepath, domain_name):
+    """
+    Analyze one bundle for Figure 1 metrics:
+      - platform coverage over active attack-pattern objects
+      - software-link coverage over active attack-pattern objects
+      - CVE-link coverage over active attack-pattern objects
+    """
     objects = load_bundle(filepath)
-    by_type, _ = index_objects_by_type(objects)
+    by_type, by_id = index_objects_by_type(objects)
+    relationships = by_type.get('relationship', [])
+    rel_fwd, rel_rev, _ = build_relationship_index(relationships)
+
     techniques = by_type.get('attack-pattern', [])
     total = len(techniques)
     with_platform = sum(1 for t in techniques if t.get('x_mitre_platforms'))
+    sw_link_pct = compute_software_link_rate(by_type, rel_fwd, rel_rev)
+    cve_link_pct = compute_cve_link_rate_for_techniques(techniques)
+
     return {
         'domain': domain_name,
         'total_techniques': total,
         'with_platform': with_platform,
         'platform_pct': pct(with_platform, total),
+        'software_link_pct': sw_link_pct,
+        'cve_link_pct': cve_link_pct,
+        'num_relationships': len(relationships),
+        'num_software': len(by_type.get('malware', [])) + len(by_type.get('tool', [])),
+        'num_intrusion_sets': len(by_type.get('intrusion-set', [])),
+        'num_campaigns': len(by_type.get('campaign', [])),
     }
 
 
@@ -822,46 +841,18 @@ def analyze_profile_specificity(intrusion_sets, software_objects, rel_fwd, by_id
 # 6. Cross-domain coverage (for Figure 1)
 # ─────────────────────────────────────────────────────────────────
 
-def analyze_cross_domain_coverage(enterprise_coverage, mobile_file, ics_file):
+def analyze_cross_domain_coverage(file_by_domain):
     """
-    Compute platform coverage for Mobile and ICS domains.
-    CAPEC and FiGHT don't use x_mitre_platforms the same way.
+    Compute measured coverage for all local bundles.
     """
-    results = {
-        'enterprise': enterprise_coverage,
-    }
-
-    # Mobile
-    if mobile_file.exists():
-        results['mobile'] = analyze_domain_platform_coverage(mobile_file, 'Mobile')
-    else:
-        print(f"[WARN] Mobile bundle not found at {mobile_file}")
-
-    # ICS
-    if ics_file.exists():
-        results['ics'] = analyze_domain_platform_coverage(ics_file, 'ICS')
-    else:
-        print(f"[WARN] ICS bundle not found at {ics_file}")
-
-    # CAPEC - doesn't have x_mitre_platforms, uses different structure
-    # We'll report 0 or handle separately
-    results['capec'] = {
-        'domain': 'CAPEC',
-        'total_techniques': 615,
-        'with_platform': 0,
-        'platform_pct': 0.0,
-        'note': 'CAPEC uses abstraction levels, not x_mitre_platforms',
-    }
-
-    # FiGHT - uses x_mitre_platforms but different schema
-    results['fight'] = {
-        'domain': 'FiGHT',
-        'total_techniques': 707,
-        'with_platform': 0,
-        'platform_pct': 0.0,
-        'note': 'FiGHT platform coverage pending bundle analysis',
-    }
-
+    results = {}
+    for key, meta in file_by_domain.items():
+        path = meta['path']
+        name = meta['name']
+        if path.exists():
+            results[key] = analyze_domain_bundle(path, name)
+        else:
+            print(f"[WARN] {name} bundle not found at {path}")
     return results
 
 
@@ -869,7 +860,7 @@ def analyze_cross_domain_coverage(enterprise_coverage, mobile_file, ics_file):
 # 7. Software coverage for cross-domain figure
 # ─────────────────────────────────────────────────────────────────
 
-def compute_software_link_rate(objects_by_type, rel_fwd):
+def compute_software_link_rate(objects_by_type, rel_fwd, rel_rev):
     """Fraction of attack-patterns linked to at least one malware/tool."""
     techniques = objects_by_type.get('attack-pattern', [])
     software_ids = set()
@@ -884,6 +875,12 @@ def compute_software_link_rate(objects_by_type, rel_fwd):
             if rtype == 'uses' and tgt in software_ids:
                 linked += 1
                 break
+        else:
+            # ATT&CK and FiGHT commonly encode software -> uses -> technique.
+            for rtype, src, _ in rel_rev.get(tech['id'], []):
+                if rtype == 'uses' and src in software_ids:
+                    linked += 1
+                    break
     return pct(linked, len(techniques)) if techniques else 0.0
 
 
@@ -1019,33 +1016,20 @@ def main():
 
     # ── Cross-domain coverage ──
     print("\n[7/7] Computing cross-domain coverage...")
-    enterprise_cov = {
-        'domain': 'Enterprise',
-        'total_techniques': platform_results['total_techniques'],
-        'with_platform': platform_results['with_platform'],
-        'platform_pct': platform_results['platform_pct'],
-    }
-    cross_domain = analyze_cross_domain_coverage(enterprise_cov, MOBILE_FILE, ICS_FILE)
+    cross_domain = analyze_cross_domain_coverage({
+        'enterprise': {'name': 'Enterprise', 'path': ENTERPRISE_FILE},
+        'mobile': {'name': 'Mobile', 'path': MOBILE_FILE},
+        'ics': {'name': 'ICS', 'path': ICS_FILE},
+        'capec': {'name': 'CAPEC', 'path': CAPEC_FILE},
+        'fight': {'name': 'FiGHT', 'path': FIGHT_FILE},
+    })
     for domain, data in cross_domain.items():
-        print(f"  {data.get('domain', domain)}: {data.get('platform_pct', 'N/A')}% platform coverage")
-
-    # Also compute software-link and CVE-link rates per domain for Figure 1
-    enterprise_sw_link = compute_software_link_rate(by_type, rel_fwd)
-    enterprise_cve_link = compute_cve_link_rate_for_techniques(techniques)
-
-    # Mobile and ICS software/CVE link rates
-    domain_extra = {}
-    for dfile, dname in [(MOBILE_FILE, 'mobile'), (ICS_FILE, 'ics')]:
-        if dfile.exists():
-            d_objects = load_bundle(dfile)
-            d_by_type, d_by_id = index_objects_by_type(d_objects)
-            d_rels = d_by_type.get('relationship', [])
-            d_fwd, _, _ = build_relationship_index(d_rels)
-            d_techs = d_by_type.get('attack-pattern', [])
-            domain_extra[dname] = {
-                'sw_link_pct': compute_software_link_rate(d_by_type, d_fwd),
-                'cve_link_pct': compute_cve_link_rate_for_techniques(d_techs),
-            }
+        print(
+            f"  {data.get('domain', domain)}: "
+            f"platform={data.get('platform_pct', 'N/A')}%, "
+            f"software-link={data.get('software_link_pct', 'N/A')}%, "
+            f"CVE-link={data.get('cve_link_pct', 'N/A')}%"
+        )
 
     # ══════════════════════════════════════════════════════════════
     # Assemble TODO values
@@ -1058,23 +1042,49 @@ def main():
         'enterprise_system_requirements_pct': platform_results['system_requirements_pct'],
         'mobile_platform_pct': cross_domain.get('mobile', {}).get('platform_pct', 'N/A'),
         'ics_platform_percentage': cross_domain.get('ics', {}).get('platform_pct', 'N/A'),
-        'capec_platform_percentage': cross_domain.get('capec', {}).get('platform_pct', 0.0),
+        'capec_platform_percentage': cross_domain.get('capec', {}).get('platform_pct', 'N/A'),
+        'fight_platform_percentage': cross_domain.get('fight', {}).get('platform_pct', 'N/A'),
+
+        # Figure 1 (cross-corpus coverage)
+        'enterprise_software_link_pct': cross_domain.get('enterprise', {}).get('software_link_pct', 'N/A'),
+        'enterprise_cve_link_pct': cross_domain.get('enterprise', {}).get('cve_link_pct', 'N/A'),
+        'mobile_software_link_pct': cross_domain.get('mobile', {}).get('software_link_pct', 'N/A'),
+        'mobile_cve_link_pct': cross_domain.get('mobile', {}).get('cve_link_pct', 'N/A'),
+        'ics_software_link_pct': cross_domain.get('ics', {}).get('software_link_pct', 'N/A'),
+        'ics_cve_link_pct': cross_domain.get('ics', {}).get('cve_link_pct', 'N/A'),
+        'capec_software_link_pct': cross_domain.get('capec', {}).get('software_link_pct', 'N/A'),
+        'capec_cve_link_pct': cross_domain.get('capec', {}).get('cve_link_pct', 'N/A'),
+        'fight_software_link_pct': cross_domain.get('fight', {}).get('software_link_pct', 'N/A'),
+        'fight_cve_link_pct': cross_domain.get('fight', {}).get('cve_link_pct', 'N/A'),
 
         # RQ1/RQ2 Software
         'enterprise_campaigns_with_software_count': software_results['campaigns_with_software'],
         'enterprise_campaigns_with_software_percentage': software_results['campaigns_with_software_pct'],
+        'enterprise_active_campaign_count': software_results['total_usable_campaigns'],
         'enterprise_campaigns_with_platform_signal_count': software_results['campaigns_with_platform_signal'],
         'enterprise_campaigns_with_platform_signal_pct': software_results['campaigns_with_platform_signal_pct'],
         'enterprise_campaigns_platform_unknown_count': software_results['campaigns_unknown_platform'],
         'enterprise_campaigns_platform_unknown_pct': software_results['campaigns_unknown_platform_pct'],
+        'campaign_os_windows_count': software_results['campaign_os_family_counts'].get('Windows', 0),
+        'campaign_os_linux_count': software_results['campaign_os_family_counts'].get('Linux', 0),
+        'campaign_os_macos_count': software_results['campaign_os_family_counts'].get('macOS', 0),
         'enterprise_intrusion_sets_with_software_count': software_results['is_with_software'],
         'enterprise_intrusion_sets_with_software_percentage': software_results['is_with_software_pct'],
+        'enterprise_active_intrusion_set_count': software_results['total_intrusion_sets'],
+        'enterprise_active_software_count': software_results['total_software'],
+        'enterprise_active_malware_count': len(malware),
+        'enterprise_active_tool_count': len(tools),
         'software_with_version_signal_percentage': software_results['software_with_version_pct'],
         'software_with_cpe_percentage': software_results['software_with_cpe_pct'],
 
         # RQ1/RQ2 CVE
         'cve_unique_count': cve_results['cve_unique_count'],
+        'cve_structured_count': cve_results['cve_structured_count'],
+        'cve_freetext_only_count': cve_results['cve_freetext_only_count'],
         'cve_from_freetext_pct': cve_results['cve_from_freetext_pct'],
+        'cve_actionable_count': cve_results['actionable_cve_count'],
+        'cve_technique_only_count': cve_results['technique_only_cve_count'],
+        'campaign_linked_cve_count': len(cve_results['cves_from_campaigns']),
         'ent_campaigns_with_cve_count': cve_results['campaigns_with_cve'],
         'ent_campaigns_with_cve_pct': cve_results['campaigns_with_cve_pct'],
         'ent_intrusion_sets_with_cve_count': cve_results['is_with_cve'],
@@ -1113,29 +1123,29 @@ def main():
     figure_data = {
         'coverage_chart': {
             'enterprise': {
-                'platform': platform_results['platform_pct'],
-                'software_link': enterprise_sw_link,
-                'cve_link': enterprise_cve_link,
+                'platform': cross_domain.get('enterprise', {}).get('platform_pct', 0),
+                'software_link': cross_domain.get('enterprise', {}).get('software_link_pct', 0),
+                'cve_link': cross_domain.get('enterprise', {}).get('cve_link_pct', 0),
             },
             'mobile': {
                 'platform': cross_domain.get('mobile', {}).get('platform_pct', 0),
-                'software_link': domain_extra.get('mobile', {}).get('sw_link_pct', 0),
-                'cve_link': domain_extra.get('mobile', {}).get('cve_link_pct', 0),
+                'software_link': cross_domain.get('mobile', {}).get('software_link_pct', 0),
+                'cve_link': cross_domain.get('mobile', {}).get('cve_link_pct', 0),
             },
             'ics': {
                 'platform': cross_domain.get('ics', {}).get('platform_pct', 0),
-                'software_link': domain_extra.get('ics', {}).get('sw_link_pct', 0),
-                'cve_link': domain_extra.get('ics', {}).get('cve_link_pct', 0),
+                'software_link': cross_domain.get('ics', {}).get('software_link_pct', 0),
+                'cve_link': cross_domain.get('ics', {}).get('cve_link_pct', 0),
             },
             'capec': {
-                'platform': 0,
-                'software_link': 0,
-                'cve_link': 0,
+                'platform': cross_domain.get('capec', {}).get('platform_pct', 0),
+                'software_link': cross_domain.get('capec', {}).get('software_link_pct', 0),
+                'cve_link': cross_domain.get('capec', {}).get('cve_link_pct', 0),
             },
             'fight': {
-                'platform': 0,
-                'software_link': 0,
-                'cve_link': 0,
+                'platform': cross_domain.get('fight', {}).get('platform_pct', 0),
+                'software_link': cross_domain.get('fight', {}).get('software_link_pct', 0),
+                'cve_link': cross_domain.get('fight', {}).get('cve_link_pct', 0),
             },
         },
         'software_specificity': {
