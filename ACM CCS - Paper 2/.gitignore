@@ -8,6 +8,7 @@
 *.out
 *.run.xml
 *.synctex.gz
+main.pdf
 
 # macOS
 .DS_Store
