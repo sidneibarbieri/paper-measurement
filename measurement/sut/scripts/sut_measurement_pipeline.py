@@ -1041,7 +1041,7 @@ def bootstrap_confusion_ci(per_is_rows, delta, n_boot=5000, seed=42):
             'confusion_ci_high': 0.0,
             'unique_ci_low': 0.0,
             'unique_ci_high': 0.0,
-            'bootstrap_rows': [],
+            'bootstrap_summary_rows': [],
         }
 
     rng = random.Random(seed)
@@ -1074,9 +1074,13 @@ def bootstrap_confusion_ci(per_is_rows, delta, n_boot=5000, seed=42):
         'confusion_ci_high': round(confusion_samples[hi_idx], 1),
         'unique_ci_low': round(unique_samples[lo_idx], 1),
         'unique_ci_high': round(unique_samples[hi_idx], 1),
-        'bootstrap_rows': [
-            {'replicate': i + 1, 'confusion_pct': round(confusion_samples[i], 4), 'unique_pct': round(unique_samples[i], 4)}
-            for i in range(n_boot)
+        'bootstrap_summary_rows': [
+            {'stat': 'n_boot', 'confusion_pct': float(n_boot), 'unique_pct': float(n_boot)},
+            {'stat': 'p01', 'confusion_pct': round(confusion_samples[int(0.01 * n_boot)], 4), 'unique_pct': round(unique_samples[int(0.01 * n_boot)], 4)},
+            {'stat': 'p05', 'confusion_pct': round(confusion_samples[int(0.05 * n_boot)], 4), 'unique_pct': round(unique_samples[int(0.05 * n_boot)], 4)},
+            {'stat': 'p50', 'confusion_pct': round(confusion_samples[int(0.50 * n_boot)], 4), 'unique_pct': round(unique_samples[int(0.50 * n_boot)], 4)},
+            {'stat': 'p95', 'confusion_pct': round(confusion_samples[int(0.95 * n_boot)], 4), 'unique_pct': round(unique_samples[int(0.95 * n_boot)], 4)},
+            {'stat': 'p99', 'confusion_pct': round(confusion_samples[int(0.99 * n_boot)], 4), 'unique_pct': round(unique_samples[int(0.99 * n_boot)], 4)},
         ],
     }
 
@@ -1732,10 +1736,10 @@ def main():
     with open(AUDIT_DIR / 'bootstrap_confusion_distribution.csv', 'w', newline='') as f:
         writer = csv.DictWriter(
             f,
-            fieldnames=['replicate', 'confusion_pct', 'unique_pct']
+            fieldnames=['stat', 'confusion_pct', 'unique_pct']
         )
         writer.writeheader()
-        for row in bootstrap_results['bootstrap_rows']:
+        for row in bootstrap_results['bootstrap_summary_rows']:
             writer.writerow(row)
 
     # Platform distribution
