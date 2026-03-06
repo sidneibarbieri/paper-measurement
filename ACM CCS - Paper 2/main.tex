@@ -905,6 +905,10 @@ The CAPEC bundle does not use
 patterns rather than platform-bound behaviors. In FiGHT, platform
 coverage is \fightplatformpercentage\% under the same active-object filter.
 Figure~\ref{fig:coverage} compares measured rates across all corpora.
+The CAPEC zeros in this figure are structural properties of the
+bundle (no \texttt{malware}/\texttt{tool} objects and no CVE mentions in
+active \texttt{attack-pattern} objects), not missing data caused by the
+measurement pipeline.
 
 \begin{figure}[!htb]
 \centering
@@ -912,7 +916,7 @@ Figure~\ref{fig:coverage} compares measured rates across all corpora.
 % FIGURE NOTE:
 % - Keep Y-axis fixed at 0 to 100.
 % - Add value labels.
-\caption{Coverage of structured SUT-relevant signals across corpora.}\label{fig:coverage}
+\caption{Coverage of structured SUT-relevant signals across corpora. CAPEC zeros are schema-driven in this dataset.}\label{fig:coverage}
 \Description{Grouped bar chart for Enterprise, Mobile, ICS, CAPEC, and FiGHT with measured platform, software-link, and CVE-link rates.}
 \end{figure}
 
@@ -971,6 +975,8 @@ documented, the specificity required for automated SUT
 construction is entirely absent.
 The distribution of specificity levels is summarized in
 Figure~\ref{fig:software_specificity}.
+The key reading is that almost all software references are family-level
+labels without a version pin.
 
 \begin{figure}[!htb]
 \centering
@@ -1012,7 +1018,8 @@ STIX fields alone~\cite{DBLP:conf/uss/SahaMBCVL25}, confirming the
 structural gap between referenced intelligence and encoded
 intelligence.
 Figure~\ref{fig:cve_location} shows where CVE evidence is found in
-practice.
+practice. The key reading is that actionable CVE evidence is sparse and
+split between structured and free-text fields.
 
 \myparagraph{Campaign-linked exploited CVEs}
 Among the \cveactionablecount{} actionable CVEs,
@@ -1161,7 +1168,8 @@ Software + compatibility summary & \sutprofileuniquesoftwarecompatpercentage\% &
 \Description{Horizontal bar chart of confused-group percentages for six profile settings: software only, software plus CVE, software plus platform, software plus CVE plus platform, software plus OS family, and software plus compatibility summary.}
 \end{figure}
 Figure~\ref{fig:jaccard_cdf} visualizes the full confusion
-distribution.
+distribution. The key reading is that adding CVE evidence does not
+materially shift nearest-neighbor separability at $\delta = 0.10$.
 
 \begin{figure}[!htb]
 \centering

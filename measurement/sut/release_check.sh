@@ -8,6 +8,18 @@ PAPER_DIR="$ROOT/ACM CCS - Paper 2"
 log() { printf '[release-check] %s\n' "$*"; }
 fail() { printf '[release-check][FAIL] %s\n' "$*" >&2; exit 1; }
 
+log "0) Verifying required input bundles"
+required_inputs=(
+  "data/enterprise-attack.json"
+  "data/mobile-attack.json"
+  "data/ics-attack.json"
+  "data/stix-capec.json"
+  "data/fight-enterprise-10.1.json"
+)
+for f in "${required_inputs[@]}"; do
+  [[ -f "$MEAS_SCRIPTS/$f" ]] || fail "missing input bundle: $MEAS_SCRIPTS/$f"
+done
+
 log "1) Running measurement pipeline"
 cd "$MEAS_SCRIPTS"
 python3 sut_measurement_pipeline.py >/tmp/measurement_pipeline_release.log 2>&1 || {
@@ -83,6 +95,9 @@ checks.append((0.0 <= d['sut_profile_confusion_software_platform_percentage'] <=
 checks.append((0.0 <= d['sut_profile_confusion_software_cve_platform_percentage'] <= 100.0, 'software+cve+platform confusion pct out of range'))
 checks.append((0.0 <= d['sut_profile_confusion_software_family_only_percentage'] <= 100.0, 'software+family confusion pct out of range'))
 checks.append((0.0 <= d['sut_profile_confusion_software_compat_percentage'] <= 100.0, 'software+compat confusion pct out of range'))
+checks.append((d['capec_platform_percentage'] == 0.0, 'CAPEC platform percentage must be 0.0 for this bundle'))
+checks.append((d['capec_software_link_pct'] == 0.0, 'CAPEC software-link percentage must be 0.0 for this bundle'))
+checks.append((d['capec_cve_link_pct'] == 0.0, 'CAPEC CVE-link percentage must be 0.0 for this bundle'))
 
 unknown_names = []
 with open(base/'audit'/'campaign_platform_unknown.csv', newline='', encoding='utf-8') as f:
