@@ -823,6 +823,10 @@ attached to software (\texttt{malware}/\texttt{tool}) linked to the
 campaign. Technique-level platforms are excluded from this step
 because they encode where a technique can run in general, not what a
 specific campaign targeted.
+Campaigns with no linked software are reported as \emph{platform
+unknown} instead of receiving inferred values. This avoids
+overstating environment evidence when the bundle lacks software-level
+signals.
 
 \subsection{SUT Compatibility Classification}
 
@@ -1186,6 +1190,10 @@ the same asynchrony was observed in the companion
 study~\cite{ferraz2026proceduralsemanticsgapstructured}. External
 validity is bounded by the focus on public ATT\&CK datasets;
 commercial CTI feeds may carry richer software version data.
+Campaign-level platform inference also uses software-linked platform
+tags as a compatibility proxy. Multi-platform tools can inflate
+OS-family counts and do not prove the exact operating system targeted
+in a specific incident.
 Finally, because this study and its companion analysis share the same
 data baseline and extraction conventions, any upstream corpus bias
 propagates to both axes; this strengthens comparability but also
