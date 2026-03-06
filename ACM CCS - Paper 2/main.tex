@@ -1132,11 +1132,19 @@ replicates at $\delta = 0.10$ yields a confusion estimate of
 \bootstrapconfusioncilow{}\%--\bootstrapconfusioncihigh{}\%) and
 unique-profile estimate of \bootstrapuniquepct\% (confidence interval:
 \bootstrapuniquecilow{}\%--\bootstrapuniquecihigh{}\%).
-Feature ablation shows that adding platform labels to software-only
-profiles does not change nearest-neighbor specificity in this
-dataset: uniqueness remains
-\sutprofileuniquesoftwareplatformpercentage\% and confusion remains
-\sutprofileconfusionsoftwareplatformpercentage\%.
+Feature ablation summary at $\delta=0.10$ is:
+software-only (\sutprofileuniquesoftwarepercentage\% unique),
+software+CVE (\sutprofileuniquesoftwarecvepercentage\% unique),
+software+platform (\sutprofileuniquesoftwareplatformpercentage\% unique),
+software+CVE+platform
+(\sutprofileuniquesoftwarecveplatformpercentage\% unique), and
+software+OS-family only
+(\sutprofileuniquesoftwarefamilyonlypercentage\% unique). The
+corresponding confusion rates are
+\sutprofileconfusionsoftwarecvepercentage\%,
+\sutprofileconfusionsoftwareplatformpercentage\%,
+\sutprofileconfusionsoftwarecveplatformpercentage\%, and
+\sutprofileconfusionsoftwarefamilyonlypercentage\%.
 Figure~\ref{fig:jaccard_cdf} visualizes the full confusion
 distribution.
 

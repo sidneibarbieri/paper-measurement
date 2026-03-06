@@ -117,8 +117,8 @@ def main():
     )
     add_row(
         rows, "RQ3-J5", "Analysis: profile ablation summary",
-        f"unique(sw)={v(todo,'sut_profile_unique_software_percentage')}%, unique(sw+cve)={v(todo,'sut_profile_unique_software_cve_percentage')}%, unique(sw+platform)={v(todo,'sut_profile_unique_software_platform_percentage')}%",
-        "sut_profile_unique_software_percentage, sut_profile_unique_software_cve_percentage, sut_profile_unique_software_platform_percentage",
+        f"unique(sw)={v(todo,'sut_profile_unique_software_percentage')}%, unique(sw+cve)={v(todo,'sut_profile_unique_software_cve_percentage')}%, unique(sw+platform)={v(todo,'sut_profile_unique_software_platform_percentage')}%, unique(sw+cve+platform)={v(todo,'sut_profile_unique_software_cve_platform_percentage')}%, unique(sw+family)={v(todo,'sut_profile_unique_software_family_only_percentage')}%",
+        "sut_profile_unique_software_percentage, sut_profile_unique_software_cve_percentage, sut_profile_unique_software_platform_percentage, sut_profile_unique_software_cve_platform_percentage, sut_profile_unique_software_family_only_percentage",
         "`results/todo_values.json`, `results/audit/profile_ablation_summary.csv`",
     )
     add_row(

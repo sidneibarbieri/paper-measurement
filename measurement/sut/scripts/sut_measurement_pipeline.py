@@ -847,11 +847,13 @@ def analyze_compatibility(techniques, rel_fwd, by_id):
 # ─────────────────────────────────────────────────────────────────
 
 def build_sut_profiles(
-    intrusion_sets, software_objects, rel_fwd, by_id, include_cve=False, include_platform=False
+    intrusion_sets, software_objects, rel_fwd, by_id,
+    include_cve=False, platform_mode='none'
 ):
     """
     Build binary SUT profile vectors for each intrusion set.
     Profile = set of software IDs (+ optionally CVE IDs, platform labels) linked to the IS.
+    platform_mode: 'none' | 'raw' | 'family'
     """
     software_ids = set(s['id'] for s in software_objects)
 
@@ -889,14 +891,19 @@ def build_sut_profiles(
                 all_features.add(f"CVE:{cve}")
 
         # Optionally add platform labels from linked software objects
-        if include_platform:
+        if platform_mode in ('raw', 'family'):
             platforms = set()
             for rtype, tgt, _ in rel_fwd.get(is_id, []):
                 if rtype == 'uses' and tgt in by_id:
                     obj = by_id[tgt]
                     if obj.get('type') in ('malware', 'tool'):
                         for p in obj.get('x_mitre_platforms', []) or []:
-                            platforms.add(p)
+                            if platform_mode == 'raw':
+                                platforms.add(p)
+                            else:
+                                fam = normalize_os_family(p)
+                                if fam:
+                                    platforms.add(fam)
             for p in platforms:
                 feat = f"PLATFORM:{p}"
                 profile.add(feat)
@@ -921,19 +928,22 @@ def jaccard_distance(set_a, set_b):
 def analyze_profile_specificity(intrusion_sets, software_objects, rel_fwd, by_id):
     """
     RQ3: SUT profile specificity analysis.
-    Computes for software-only, software+CVE, and software+platform settings.
+    Computes for software-only, software+CVE, software+platform, software+CVE+platform,
+    and software+OS-family settings.
     """
     results = {}
 
     settings = [
-        ('software_only', False, False),
-        ('software_cve', True, False),
-        ('software_platform', False, True),
+        ('software_only', False, 'none'),
+        ('software_cve', True, 'none'),
+        ('software_platform', False, 'raw'),
+        ('software_cve_platform', True, 'raw'),
+        ('software_family_only', False, 'family'),
     ]
-    for setting, include_cve, include_platform in settings:
+    for setting, include_cve, platform_mode in settings:
         profiles, features = build_sut_profiles(
             intrusion_sets, software_objects, rel_fwd, by_id,
-            include_cve=include_cve, include_platform=include_platform
+            include_cve=include_cve, platform_mode=platform_mode
         )
 
         is_ids = list(profiles.keys())
@@ -1293,6 +1303,8 @@ def main():
     sw_only = specificity_results['software_only']
     sw_cve = specificity_results['software_cve']
     sw_platform = specificity_results['software_platform']
+    sw_cve_platform = specificity_results['software_cve_platform']
+    sw_family_only = specificity_results['software_family_only']
     print(f"  Software-only unique profiles: {sw_only['unique_count']}/{sw_only['total_is']} "
           f"({sw_only['unique_pct']}%)")
     print(f"  Software+CVE unique profiles: {sw_cve['unique_count']}/{sw_cve['total_is']} "
@@ -1303,6 +1315,14 @@ def main():
           f"({sw_platform['unique_pct']}%)")
     print(f"  Software+platform confused: {sw_platform['confused_count']}/{sw_platform['total_is']} "
           f"({sw_platform['confused_pct']}%)")
+    print(f"  Software+CVE+platform unique profiles: {sw_cve_platform['unique_count']}/{sw_cve_platform['total_is']} "
+          f"({sw_cve_platform['unique_pct']}%)")
+    print(f"  Software+CVE+platform confused: {sw_cve_platform['confused_count']}/{sw_cve_platform['total_is']} "
+          f"({sw_cve_platform['confused_pct']}%)")
+    print(f"  Software+OS-family unique profiles: {sw_family_only['unique_count']}/{sw_family_only['total_is']} "
+          f"({sw_family_only['unique_pct']}%)")
+    print(f"  Software+OS-family confused: {sw_family_only['confused_count']}/{sw_family_only['total_is']} "
+          f"({sw_family_only['confused_pct']}%)")
 
     threshold_results = analyze_min_evidence_threshold(
         specificity_results['software_only']['per_is_rows'],
@@ -1462,8 +1482,12 @@ def main():
         'sut_profile_unique_software_percentage': sw_only['unique_pct'],
         'sut_profile_unique_software_cve_percentage': sw_cve['unique_pct'],
         'sut_profile_unique_software_platform_percentage': sw_platform['unique_pct'],
+        'sut_profile_unique_software_cve_platform_percentage': sw_cve_platform['unique_pct'],
+        'sut_profile_unique_software_family_only_percentage': sw_family_only['unique_pct'],
         'sut_profile_confusion_software_cve_percentage': sw_cve['confused_pct'],
         'sut_profile_confusion_software_platform_percentage': sw_platform['confused_pct'],
+        'sut_profile_confusion_software_cve_platform_percentage': sw_cve_platform['confused_pct'],
+        'sut_profile_confusion_software_family_only_percentage': sw_family_only['confused_pct'],
         'sut_profile_confusion_software_cve_ci_low': proportion_ci_wilson(
             sw_cve['confused_count'],
             sw_cve['total_is'],
@@ -1559,6 +1583,8 @@ def main():
             'software_only_distances': specificity_results['software_only']['nearest_distances'],
             'software_cve_distances': specificity_results['software_cve']['nearest_distances'],
             'software_platform_distances': specificity_results['software_platform']['nearest_distances'],
+            'software_cve_platform_distances': specificity_results['software_cve_platform']['nearest_distances'],
+            'software_family_only_distances': specificity_results['software_family_only']['nearest_distances'],
             'delta_threshold': JACCARD_DELTA,
         },
         'compatibility_table': {
@@ -1749,7 +1775,13 @@ def main():
             fieldnames=['setting', 'unique_count', 'unique_pct', 'confused_count', 'confused_pct', 'total_is', 'num_features']
         )
         writer.writeheader()
-        for setting in ['software_only', 'software_cve', 'software_platform']:
+        for setting in [
+            'software_only',
+            'software_cve',
+            'software_platform',
+            'software_cve_platform',
+            'software_family_only',
+        ]:
             row = specificity_results[setting]
             writer.writerow({
                 'setting': setting,
