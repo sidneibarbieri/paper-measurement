@@ -20,11 +20,12 @@
   \node at (48.8,5.9) {97.6\%};
   \node[anchor=west] at (100.5,5.9) {v.~only (19)};
 
-  % Legend
-  \fill[acmGrayFill] (0,0.0) rectangle (1.4,0.8);
-  \node[anchor=west] at (1.8,0.4) {No version, no CPE};
-  \fill[acmTeal] (35,0.0) rectangle (36.4,0.8);
-  \node[anchor=west] at (36.8,0.4) {Textual version only};
-  \fill[acmBlue] (65,0.0) rectangle (66.4,0.8);
-  \node[anchor=west] at (66.8,0.4) {CPE (0 objects)};
+  % Legend in a dedicated box above the bar region.
+  \node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (55.0,6.9) {%
+    \begin{tabular}{@{}l@{}}
+      \textcolor{acmGrayFill}{\rule{0.95em}{0.72em}}\ \ No version, no CPE\\[1pt]
+      \textcolor{acmTeal}{\rule{0.95em}{0.72em}}\ \ Textual version only\\[1pt]
+      \textcolor{acmBlue}{\rule{0.95em}{0.72em}}\ \ CPE (0 objects)
+    \end{tabular}
+  };
 \end{tikzpicture}

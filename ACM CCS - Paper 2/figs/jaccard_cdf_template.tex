@@ -35,8 +35,11 @@
   \node[anchor=south west,text=acmDelta] at (0.105,0.10) {$\delta=0.1$};
   \node[anchor=north west,text=acmDelta] at (0.105,0.085) {9.3\% confused};
 
-  \draw[line width=0.9pt,acmBlue] (0.54,0.22) -- (0.62,0.22);
-  \node[anchor=west] at (0.63,0.22) {Software only};
-  \draw[line width=0.9pt,acmTeal,densely dashed] (0.54,0.14) -- (0.62,0.14);
-  \node[anchor=west] at (0.63,0.14) {Software + CVE};
+  % Legend in a dedicated box to avoid text/curve collisions.
+  \node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (0.56,0.98) {%
+    \begin{tabular}{@{}l@{}}
+      \textcolor{acmBlue}{\rule{0.95em}{0.72em}}\ \ Software only\\[1pt]
+      \textcolor{acmTeal}{\rule{0.95em}{0.72em}}\ \ Software + CVE
+    \end{tabular}
+  };
 \end{tikzpicture}
