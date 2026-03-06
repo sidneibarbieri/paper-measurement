@@ -46,11 +46,12 @@
   \node at (11.3,-8) {CAPEC};
   \node at (14.3,-8) {FiGHT};
 
-  % Legend in a dedicated top-right band above the 100% line.
-  \fill[acmBlue] (11.3,114.0) rectangle (11.8,117.5);
-  \node[anchor=west] at (11.9,115.7) {$\rho_P$: platform};
-  \fill[acmTeal] (11.3,108.5) rectangle (11.8,112.0);
-  \node[anchor=west] at (11.9,110.2) {$\rho_S$: software};
-  \fill[acmSand] (11.3,103.0) rectangle (11.8,106.5);
-  \node[anchor=west] at (11.9,104.7) {$\rho_V$: CVE};
+  % Legend in a fixed-typography box between the 100% line and top limit.
+  \node[anchor=north west,fill=white,fill opacity=0.95,text opacity=1,inner sep=2.2pt] at (10.9,121.6) {%
+    \begin{tabular}{@{}l@{}}
+      \textcolor{acmBlue}{\rule{0.95em}{0.72em}}\ \ $\rho_P$: platform\\[1pt]
+      \textcolor{acmTeal}{\rule{0.95em}{0.72em}}\ \ $\rho_S$: software\\[1pt]
+      \textcolor{acmSand}{\rule{0.95em}{0.72em}}\ \ $\rho_V$: CVE
+    \end{tabular}
+  };
 \end{tikzpicture}
