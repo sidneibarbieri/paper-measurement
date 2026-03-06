@@ -1132,24 +1132,27 @@ replicates at $\delta = 0.10$ yields a confusion estimate of
 \bootstrapconfusioncilow{}\%--\bootstrapconfusioncihigh{}\%) and
 unique-profile estimate of \bootstrapuniquepct\% (confidence interval:
 \bootstrapuniquecilow{}\%--\bootstrapuniquecihigh{}\%).
-Feature ablation summary at $\delta=0.10$ is:
-software-only (\sutprofileuniquesoftwarepercentage\% unique),
-software+CVE (\sutprofileuniquesoftwarecvepercentage\% unique),
-software+platform (\sutprofileuniquesoftwareplatformpercentage\% unique),
-software+CVE+platform
-(\sutprofileuniquesoftwarecveplatformpercentage\% unique), and
-software+OS-family only
-(\sutprofileuniquesoftwarefamilyonlypercentage\% unique), and
-software+compatibility-summary
-(\sutprofileuniquesoftwarecompatpercentage\% unique). The
-corresponding confusion rates are
-\sutprofileconfusionsoftwarecvepercentage\%,
-\sutprofileconfusionsoftwareplatformpercentage\%,
-\sutprofileconfusionsoftwarecveplatformpercentage\%, and
-\sutprofileconfusionsoftwarefamilyonlypercentage\%, and
-\sutprofileconfusionsoftwarecompatpercentage\%. In this corpus, the
-compatibility summary yields only a modest gain over software-only
-profiles.
+Table~\ref{tab:ablation_rq3} summarizes ablation settings at
+$\delta = 0.10$. In this corpus, compatibility-summary features
+yield a modest gain over software-only profiles, while CVE and
+platform augmentations do not change nearest-neighbor outcomes.
+
+\begin{table}[!htb]
+\caption{RQ3 feature ablation at $\delta=0.10$ (n = \enterpriseactiveintrusionsetcount{} intrusion sets).}\label{tab:ablation_rq3}
+\centering\small
+\begin{tabular}{lrr}
+\toprule
+\textbf{Profile Setting} & \textbf{Unique (\%)} & \textbf{Confused (\%)} \\
+\midrule
+Software only & \sutprofileuniquesoftwarepercentage\% & \sutprofileconfusionsoftwarepercentage\% \\
+Software + CVE & \sutprofileuniquesoftwarecvepercentage\% & \sutprofileconfusionsoftwarecvepercentage\% \\
+Software + platform & \sutprofileuniquesoftwareplatformpercentage\% & \sutprofileconfusionsoftwareplatformpercentage\% \\
+Software + CVE + platform & \sutprofileuniquesoftwarecveplatformpercentage\% & \sutprofileconfusionsoftwarecveplatformpercentage\% \\
+Software + OS family & \sutprofileuniquesoftwarefamilyonlypercentage\% & \sutprofileconfusionsoftwarefamilyonlypercentage\% \\
+Software + compatibility summary & \sutprofileuniquesoftwarecompatpercentage\% & \sutprofileconfusionsoftwarecompatpercentage\% \\
+\bottomrule
+\end{tabular}
+\end{table}
 Figure~\ref{fig:jaccard_cdf} visualizes the full confusion
 distribution.
 

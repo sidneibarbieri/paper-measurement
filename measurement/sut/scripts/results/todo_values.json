@@ -75,6 +75,7 @@
   "sut_profile_unique_software_cve_platform_percentage": 90.7,
   "sut_profile_unique_software_family_only_percentage": 90.7,
   "sut_profile_unique_software_compat_percentage": 91.3,
+  "sut_profile_confusion_software_percentage": 9.3,
   "sut_profile_confusion_software_cve_percentage": 9.3,
   "sut_profile_confusion_software_platform_percentage": 9.3,
   "sut_profile_confusion_software_cve_platform_percentage": 9.3,

@@ -1524,6 +1524,7 @@ def main():
         'sut_profile_unique_software_cve_platform_percentage': sw_cve_platform['unique_pct'],
         'sut_profile_unique_software_family_only_percentage': sw_family_only['unique_pct'],
         'sut_profile_unique_software_compat_percentage': sw_compat['unique_pct'],
+        'sut_profile_confusion_software_percentage': sw_only['confused_pct'],
         'sut_profile_confusion_software_cve_percentage': sw_cve['confused_pct'],
         'sut_profile_confusion_software_platform_percentage': sw_platform['confused_pct'],
         'sut_profile_confusion_software_cve_platform_percentage': sw_cve_platform['confused_pct'],
