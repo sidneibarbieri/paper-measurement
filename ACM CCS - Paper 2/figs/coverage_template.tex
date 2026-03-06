@@ -4,7 +4,7 @@
 \definecolor{acmGrid}{HTML}{D9DDE2}
 \begin{tikzpicture}[x=0.48cm,y=0.03cm,font=\footnotesize]
   \draw[->] (0,0) -- (17.2,0) node[right] {Corpus};
-  \draw[->] (0,0) -- (0,110) node[above] {\%};
+  \draw[->] (0,0) -- (0,124) node[above] {\%};
   \foreach \yy in {0,20,40,60,80,100} {
     \draw[acmGrid] (0,\yy) -- (16.8,\yy);
     \node[left] at (0,\yy) {\yy};
@@ -46,11 +46,11 @@
   \node at (11.3,-8) {CAPEC};
   \node at (14.3,-8) {FiGHT};
 
-  % Legend moved to the right-side empty area to avoid overlap with bar labels.
-  \fill[acmBlue] (10.9,106) rectangle (11.4,109.5);
-  \node[anchor=west] at (11.5,107.7) {$\rho_P$: platform};
-  \fill[acmTeal] (10.9,100.5) rectangle (11.4,104.0);
-  \node[anchor=west] at (11.5,102.2) {$\rho_S$: software};
-  \fill[acmSand] (10.9,95.0) rectangle (11.4,98.5);
-  \node[anchor=west] at (11.5,96.7) {$\rho_V$: CVE};
+  % Legend in a dedicated top-right band above the 100% line.
+  \fill[acmBlue] (11.3,114.0) rectangle (11.8,117.5);
+  \node[anchor=west] at (11.9,115.7) {$\rho_P$: platform};
+  \fill[acmTeal] (11.3,108.5) rectangle (11.8,112.0);
+  \node[anchor=west] at (11.9,110.2) {$\rho_S$: software};
+  \fill[acmSand] (11.3,103.0) rectangle (11.8,106.5);
+  \node[anchor=west] at (11.9,104.7) {$\rho_V$: CVE};
 \end{tikzpicture}
