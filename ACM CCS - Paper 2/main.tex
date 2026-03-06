@@ -95,15 +95,13 @@
 % Local build workaround: disable microtype expansion/protrusion when
 % non-scalable fallback fonts are selected by the local TeX setup.
 \microtypesetup{expansion=false, protrusion=false}
-% Reduce underfull hbox warnings in narrow ACM columns during drafting.
-\setlength{\emergencystretch}{2em}
-% Suppress non-essential box warnings (common with acronyms, URLs, and TODO placeholders).
-\hbadness=10000
+% Keep mild stretch to reduce line-break pressure in narrow ACM columns.
+\setlength{\emergencystretch}{1em}
 % Keep bibliography URLs and long venue strings from generating editor noise.
 \AtBeginEnvironment{thebibliography}{%
   \sloppy
   \emergencystretch=2em
-  \hbadness=10000
+  \hbadness=3000
   \Urlmuskip=0mu plus 3mu
 }
 %%
@@ -124,7 +122,7 @@
 \acmYear{2026}
 \acmDOI{10.1145/0000000.0000000}
 %% These commands are for a PROCEEDINGS abstract or paper.
-\acmConference[ASIACCS '26]{Proceedings of the 21st ACM Asia Conference on Computer and Communications Security (ASIACCS 2026)}{June 1--5, 2026}{Bangalore, India}
+\acmConference[CCS '26]{Proceedings of the 2026 ACM SIGSAC Conference on Computer and Communications Security}{November 15--19, 2026}{The Hague, The Netherlands}
 %%
 %%  Uncomment \acmBooktitle if the title of the proceedings is different
 %%  from ``Proceedings of ...''!
@@ -329,8 +327,6 @@ APT Emulation, Adversary Emulation, Measurement}
 %  \label{fig:teaser}
 %\end{teaserfigure}
 
-% ljr: pacify column width limits
-\sloppy
 %%
 %% This command processes the author and affiliation and title
 %% information and builds the first part of the formatted document.
@@ -373,17 +369,21 @@ under current encoding practices.
 
 The gap has practical consequences for the evaluation stack.
 Red team platforms such as \caldera{} provide execution logic but
-leave SUT instantiation entirely to the
-analyst~\cite{applebaum2016caldera,redcanary2023art,orbinato2024laccolith,damodaran2025automated,wang2024sands}. APT detection systems are
-meaningfully evaluated only for techniques that can actually reach a
-target~\cite{milajerdi2019holmes,han2020unicorn,DBLP:conf/uss/Dong0NS0LLX23,DBLP:conf/uss/YangXXLZ23,Li_2024,DBLP:conf/ccs/LvGQCZCJ24,DBLP:conf/sp/RehmanAH24,Cheng_2024,DBLP:conf/uss/JiaXN0ZW24,DBLP:conf/ccs/Aly0Y25,DBLP:conf/uss/Zhang0YK0KF25}. Attribution research shows
-that robust actor-level conclusions remain difficult under TTP overlap,
-heterogeneous evidence quality, and incomplete reporting~\cite{DBLP:conf/uss/SahaMBCVL25,DBLP:conf/ccs/YuldoshkhujaevJ25}.
+leave SUT instantiation to the
+analyst~\cite{applebaum2016caldera,redcanary2023art,orbinato2024laccolith,damodaran2025automated,wang2024sands}.
+APT detection systems are meaningfully evaluated only for techniques
+that can actually reach a target, and prior work repeatedly reports
+this dependence on realistic execution context
+(\cite{milajerdi2019holmes,han2020unicorn,DBLP:conf/uss/Dong0NS0LLX23,DBLP:conf/uss/YangXXLZ23,DBLP:conf/ccs/LvGQCZCJ24,DBLP:conf/sp/RehmanAH24};
+see also~\cite{Li_2024,Cheng_2024,DBLP:conf/uss/JiaXN0ZW24,DBLP:conf/ccs/Aly0Y25,DBLP:conf/uss/Zhang0YK0KF25}).
+Attribution research also shows that robust actor-level conclusions
+remain difficult under TTP overlap, heterogeneous evidence quality,
+and incomplete reporting~\cite{DBLP:conf/uss/SahaMBCVL25,DBLP:conf/ccs/YuldoshkhujaevJ25}.
 Together, these observations increase dependence on richer contextual
-evidence (especially software and vulnerability context), precisely
-the signals most often missing from structured encoding. The same
-operational tension appears in recent analyses of ATT\&CK-oriented
-evaluation practice and operational deployment constraints in
+evidence, especially software and vulnerability context, which are
+precisely the signals most often missing from structured encoding.
+The same operational tension appears in recent analyses of
+ATT\&CK-oriented evaluation practice and deployment constraints in
 industry~\cite{apurva2024mitre,10.1145/3634737.3645012,DBLP:conf/ccs/DongLJLWHXCLGC23}.
 
 A CTI standard that names malware but not its version, or
@@ -1264,11 +1264,11 @@ natural-language \texttt{description} fields, and there are zero
 across structured \texttt{external\_references} entries.
 This means automated extraction
 requires NLP pipelines whose error rate compounds across a
-multi-step SUT derivation workflow; remediation uses LLM-based
-enrichment pipelines, operating on the existing corpus of
-threat reports that authors cite but do not structure, could
-extract CVE identifiers and attach them as structured
-\texttt{external\_reference} entries to existing \stix{} objects.
+multi-step SUT derivation workflow.\ \emph{Remediation:}
+LLM-assisted enrichment pipelines can process the same threat
+reports already cited by ATT\&CK objects, extract CVE identifiers,
+and attach them as structured \texttt{external\_reference} entries
+to existing \stix{} objects.
 This is a contained, verifiable task suitable for human-in-the-loop
 validation at scale.
 
