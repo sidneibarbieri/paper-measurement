@@ -1,6 +1,9 @@
 # macOS / editor
 .DS_Store
-.vscode/
+.vscode/*
+!.vscode/settings.json
+ACM CCS - Paper 2/.vscode/*
+!ACM CCS - Paper 2/.vscode/settings.json
 
 # Python
 __pycache__/
@@ -33,3 +36,7 @@ ACM CCS - Paper 1/
 _pesquisa/
 generic_project_metodology/
 master_dataset.csv
+
+# Local LaTeX dependency dumps (not needed in git)
+ACM CCS - Paper 2/.texdeps/
+ACM CCS - Paper 2/.disabled-local-font-sty/

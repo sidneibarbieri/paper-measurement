@@ -1,0 +1,143 @@
+{
+  "latex-workshop.latex.env": {
+    "PATH": "/Library/TeX/texbin:/usr/bin:/bin:/usr/sbin:/sbin"
+  },
+  "latex-workshop.latex.build.enableMagicComments": true,
+  "latex-workshop.latex.autoBuild.run": "never",
+  "latex-workshop.latex.tools": [
+    {
+      "name": "latexmk-mactex",
+      "command": "/Library/TeX/texbin/latexmk",
+      "args": [
+        "-synctex=1",
+        "-interaction=nonstopmode",
+        "-file-line-error",
+        "-pdf",
+        "%DOC%"
+      ]
+    }
+  ],
+  "latex-workshop.latex.recipes": [
+    {
+      "name": "latexmk (MacTeX)",
+      "tools": [
+        "latexmk-mactex"
+      ]
+    }
+  ],
+  "latex-workshop.latex.recipe.default": "latexmk (MacTeX)",
+  "latex-workshop.latex.log.ignore": [
+    "Underfull \\hbox",
+    "Overfull \\hbox",
+    "Package balance Warning",
+    "Warning--empty address",
+    "Warning--page numbers missing in both pages and numpages fields"
+  ],
+  "texlab.diagnostics.ignoredPatterns": [
+    "^Undefined reference$"
+  ],
+  "ltex.language": "en-US",
+  "ltex.dictionary.en-US": [
+    "ASIACCS",
+    "MITRE",
+    "ATT&CK",
+    "STIX",
+    "STIX-encoded",
+    "ATT&CK-oriented",
+    "ATT&CK-grounded",
+    "ATT&CK-linked",
+    "ATT&CK-derived",
+    "CTI",
+    "SUT",
+    "SUTs",
+    "SUT-centric",
+    "SUT-relevant",
+    "IaC",
+    "CAPEC",
+    "FiGHT",
+    "Jaccard",
+    "Caldera",
+    "APT",
+    "TTP",
+    "TTPs",
+    "CVE",
+    "CVEs",
+    "CPE",
+    "SDO",
+    "SDOs",
+    "SRO",
+    "SROs",
+    "deployability",
+    "Deployability",
+    "testbed",
+    "asynchrony",
+    "stixxml",
+    "basicstyle",
+    "numberstyle",
+    "stepnumber",
+    "numbersep",
+    "showstringspaces",
+    "breaklines",
+    "fullflexible",
+    "rulecolor",
+    "backgroundcolor",
+    "xmitreplatforms",
+    "xmitresystemrequirements",
+    "xmitredeprecated",
+    "xmitrepermissionsrequired",
+    "xmitredefensebypassed",
+    "xmitreversionrange",
+    "xmitresutclass",
+    "externalreferences",
+    "externalreference",
+    "freetext",
+    "sourceref",
+    "relationshiptype",
+    "targetref",
+    "VMR",
+    "compat",
+    "cve",
+    "cpe",
+    "sut",
+    "desc",
+    "ics",
+    "capec",
+    "SPACEHOP",
+    "Rehman",
+    "Aly",
+    "Saha",
+    "Yuldoshkhujaev",
+    "Virkud",
+    "Kurt",
+    "Ágney",
+    "Sidnei",
+    "Barbieri",
+    "Lourenço",
+    "Júnior",
+    "Evangelista",
+    "CNPq",
+    "FAPESP",
+    "PPGAO",
+    "Coordenação",
+    "Programa",
+    "Aplicações",
+    "Operacionais",
+    "Tecnológico"
+  ],
+  "ltex.enabled": [
+    "latex",
+    "tex"
+  ],
+  "ltex.disabledRules": {
+    "en-US": [
+      "UPPERCASE_SENTENCE_START",
+      "EN_COMPOUNDS_MULTI_STEP",
+      "OVER_COMPOUNDS",
+      "COLLECTIVE_NOUN_VERB_AGREEMENT_VBP"
+    ]
+  },
+  "files.associations": {
+    "acmart.cls": "plaintext",
+    "totpages.sty": "plaintext"
+  }
+}
