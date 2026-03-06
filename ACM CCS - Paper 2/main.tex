@@ -364,8 +364,8 @@ platform constraints are broadly present but coarse; software
 references rarely carry version specificity or CPE identifiers;
 and CVE linkages are sparse and split across structured and
 free-text encoding.
-Automated SUT generation from structured CTI alone is not feasible
-under current encoding practices.
+Automated SUT generation from the measured structured CTI fields alone
+is not feasible under current encoding practices.
 
 The gap has practical consequences for the evaluation stack.
 Red team platforms such as \caldera{} provide execution logic but
@@ -1187,12 +1187,13 @@ materially shift nearest-neighbor separability at $\delta = 0.10$.
 
 \subsection{Implications for Reproducible APT Emulation}
 
-Our results establish that structured CTI provides only partial
+Our results establish that the measured structured CTI fields provide only partial
 information for SUT construction. Platform constraints are broadly
 populated but coarse; software constraints identify artifacts but
 rarely specify versions; and CVE constraints are sparse and split
-between structured and free-text fields. Automated SUT generation from CTI alone is therefore
-not feasible. The minimum viable workflow requires at least one
+between structured and free-text fields. Automated SUT generation from
+CTI fields alone is therefore not feasible in this dataset. The minimum
+viable workflow requires at least one
 analyst-driven enrichment step that pins software versions and maps
 platform hints to concrete OS images. This enrichment step is
 separate from the procedural gap identified in the companion
@@ -1202,9 +1203,11 @@ work shows it also lacks \emph{where-to-execute} specifications.
 
 \subsection{Container vs.\ VM Trade-offs}
 
-The compatibility classification reveals that a non-trivial
-fraction of Enterprise techniques require VM or full infrastructure
-backends beyond what containers provide. Research groups designing
+The compatibility classification reveals that
+\compatibilityvmrequiredpercentage\% (VMR) plus
+\compatibilityinfrastructuredependentpercentage\% (ID) of Enterprise
+techniques require VM or full infrastructure backends beyond what
+containers provide. Research groups designing
 cyber ranges exclusively around container orchestration will
 systematically exclude entire tactic clusters, in particular,
 boot-level persistence, kernel injection, and enterprise identity
@@ -1269,6 +1272,7 @@ LLM-assisted enrichment pipelines can process the same threat
 reports already cited by ATT\&CK objects, extract CVE identifiers,
 and attach them as structured \texttt{external\_reference} entries
 to existing \stix{} objects.
+We do not evaluate this remediation in this paper.
 This is a contained, verifiable task suitable for human-in-the-loop
 validation at scale.
 

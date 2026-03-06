@@ -112,6 +112,25 @@ expected_unknown = sorted([
 ])
 checks.append((unknown_names == expected_unknown, 'unknown campaign list mismatch'))
 
+campaign_cve_map = {}
+with open(base/'audit'/'campaign_cves.csv', newline='', encoding='utf-8') as f:
+    r = csv.DictReader(f)
+    for row in r:
+        try:
+            if int(row.get('cve_count', '0')) > 0:
+                cves = '; '.join(c.strip() for c in row.get('cves', '').split(';') if c.strip())
+                campaign_cve_map[row['campaign_name']] = cves
+        except ValueError:
+            continue
+expected_campaign_cve_map = {
+    'APT28 Nearest Neighbor Campaign': 'CVE-2022-38028',
+    'ShadowRay': 'CVE-2023-48022',
+    'Operation MidnightEclipse': 'CVE-2024-3400',
+    'Versa Director Zero Day Exploitation': 'CVE-2024-39717',
+    'SharePoint ToolShell Exploitation': 'CVE-2025-49704; CVE-2025-49706; CVE-2025-53770; CVE-2025-53771',
+}
+checks.append((campaign_cve_map == expected_campaign_cve_map, 'campaign-linked CVE table source map mismatch'))
+
 bad = [msg for ok, msg in checks if not ok]
 if bad:
     for msg in bad:
