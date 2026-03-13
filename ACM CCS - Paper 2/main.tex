@@ -918,6 +918,9 @@ To quantify the practical ceiling of text-based enrichment, we apply the same ve
 \myparagraph{Gap 3: no SUT compatibility signal}
 The \attack{} schema carries no field indicating whether a technique requires a container, a VM, or a full enterprise topology. Our CF/VMR/ID classification is heuristic and inherits the incompleteness of the underlying fields. A direct extension would be a standardized \texttt{x\_mitre\_sut\_class} field.
 
+\myparagraph{Gap 4: infrastructure and vulnerability SDOs unused}
+\stix{}~2.1 defines first-class \texttt{infrastructure} and \texttt{vulnerability} SDOs designed to represent network topology, C2 infrastructure, and exploitable software flaws. Of the \enterpriseactivecampaigncount{} Enterprise campaigns, zero use \texttt{infrastructure} SDOs and zero use \texttt{vulnerability} SDOs (CVE evidence resides in \texttt{external\_references} or free text). The ID class (\compatibilityinfrastructuredependentpercentage\% of techniques) directly requires multi-host topology, yet no structured representation of that topology accompanies the campaign objects. Populating \texttt{infrastructure} SDOs for campaign C2 and lateral-movement components would directly support SUT graph construction without schema changes.
+
 \paragraph{Schema extensions with quantified gains}
 
 Based on our measurements, we propose three minimal schema extensions with quantified impact on automated SUT generation:
