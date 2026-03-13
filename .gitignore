@@ -44,6 +44,10 @@ __pycache__/
 _chat_all_research.txt
 _pesquisa/
 generic_project_metodology/
+# Internal review notes (contain author names — excluded during double-blind)
+reviews/
+# External repo mirror
+papers\ repo/
 # Large data file (pipeline downloads ATT&CK bundles automatically)
 master_dataset.csv
 # Compressed archives (unpack locally)
