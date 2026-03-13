@@ -4,10 +4,12 @@
 !.vscode/settings.json
 ACM CCS - Paper 2/.vscode/*
 !ACM CCS - Paper 2/.vscode/settings.json
+ACM CCS - Paper 1/.vscode/*
 
 # Python
 __pycache__/
 *.pyc
+*.pyo
 
 # LaTeX build artifacts
 *.aux
@@ -30,16 +32,33 @@ __pycache__/
 # R / temp
 .Rhistory
 
-# Keep repository focused on manuscript + measurement pipeline
-papers repo/
-ACM CCS - Paper 1/
+# --- Security: credentials and secrets ---
+.env
+.env.*
+*.env
+**/secrets.yml
+**/credentials.json
+
+# --- Administrative / personal files (not for reviewers) ---
+# Chat history, working notes, personal research notes
+_chat_all_research.txt
 _pesquisa/
 generic_project_metodology/
+# Large data file (pipeline downloads ATT&CK bundles automatically)
 master_dataset.csv
+# Compressed archives (unpack locally)
+measurement.zip
+# Paper 1 LaTeX source excluded while under double-blind review
+# (submit with anonymous template; add back after acceptance)
+ACM CCS - Paper 1/
 
-# Chat history with API keys (security)
-_chat_all_research.txt
-
-# Local LaTeX dependency dumps (not needed in git)
+# --- LaTeX local dependency caches ---
 ACM CCS - Paper 2/.texdeps/
 ACM CCS - Paper 2/.disabled-local-font-sty/
+
+# --- Vim swap files ---
+*.swp
+*.swo
+
+# --- Claude internal state ---
+.claude/
