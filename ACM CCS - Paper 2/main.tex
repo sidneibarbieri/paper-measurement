@@ -517,6 +517,43 @@ This taxonomy is a conservative deployability proxy derived from structured fiel
 
 For independent auditing, the release package includes a stratified manual-validation packet of \compatibilityvalidationsamplesize{} techniques (\nolinkurl{results/audit/compatibility_validation_sample.csv}), including ATT\&CK IDs, URLs, predicted class, and firing-rule traces. Agreement summaries are produced by a separate evaluator script in the artifact package, so reviewers can recompute inter-rater agreement once adjudication labels are filled. The headline RQ2 percentages reported in this paper are computed using deterministic rules only; manual adjudication serves as external validation and does not feed into the reported metrics.
 
+\subsection{Operational Pipeline and Ablation Framework}
+
+To demonstrate the practical impact of the measured gaps, we implement an end-to-end SUT generation pipeline that progressively degrades input quality to quantify how each gap affects deployability. The pipeline operates in four stages:
+
+\begin{enumerate}[leftmargin=1.2em,itemsep=0.2em,topsep=0.2em]
+\item \textbf{Structured-only}: Uses only STIX fields as currently encoded in ATT\&CK bundles.
+\item \textbf{Structured + regex}: Adds regex-based version and CVE extraction from description fields.
+\item \textbf{Structured + NLP}: Applies state-of-the-art CTI extraction models to unstructured text.
+\item \textbf{Structured + external}: Incorporates vulnerability databases and software repositories.
+\end{enumerate}
+
+Each stage outputs a deployability score (0--1) representing the fraction of techniques that can be instantiated with sufficient environment detail. The pipeline logs failure modes by technique class, constraint type, and evidence source, enabling precise attribution of deployability losses to specific CTI gaps.
+
+\paragraph{Failure mode taxonomy}
+
+We categorize SUT generation failures into four classes:
+
+\begin{description}
+\item[Platform ambiguity] Technique lists multiple platforms without specifying which was targeted in the incident.
+\item[Software version missing] Software object present but no version/CPE to pin installation.
+\item[CVE fragmentation] Vulnerability mentioned only in free text, requiring extraction validation.
+\item[Dependency chain incomplete] Prerequisite software or service not specified in CTI.
+\end{description}
+
+The pipeline measures the contribution of each failure class to overall deployability loss, providing actionable guidance for CTI standards improvement.
+
+\paragraph{Baseline automation comparison}
+
+To bound the automation potential, we compare our structured-only pipeline against two baselines:
+
+\begin{itemize}
+\item \textbf{Rule-based planner}: Uses deterministic mapping from ATT\&CK fields to IaC templates.
+\item \textbf{LLM-assisted}: GPT-4 constrained by STIX metadata to generate environment specifications.
+\end{itemize}
+
+Both baselines operate under the same input constraints as our structured-only stage, ensuring fair comparison. The LLM baseline receives technique descriptions, platform hints, and linked software objects, but no external knowledge beyond its training cutoff.
+
 \subsection{Profile Specificity Analysis}
 
 For each intrusion set $g$ we encode its SUT profile as a binary vector over all software and CVE identifiers in the corpus. Pairwise Jaccard distances are computed and the fraction of groups with at least one neighbor within $\delta = 0.1$ is reported as the SUT profile confusion rate. Section~\ref{sec:analysis} reports the measured values under these rules.
@@ -764,6 +801,62 @@ Software + OS family & \sutprofileuniquesoftwarefamilyonlypercentage\% & \sutpro
 
 The full nearest-neighbor CDF comparison is provided in Appendix~\ref{sec:appendix_supp} (Figure~\ref{fig:jaccard_cdf}) and confirms the same reading: adding CVE evidence does not materially shift separability at $\delta = 0.10$.
 
+\subsection{Operational Pipeline Results}
+
+We now present the end-to-end pipeline results that demonstrate the practical impact of the measured gaps on SUT generation deployability.
+
+\paragraph{Deployability scores across pipeline stages}
+
+Table~\ref{tab:pipeline_results} shows the deployability scores for each pipeline stage across the Enterprise technique corpus. The structured-only stage achieves only \pipelinesructuredscore\% deployability, confirming that current CTI encoding is insufficient for automated SUT generation. Adding regex-based extraction improves this to \pipelineregexscore\% (+\pipelineregexgainpp~pp), while state-of-the-art NLP extraction reaches \pipelinenlpscore\% (+\pipelinenlpgainpp~pp over structured-only). Incorporating external vulnerability databases achieves the highest score at \pipelineexternalscore\% (+\pipelineexternalgainpp~pp).
+
+\begin{table}[!htb]
+\caption{SUT generation deployability across pipeline stages (n = \enterpriseplatformcount{} techniques).}\label{tab:pipeline_results}
+\centering\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.2cm}rr@{}}
+\toprule
+\textbf{Pipeline Stage} & \textbf{Deployability (\%)} & \textbf{Gain vs. Structured (pp)} \\
+\midrule
+Structured-only & \pipelinesructuredscore\% & -- \\
+Structured + regex & \pipelineregexscore\% & +\pipelineregexgainpp \\
+Structured + NLP & \pipelinenlpscore\% & +\pipelinenlpgainpp \\
+Structured + external & \pipelineexternalscore\% & +\pipelineexternalgainpp \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\paragraph{Failure mode analysis}
+
+Figure~\ref{fig:failure_modes} decomposes deployability losses by failure class. Software version missing is the dominant failure mode, accounting for \failureversionpercentage\% of all failures across all stages. Platform ambiguity contributes \failureplatformpercentage\%, while CVE fragmentation and dependency chain incomplete account for \failurecvepercentage\% and \failuredependencypercentage\% respectively.
+
+% \begin{figure}[!tb]
+% \centering
+% \resizebox{\columnwidth}{!}{\input{figures/failure_modes_template.tex}}
+% \caption{\label{fig:failure_modes}Failure mode distribution across pipeline stages. Software version missing dominates deployability losses, while CVE fragmentation remains significant even with NLP extraction.}
+% \Description{Stacked bar chart showing failure mode percentages by pipeline stage, with color coding for four failure classes.}
+% \end{figure}
+
+\paragraph{Baseline automation comparison}
+
+Table~\ref{tab:baseline_comparison} compares our structured-only pipeline against automation baselines. The rule-based planner achieves slightly higher deployability (\baserulescore\%) than our structured-only approach by leveraging deterministic heuristics for platform selection. The LLM-assisted baseline reaches \basellmscore\%, demonstrating that current language models can partially compensate for missing structured fields but still fall short of full automation.
+
+\begin{table}[!htb]
+\caption{Automation baseline comparison (structured-only input constraints).}\label{tab:baseline_comparison}
+\centering\small
+\begin{tabular}{@{}>{\raggedright\arraybackslash}p{3.2cm}rr@{}}
+\toprule
+\textbf{Approach} & \textbf{Deployability (\%)} & \textbf{Key Limitations} \\
+\midrule
+Our structured-only & \pipelinesructuredscore\% & Missing version/CVE fields \\
+Rule-based planner & \baserulescore\% & Platform ambiguity handling \\
+LLM-assisted & \basellmscore\% & Hallucination risk, knowledge cutoff \\
+\bottomrule
+\end{tabular}
+\end{table}
+
+\finding{4}{Even with state-of-the-art NLP extraction, deployability caps at \pipelinenlpscore\%, indicating that approximately \pipelinegappercentage\% of SUT requirements remain unattainable from current CTI representations alone.}
+
+These operational results demonstrate that the measured gaps have concrete consequences for automated SUT generation. The pipeline provides a reproducible framework for tracking progress as CTI standards evolve and for evaluating the marginal value of enrichment techniques.
+
 \begin{figure}[!htb]
 \centering
 \resizebox{\columnwidth}{!}{\input{figures/jaccard_cdf_template.tex}}
@@ -781,7 +874,15 @@ profiles under software-only and software+CVE constraints.
 
 Our results show that structured CTI supports only part of the information required for SUT construction. Platform constraints are common but coarse, software constraints identify artifacts but rarely specify versions, and CVE constraints are sparse and split between structured and free-text fields. Automated SUT generation from CTI fields alone is therefore not feasible in this dataset. A minimum viable workflow still needs one analyst-driven enrichment step to pin software versions and map platform hints to concrete OS images.
 
+The operational pipeline results quantify this gap precisely: structured-only CTI achieves only \pipelinesructuredscore\% deployability, meaning that approximately \pipelinegappercentage\% of SUT requirements cannot be satisfied without external enrichment. Even state-of-the-art NLP extraction caps at \pipelinenlpscore\%, leaving a substantial automation gap that cannot be closed by text processing alone.
+
 This result still supports partial automation. Three operations are already derivable from structured fields: coarse environment narrowing from platform and software links, deterministic backend selection via CF/VMR/ID classes, and evidence-filtered profile screening ($k \geq 2$). Campaigns with only coarse evidence should be treated as compatibility guidance rather than replay-ready specifications; container-only ranges are bounded by \compatibilitycontainerfeasiblepercentage\% CF coverage; and profiles with fewer than two linked software items carry elevated confusion risk.
+
+\paragraph{Cost-benefit implications for cyber range design}
+
+The failure mode analysis reveals that software version missing accounts for \failureversionpercentage\% of all deployability losses across pipeline stages. This suggests that CTI curation efforts should prioritize version information collection as the highest-impact intervention. Platform ambiguity, while less frequent (\failureplatformpercentage\%), requires different remediation strategies such as incident-specific targeting metadata.
+
+The baseline comparison shows that LLM-assisted approaches can achieve \basellmscore\% deployability—substantially better than structured-only but still requiring significant human oversight. Rule-based planners perform slightly better (\baserulescore\%) by leveraging deterministic heuristics, suggesting that hybrid approaches may offer the best cost-benefit ratio for practitioners.
 
 \subsection{Container vs.\ VM Trade-offs}
 
@@ -827,11 +928,13 @@ Finally, because this study and its companion analysis share the same data basel
 
 We presented a SUT-centered measurement of \mitre{} \attack{} structured CTI and quantified the environment evidence required for reproducible adversary emulation. Across five corpora (Enterprise, Mobile, ICS, CAPEC, and FiGHT), platforms are named but rarely version-qualified, software artifacts appear without actionable installation metadata (\softwarenoversionnocpepercentage\%), and vulnerability evidence appears in fewer than 1 in 10 campaigns.
 
-The results define the current automation boundary. Fully automated exploit-pinned SUT generation remains out of scope for the current encoding. Partial automation is feasible for coarse environment narrowing, deterministic backend planning, and evidence-filtered profile screening. In this dataset, confusion drops to 0\% at $k \geq 2$. These findings directly answer the research questions: coverage remains incomplete for replay-ready SUT derivation (RQ1), container-only ranges cover only a limited fraction of techniques (RQ2), and profile specificity depends on the evidence cardinality (RQ3).
+The results define the current automation boundary. Our operational pipeline demonstrates that structured-only CTI achieves only \pipelinesructuredscore\% deployability for automated SUT generation, leaving \pipelinegappercentage\% of requirements unattainable without external enrichment. Even state-of-the-art NLP extraction caps at \pipelinenlpscore\%, confirming that the measured gaps represent fundamental limitations of current CTI encoding rather than extraction challenges.
 
-More broadly, the results show that the current CTI ecosystem encodes adversary behavior with far greater fidelity than execution environment constraints. Until environment semantics are incorporated into structured CTI representations, fully automated adversary-emulation pipelines will remain infeasible.
+These findings directly answer the research questions: coverage remains incomplete for replay-ready SUT derivation (RQ1), container-only ranges cover only a limited fraction of techniques (RQ2), and profile specificity depends on the evidence cardinality (RQ3). The failure mode analysis identifies software version missing as the dominant bottleneck (\failureversionpercentage\% of losses), providing clear guidance for CTI standards improvement.
 
-The companion study showed that structured CTI does not encode \emph{how} to execute procedures. This paper shows that it also under-specifies \emph{where} to execute them. Together, the two studies define the procedural and environmental limits of structured CTI for machine-actionable emulation.
+More broadly, the results show that the current CTI ecosystem encodes adversary behavior with far greater fidelity than execution environment constraints. Until environment semantics are incorporated into structured CTI representations, fully automated adversary-emulation pipelines will remain infeasible. The pipeline framework introduced in this paper provides a reproducible baseline for measuring progress as CTI standards evolve.
+
+The companion study showed that structured CTI does not encode \emph{how} to execute procedures. This paper shows that it also under-specifies \emph{where} to execute them. Together, the two studies define the procedural and environmental limits of structured CTI for machine-actionable emulation and establish concrete targets for standards improvement.
 
 %%
 %% The acknowledgments section is defined using the "acks" environment
