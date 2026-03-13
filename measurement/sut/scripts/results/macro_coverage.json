@@ -1,7 +1,7 @@
 {
   "generated_macro_count": 162,
-  "manuscript_macro_count": 115,
-  "unused_generated_macro_count": 47,
+  "manuscript_macro_count": 125,
+  "unused_generated_macro_count": 37,
   "unused_generated_macros": [
     "capec_platform_percentage",
     "enterprise_software_link_pct",
@@ -31,24 +31,14 @@
     "sut_profile_confusion_software_cve_ci_high",
     "threshold_k_one_sample",
     "null_model_observed_minus_mean_pp",
-    "campaign_mean_technique_count",
-    "campaign_median_technique_count",
-    "campaign_mean_tactic_coverage",
-    "campaign_complete_killchain_count",
-    "campaign_complete_killchain_pct",
     "campaign_with_ia_and_exfil_count",
     "campaign_with_ia_and_exfil_pct",
-    "ieir_count",
-    "ieir_pct",
     "environment_campaign_specific_count",
     "environment_campaign_specific_pct",
     "environment_high_confidence_pct",
     "environment_medium_pct",
     "environment_low_pct",
     "environment_none_pct",
-    "evidence_convergence_count",
-    "evidence_convergence_rate_pct",
-    "evidence_divergence_count",
-    "evidence_mean_signal_count"
+    "evidence_convergence_count"
   ]
 }

@@ -626,6 +626,10 @@ macOS   & \campaignosmacoscount{} & \campaignosmacospctsignal\% & \campaignosmac
 
 Accordingly, OS-family evidence should not be used as a standalone attribution signal; in this paper, it is used only as environmental compatibility evidence for SUT construction. With platform coverage established, we next test whether software references provide enough precision to instantiate reproducible targets.
 
+\myparagraph{Campaign structural completeness and implicit-signal rate}
+
+The \enterpriseactivecampaigncount{} campaigns are structurally rich behavioral records: the average campaign uses \campaignmeantechniquecount{} techniques (median \campaignmediantechniquecount{}) spanning \campaignmeantacticcoverage{} ATT\&CK tactic categories, and \campaigncompletekillchaincount{} campaigns (\campaigncompletekillchainpct\%) exercise at least one technique in each of the initial-access, execution, discovery, lateral-movement, and exfiltration phases—a structurally complete kill-chain. Importantly, only \ieircount{} campaigns (\ieirpct\%) carry no explicit platform or software signal and rely entirely on tactic-level heuristics for environment inference. This confirms that the environment evidence gap measured throughout this paper cannot be attributed to sparse behavioral records: campaigns exhibit high tactical completeness yet still lack the deployment-grade specificity required for automated SUT construction.
+
 \subsection{Software Reference Rate (RQ1, RQ2)}
 % TASK (RQ1/RQ2 software):
 % 1) Measure software-link rates for campaigns and intrusion sets.
@@ -992,6 +996,8 @@ Construct validity is limited because our measurements capture only what is expl
 Campaign-level platform inference also uses software-linked platform tags as a proxy for compatibility. Multi-platform tools can inflate OS-family counts and do not prove the exact operating system targeted in a specific incident.
 
 Finally, because this study and its companion analysis share the same data baseline and extraction conventions, any upstream corpus bias propagates to both axes, thereby strengthening comparability but also coupling sensitivity to ATT\&CK curation artifacts.
+
+Multi-source signal consistency provides an additional internal validity check: \evidenceconvergenceratepct\% of campaigns show agreement across platform signals derived from technique metadata, software-linked platforms, and tactic-implied heuristics (mean signal count per campaign: \evidencemeansignalcount{}). The \evidencedivergencecount{} divergent cases are documented in the artifact (\nolinkurl{results/audit/evidence\_convergence.csv}) for independent verification.
 
 
 % ===============================================================
