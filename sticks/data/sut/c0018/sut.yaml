@@ -1,0 +1,361 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: C0018
+# Campaign ID: campaign--519ee082-8ab6-439b-988f-a8a3f02c8d30
+# Generated: 2026-03-06T15:01:08.760658
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__519ee082_8ab6_439b_988f_a8a3f02c8d30:
+  # Platform Variant: Windows Server 2019 (Domain-Joined)
+  os: [Windows Server 2019, Build 1809]
+  
+  services:
+    WMI: enabled
+    PowerShell: enabled
+    RemoteDesktop: enabled
+    SMB: enabled
+    IIS: enabled
+    # IIS required for Exploit Public-Facing Application
+    WinRM: enabled
+    # WinRM required for remote management
+    DHCP: enabled
+    DNS: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: true
+    inbound_rdp: allowed
+    inbound_smb: allowed
+    inbound_http: allowed
+    inbound_https: allowed
+    non_standard_ports: allowed
+    # Non-standard ports required for technique b18eae87-b469-4e14-b454-b171b416bc18
+
+  identity:
+    domain_controller_reachable: true
+    credential_cache: present
+    local_admin_accounts: present
+    domain_user_accounts: present
+
+  execution_environment:
+    shells:
+      - cmd.exe
+      - powershell.exe
+    rundll32: enabled
+    # Required for technique 045d0922-2310-4e60-b5e4-3302302cb3c5
+
+  installed_software:
+    - AvosLocker # S1053 ransomware sample (for impact technique)
+    - Sysinternals Suite
+    - PsExec
+    - WinSCP
+    - PuTTY
+    - Remote Desktop Client
+    - OpenSSH
+    - 7-Zip
+    - Cobalt Strike (trial/demo)
+    - AnyDesk
+    - TeamViewer
+    - Chrome
+    - Firefox
+    - Python 3.9
+    - .NET Framework 4.8
+    - Microsoft Visual C++ Redistributable 2015-2019
+    - Nmap
+    - Wireshark
+    - Notepad++
+    - WinRM
+    # Include open-source tools for lateral/ingress tool transfer
+
+  privilege: local_admin
+
+  domain_role: member_server
+
+  persistence_surfaces:
+    - Scheduled Task
+    - Registry Run Keys
+    - Service Creation
+    - WMI Event Subscription
+    - Startup Folder
+
+  security_controls:
+    WindowsDefender: enabled
+    EDR: disabled # EDR disabled for adversary emulation
+    Firewall: enabled
+    AppLocker: disabled
+    UAC: enabled
+    # AppLocker disabled to allow unrestricted execution
+
+  artifacts:
+    host:
+      directories:
+        - C:\Users
+        - C:\Windows\System32
+        - C:\ProgramData
+        - C:\Temp
+        - C:\AvosLocker
+      processes:
+        - rundll32.exe
+        - powershell.exe
+        - wmiprvse.exe
+        - svchost.exe
+        - explorer.exe
+        - AvosLocker.exe
+        - psexec.exe
+        - TeamViewer.exe
+        - AnyDesk.exe
+        - WinSCP.exe
+      registry_keys:
+        - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+        - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+        - HKLM\SYSTEM\CurrentControlSet\Services
+        - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\WMI
+    network:
+      protocols:
+        - TCP
+        - UDP
+        - HTTP
+        - HTTPS
+        - SMB
+        - RDP
+        - DNS
+        - ICMP
+        - SSH
+        - WebDAV
+        - LDAP
+        - NFS
+        - FTP
+        - CustomPort # For non-standard port technique
+
+  # Platform Variant: Linux (Ubuntu 20.04 LTS)
+  # -----------------------------------------------------
+  # This variant enables techniques for Linux, Containers, ESXi, IaaS, Network Devices
+  os: [Ubuntu Server 20.04 LTS]
+
+  services:
+    sshd: enabled
+    apache2: enabled
+    nginx: enabled
+    samba: enabled
+    cron: enabled
+    systemd: enabled
+    docker: enabled
+    # Docker required for container techniques
+    nfs: enabled
+    rsyslog: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+    inbound_ssh: allowed
+    inbound_http: allowed
+    inbound_https: allowed
+    inbound_smb: allowed
+    inbound_nfs: allowed
+    non_standard_ports: allowed
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: present
+    local_admin_accounts: present
+    sudoers: present
+
+  execution_environment:
+    shells:
+      - bash
+      - sh
+      - zsh
+      - python3
+    # Shells required for command obfuscation and execution
+
+  installed_software:
+    - AvosLocker # S1053 ransomware sample (Linux variant)
+    - nmap
+    - netcat
+    - curl
+    - wget
+    - python3
+    - openssh-server
+    - docker-ce
+    - samba
+    - cron
+    - rsyslog
+    - TeamViewer
+    - AnyDesk
+    - tcpdump
+    - git
+    - unzip
+    - sudo
+    - systemd
+    - screen
+    - tmux
+    - socat
+    - OpenVPN
+    # Include open-source tools for lateral/ingress tool transfer
+
+  privilege: sudo
+
+  domain_role: standalone_server
+
+  persistence_surfaces:
+    - Cron Job
+    - Systemd Service
+    - SSH Authorized Keys
+    - rc.local
+    - Docker Container Startup
+    - /etc/profile.d scripts
+
+  security_controls:
+    SELinux: disabled # Disabled for adversary emulation
+    AppArmor: disabled
+    Firewall: enabled
+    Fail2ban: disabled
+    Auditd: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /home
+        - /etc
+        - /var/log
+        - /tmp
+        - /opt/AvosLocker
+        - /var/lib/docker
+      processes:
+        - sshd
+        - apache2
+        - nginx
+        - AvosLocker
+        - cron
+        - systemd
+        - bash
+        - python3
+        - nmap
+        - netcat
+        - TeamViewer
+        - AnyDesk
+      files:
+        - /etc/passwd
+        - /etc/shadow
+        - /etc/ssh/sshd_config
+        - /etc/cron.d/AvosLocker
+        - /opt/AvosLocker/AvosLocker
+        - /var/log/syslog
+    network:
+      protocols:
+        - TCP
+        - UDP
+        - HTTP
+        - HTTPS
+        - SMB
+        - SSH
+        - NFS
+        - DNS
+        - ICMP
+        - CustomPort
+
+  # Platform Variant: macOS (Monterey 12.6)
+  # -----------------------------------------------------
+  os: [macOS Monterey 12.6]
+
+  services:
+    ssh: enabled
+    apache: enabled
+    cron: enabled
+    systemd: enabled
+    TeamViewer: enabled
+    AnyDesk: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+    inbound_ssh: allowed
+    inbound_http: allowed
+    inbound_https: allowed
+    non_standard_ports: allowed
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: present
+    local_admin_accounts: present
+
+  execution_environment:
+    shells:
+      - bash
+      - zsh
+      - python3
+
+  installed_software:
+    - AvosLocker # S1053 ransomware sample (macOS variant)
+    - nmap
+    - netcat
+    - python3
+    - TeamViewer
+    - AnyDesk
+    - cron
+    - ssh
+    - git
+    - unzip
+    - screen
+    - socat
+    - OpenVPN
+
+  privilege: admin
+
+  domain_role: standalone_workstation
+
+  persistence_surfaces:
+    - LaunchAgent
+    - LaunchDaemon
+    - Cron Job
+    - SSH Authorized Keys
+    - /etc/profile.d scripts
+
+  security_controls:
+    Gatekeeper: disabled # Disabled for adversary emulation
+    SIP: disabled
+    Firewall: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /Users
+        - /etc
+        - /var/log
+        - /tmp
+        - /opt/AvosLocker
+      processes:
+        - sshd
+        - apache
+        - AvosLocker
+        - cron
+        - bash
+        - python3
+        - nmap
+        - netcat
+        - TeamViewer
+        - AnyDesk
+      files:
+        - /etc/passwd
+        - /etc/ssh/sshd_config
+        - /etc/cron.d/AvosLocker
+        - /opt/AvosLocker/AvosLocker
+        - /var/log/system.log
+    network:
+      protocols:
+        - TCP
+        - UDP
+        - HTTP
+        - HTTPS
+        - SSH
+        - DNS
+        - ICMP
+        - CustomPort
+
+  # Platform Variant: ESXi (

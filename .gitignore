@@ -37,6 +37,9 @@ _pesquisa/
 generic_project_metodology/
 master_dataset.csv
 
+# Chat history with API keys (security)
+_chat_all_research.txt
+
 # Local LaTeX dependency dumps (not needed in git)
 ACM CCS - Paper 2/.texdeps/
 ACM CCS - Paper 2/.disabled-local-font-sty/

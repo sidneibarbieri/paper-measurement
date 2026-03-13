@@ -1,0 +1,370 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: RedDelta Modified PlugX Infection Chain Operations
+# Campaign ID: campaign--276671b5-5425-48db-ad65-c8c2564a969b
+# Generated: 2026-03-06T15:00:21.698923
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__276671b5_5425_48db_ad65_c8c2564a969b:
+
+  # --- Windows Variant ---
+  windows_10_22H2:
+    os: [Windows 10 Enterprise, Version 22H2]
+
+    services:
+      winrm: enabled
+      wmi: enabled
+      rpc: enabled
+      msiexec: enabled
+      powershell: enabled
+      mmc: enabled
+      certificate_services: enabled
+      dns_client: enabled
+      proxy: enabled
+      # Ensure Office Suite is installed for spearphishing
+      office_suite: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smb: enabled
+      web_proxy: enabled
+      # Required for C2 and web protocol techniques
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      kerberos: enabled
+      # Required for identity provider and credential techniques
+
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      execution_policy: unrestricted # Required for PowerShell execution
+      dll_loading: enabled # Required for DLL technique
+
+    installed_software:
+      - Microsoft Office 2021
+      - PlugX (for emulation)
+      - .NET Framework 4.8
+      - Msiexec (Windows Installer)
+      - PowerShell 7.2
+      - WinRAR 6.0
+      - Chrome 114
+      - Firefox 114
+      - OpenSSL 3.0
+      # Ensure Office Suite for spearphishing attachment/link
+
+    privilege: local_admin # Required for registry, DLL, and persistence
+
+    domain_role: workstation
+
+    persistence_surfaces:
+      - Registry Run Keys
+      - Startup Folder
+      - Scheduled Task
+      - Service (masqueraded)
+      - DLL side-loading
+
+    security_controls:
+      defender: disabled # Required for malware upload and execution
+      firewall: enabled
+      UAC: enabled
+      AMSI: disabled # For unrestricted PowerShell
+      certificate_validation: enabled
+      # Defender must be disabled for malware execution
+
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public
+          - C:\ProgramData
+          - C:\Windows\System32
+          - C:\Windows\Temp
+        processes:
+          - powershell.exe
+          - msiexec.exe
+          - plugx.exe
+          - svchost.exe
+          - explorer.exe
+          - mmc.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Services
+        files:
+          - C:\Users\Public\encrypted_file.dat
+          - C:\ProgramData\malicious.dll
+          - C:\Windows\Temp\malicious_attachment.docx
+          - C:\Windows\Temp\malicious_link.url
+      network:
+        protocols:
+          - HTTPS
+          - HTTP
+          - DNS
+          - SMB
+          - TCP
+          - UDP
+          - ICMP
+          - WebSockets
+          - Custom C2 (non-app layer)
+          - Proxy
+
+  # --- Linux Variant ---
+  ubuntu_22_04_lts:
+    os: [Ubuntu Linux 22.04 LTS]
+
+    services:
+      sshd: enabled
+      httpd: enabled
+      openssl: enabled
+      cron: enabled
+      proxy: enabled
+      # Office Suite (LibreOffice) for spearphishing
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      web_proxy: enabled
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+      local_auth: enabled
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      execution_policy: unrestricted
+      shared_object_loading: enabled # For DLL/SO techniques
+
+    installed_software:
+      - LibreOffice 7.3
+      - PlugX (for emulation)
+      - OpenSSL 3.0
+      - Chrome 114
+      - Firefox 114
+      - WinRAR 6.0
+      - proxychains-ng 4.14
+      # LibreOffice for spearphishing attachment/link
+
+    privilege: sudo # Required for persistence and masquerading
+
+    domain_role: workstation
+
+    persistence_surfaces:
+      - cron job
+      - systemd service (masqueraded)
+      - hidden file in ~/.config
+      - /etc/rc.local
+
+    security_controls:
+      apparmor: disabled
+      firewall: enabled
+      SELinux: disabled
+      certificate_validation: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /home/user/.config
+          - /etc/systemd/system
+          - /usr/local/bin
+        processes:
+          - bash
+          - plugx
+          - cron
+          - systemd
+          - libreoffice
+        files:
+          - /tmp/encrypted_file.dat
+          - /usr/local/bin/malicious_file
+          - /home/user/.config/hidden_file
+          - /tmp/malicious_attachment.odt
+          - /tmp/malicious_link.url
+      network:
+        protocols:
+          - HTTPS
+          - HTTP
+          - DNS
+          - TCP
+          - UDP
+          - ICMP
+          - WebSockets
+          - Custom C2 (non-app layer)
+          - Proxy
+
+  # --- macOS Variant ---
+  macos_ventura_13_4:
+    os: [macOS Ventura 13.4]
+
+    services:
+      ssh: enabled
+      httpd: enabled
+      proxy: enabled
+      # Office Suite (MS Office or iWork) for spearphishing
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      web_proxy: enabled
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+      local_auth: enabled
+
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+      code_signing: enabled # Required for code signing technique
+
+    installed_software:
+      - Microsoft Office 2021
+      - PlugX (for emulation)
+      - OpenSSL 3.0
+      - Chrome 114
+      - Firefox 114
+      - proxychains-ng 4.14
+      # Office Suite for spearphishing attachment/link
+
+    privilege: admin # Required for persistence and masquerading
+
+    domain_role: workstation
+
+    persistence_surfaces:
+      - LaunchAgent (masqueraded)
+      - LaunchDaemon
+      - cron job
+      - hidden file in ~/Library
+      - login item
+
+    security_controls:
+      gatekeeper: disabled # Required for malware execution
+      firewall: enabled
+      certificate_validation: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /Users/Shared
+          - /Library/LaunchAgents
+          - /Library/LaunchDaemons
+          - ~/Library
+        processes:
+          - zsh
+          - plugx
+          - cron
+          - Microsoft Word
+        files:
+          - /tmp/encrypted_file.dat
+          - /Users/Shared/malicious_file
+          - ~/Library/hidden_file
+          - /tmp/malicious_attachment.docx
+          - /tmp/malicious_link.url
+      network:
+        protocols:
+          - HTTPS
+          - HTTP
+          - DNS
+          - TCP
+          - UDP
+          - ICMP
+          - WebSockets
+          - Custom C2 (non-app layer)
+          - Proxy
+
+  # --- ESXi Variant ---
+  vmware_esxi_7_0:
+    os: [VMware ESXi 7.0]
+
+    services:
+      ssh: enabled
+      httpd: enabled
+      proxy: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - sh
+        - bash
+
+    installed_software:
+      - PlugX (for emulation)
+      - OpenSSL 3.0
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron job
+      - hidden file in /etc
+      - masqueraded service
+
+    security_controls:
+      firewall: enabled
+      certificate_validation: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /tmp
+        processes:
+          - sh
+          - plugx
+          - cron
+        files:
+          - /tmp/encrypted_file.dat
+          - /etc/hidden_file
+      network:
+        protocols:
+          - HTTPS
+          - HTTP
+          - DNS
+          - TCP
+          - UDP
+          - ICMP
+          - WebSockets
+          - Custom C2 (non-app layer)
+          - Proxy
+
+  # --- Network Devices Variant ---
+  cisco_ios_xe_17_3:
+    os: [Cisco IOS XE 17.3]
+
+    services:
+      ssh: enabled
+      http: enabled
+      proxy: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent

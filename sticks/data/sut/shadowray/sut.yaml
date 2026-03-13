@@ -1,0 +1,442 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: ShadowRay
+# Campaign ID: campaign--57899965-b171-48ed-bbb4-8faffa3d836a
+# Generated: 2026-03-06T15:06:54.515336
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__57899965_b171_48ed_bbb4_8faffa3d836a:
+
+  # --- Linux Variant ---
+  linux:
+    os: [Ubuntu 22.04 LTS]
+
+    services:
+      ssh: enabled
+      ray: enabled  # Ray AI framework vulnerable version required
+      cron: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_http: allowed  # Required for Exploit Public-Facing Application
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present  # For possible credential theft
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      python: present  # Required for Python technique
+      docker: present  # For container workloads if needed
+
+    installed_software:
+      - ray==2.6.3  # Unpatched, vulnerable to CVE-2023-48022
+      - python3.10
+      - openssh-server
+      - net-tools
+      - curl
+      - wget
+
+    privilege: root  # Required for /etc/shadow access and privilege escalation
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - ~/.bashrc
+      - /etc/profile
+      - systemd service
+
+    security_controls:
+      selinux: disabled
+      apparmor: disabled
+      antivirus: absent
+      firewall: permissive  # Allows inbound/outbound traffic
+
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /home
+        processes:
+          - ray
+          - sshd
+          - python3
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - ~/.bashrc
+          - /tmp/encrypted_payload  # For Encrypted/Encoded File technique
+      network:
+        protocols:
+          - tcp
+          - udp
+          - http
+          - https
+          - dns
+
+  # --- Windows Variant ---
+  windows:
+    os: [Windows Server 2022 Standard]
+
+    services:
+      WinRM: enabled
+      RayService: enabled  # Ray AI framework as Windows service
+      W32Time: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_http: allowed
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - powershell
+        - cmd
+      python: present
+
+    installed_software:
+      - Ray 2.6.3 (Windows build, unpatched)
+      - Python 3.10.x
+      - 7-Zip
+      - netcat
+      - curl
+
+    privilege: Administrator
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - Scheduled Task
+      - Registry Run Key
+      - Service
+
+    security_controls:
+      defender: disabled
+      firewall: permissive
+      applocker: disabled
+
+    artifacts:
+      host:
+        directories:
+          - C:\Program Files\Ray
+          - C:\Users\Public
+          - C:\Windows\Temp
+        processes:
+          - RayService.exe
+          - python.exe
+          - powershell.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - tcp
+          - udp
+          - http
+          - https
+          - dns
+
+  # --- macOS Variant ---
+  macos:
+    os: [macOS Ventura 13.5]
+
+    services:
+      ssh: enabled
+      ray: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_http: allowed
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+      python: present
+
+    installed_software:
+      - ray==2.6.3
+      - python3.10
+      - netcat
+      - curl
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - launchd
+      - ~/.zshrc
+      - ~/.bash_profile
+
+    security_controls:
+      gatekeeper: disabled
+      xprotect: disabled
+      firewall: permissive
+
+    artifacts:
+      host:
+        directories:
+          - /Applications/Ray
+          - /Users/Shared
+          - /tmp
+        processes:
+          - ray
+          - python3
+          - zsh
+        files:
+          - ~/.zshrc
+          - ~/.bash_profile
+          - /tmp/encrypted_payload
+      network:
+        protocols:
+          - tcp
+          - udp
+          - http
+          - https
+          - dns
+
+  # --- Containers Variant (Docker) ---
+  containers:
+    os: [Ubuntu 22.04 LTS (container base image)]
+
+    services:
+      ray: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_http: allowed
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - sh
+        - bash
+      python: present
+
+    installed_software:
+      - ray==2.6.3
+      - python3.10
+      - curl
+
+    privilege: root  # For privilege escalation and compute hijacking
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - ENTRYPOINT script
+      - /etc/profile
+
+    security_controls:
+      seccomp: unconfined
+      apparmor: disabled
+
+    artifacts:
+      host:
+        directories:
+          - /app
+          - /tmp
+        processes:
+          - ray
+          - python3
+        files:
+          - /tmp/encrypted_payload
+      network:
+        protocols:
+          - tcp
+          - udp
+          - http
+          - https
+          - dns
+
+  # --- ESXi Variant ---
+  esxi:
+    os: [VMware ESXi 7.0.3]
+
+    services:
+      ssh: enabled
+      ray: enabled  # Ray deployed as a VM or container
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_http: allowed
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - sh
+      python: present
+
+    installed_software:
+      - ray==2.6.3
+      - python3.10
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - rc.local
+
+    security_controls:
+      lockdown_mode: disabled
+      firewall: permissive
+
+    artifacts:
+      host:
+        directories:
+          - /etc/vmware
+          - /tmp
+        processes:
+          - ray
+          - python3
+        files:
+          - /tmp/encrypted_payload
+      network:
+        protocols:
+          - tcp
+          - udp
+          - http
+          - https
+          - dns
+
+  # --- IaaS Variant (e.g., AWS EC2) ---
+  iaas:
+    os: [Ubuntu 22.04 LTS]
+
+    services:
+      ray: enabled
+      ssh: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_http: allowed
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      python: present
+
+    installed_software:
+      - ray==2.6.3
+      - python3.10
+      - awscli
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - ~/.bashrc
+
+    security_controls:
+      security_groups: permissive  # Ingress/Egress open
+      firewall: permissive
+
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /home
+        processes:
+          - ray
+          - python3
+        files:
+          - /tmp/encrypted_payload
+      network:
+        protocols:
+          - tcp
+          - udp
+          - http
+          - https
+          - dns
+
+  # --- Network Devices Variant ---
+  network_devices:
+    os: [Cisco IOS XE 17.3]
+
+    services:
+      http_server: enabled
+      ssh: enabled
+      ray: enabled  # Ray deployed as container or via Linux subsystem
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_http: allowed
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - cli
+      python: present  # If supported (e.g., via Guest Shell)
+
+    installed_software:
+      - ray==2.6.3  # If supported
+      - python3.10
+
+    privilege: admin
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - startup-config
+      - guest-shell profile
+
+    security_controls:
+      aaa: disabled
+      firewall: permissive
+
+    artifacts:
+      host:
+        directories:
+          - flash:
+          - bootflash:
+        processes:
+          - ray
+         

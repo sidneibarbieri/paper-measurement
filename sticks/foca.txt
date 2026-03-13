@@ -1,0 +1,1465 @@
+🔍 Analyzing direct techniques in: enterprise-attack.json
+
+📄 FILE: enterprise-attack.json
+================================================================================
+📊 DIRECT TECHNIQUES STATISTICS:
+   ├── Total campaigns: 52
+   ├── Campaigns with direct techniques: 51 (98.1%)
+   ├── Total direct techniques: 1019
+   └── Average direct techniques per campaign: 19.6
+
+🎯 CAMPAIGNS WITH DIRECT TECHNIQUES:
+--------------------------------------------------------------------------------
+
+ 1. SolarWinds Compromise
+    🔖 External ID: C0024
+    🔧 Direct techniques: 71
+    📝 The [SolarWinds Compromise](https://attack.mitre.org/campaigns/C0024) was a sophisticated supply chain cyber operation conducted by [APT29](https:/...
+    🎯 Techniques: T1003.006, T1005, T1016.001, T1018, T1021.001, T1021.002, T1021.006, T1036.004, T1036.005, T1047, T1048.002, T1053.005, T1057, T1059.001, T1059.003, T1059.005, T1069, T1069.002, T1070, T1070.004, T1070.006, T1070.008, T1071.001, T1074.002, T1078, T1078.002, T1078.003, T1078.004, T1083, T1087, T1087.002, T1090.001, T1098.001, T1098.002, T1098.003, T1098.005, T1105, T1114.002, T1133, T1140, T1190, T1195.002, T1199, T1213, T1213.003, T1218.011, T1482, T1484.002, T1539, T1546.003, T1550, T1550.001, T1550.004, T1552.004, T1553.002, T1555, T1555.003, T1558.003, T1560.001, T1562.001, T1562.002, T1562.004, T1568, T1583.001, T1584.001, T1587.001, T1589.001, T1606.001, T1606.002, T1665, T1680
+    🔍 Technique details:
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1606.002: SAML Tokens (via 'uses' relationship)
+        • T1078.004: Cloud Accounts (via 'uses' relationship)
+        • T1584.001: Domains (via 'uses' relationship)
+        • T1555.003: Credentials from Web Browsers (via 'uses' relationship)
+        • T1016.001: Internet Connection Discovery (via 'uses' relationship)
+        • T1550: Use Alternate Authentication Material (via 'uses' relationship)
+        • T1087.002: Domain Account (via 'uses' relationship)
+        • T1069.002: Domain Groups (via 'uses' relationship)
+        • T1114.002: Remote Email Collection (via 'uses' relationship)
+        • T1057: Process Discovery (via 'uses' relationship)
+        • T1090.001: Internal Proxy (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1021.002: SMB/Windows Admin Shares (via 'uses' relationship)
+        • T1213: Data from Information Repositories (via 'uses' relationship)
+        • T1568: Dynamic Resolution (via 'uses' relationship)
+        • T1589.001: Credentials (via 'uses' relationship)
+        • T1552.004: Private Keys (via 'uses' relationship)
+        • T1665: Hide Infrastructure (via 'uses' relationship)
+        • T1078.002: Domain Accounts (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1021.001: Remote Desktop Protocol (via 'uses' relationship)
+        • T1098.002: Additional Email Delegate Permissions (via 'uses' relationship)
+        • T1562.001: Disable or Modify Tools (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1539: Steal Web Session Cookie (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1213.003: Code Repositories (via 'uses' relationship)
+        • T1546.003: Windows Management Instrumentation Event Subscr... (via 'uses' relationship)
+        • T1218.011: Rundll32 (via 'uses' relationship)
+        • T1074.002: Remote Data Staging (via 'uses' relationship)
+        • T1199: Trusted Relationship (via 'uses' relationship)
+        • T1133: External Remote Services (via 'uses' relationship)
+        • T1098.005: Device Registration (via 'uses' relationship)
+        • T1606.001: Web Cookies (via 'uses' relationship)
+        • T1550.004: Web Session Cookie (via 'uses' relationship)
+        • T1083: File and Directory Discovery (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1069: Permission Groups Discovery (via 'uses' relationship)
+        • T1021.006: Windows Remote Management (via 'uses' relationship)
+        • T1018: Remote System Discovery (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1098.003: Additional Cloud Roles (via 'uses' relationship)
+        • T1553.002: Code Signing (via 'uses' relationship)
+        • T1550.001: Application Access Token (via 'uses' relationship)
+        • T1558.003: Kerberoasting (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1070.006: Timestomp (via 'uses' relationship)
+        • T1078.003: Local Accounts (via 'uses' relationship)
+        • T1070: Indicator Removal (via 'uses' relationship)
+        • T1680: Local Storage Discovery (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1098.001: Additional Cloud Credentials (via 'uses' relationship)
+        • T1036.004: Masquerade Task or Service (via 'uses' relationship)
+        • T1003.006: DCSync (via 'uses' relationship)
+        • T1562.002: Disable Windows Event Logging (via 'uses' relationship)
+        • T1195.002: Compromise Software Supply Chain (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1482: Domain Trust Discovery (via 'uses' relationship)
+        • T1555: Credentials from Password Stores (via 'uses' relationship)
+        • T1087: Account Discovery (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1070.008: Clear Mailbox Data (via 'uses' relationship)
+        • T1484.002: Trust Modification (via 'uses' relationship)
+        • T1562.004: Disable or Modify System Firewall (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1048.002: Exfiltration Over Asymmetric Encrypted Non-C2 P... (via 'uses' relationship)
+        • T1078: Valid Accounts (via 'uses' relationship)
+        • T1560.001: Archive via Utility (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+ 2. Operation Wocao
+    🔖 External ID: C0014
+    🔧 Direct techniques: 70
+    📝 [Operation Wocao](https://attack.mitre.org/campaigns/C0014) was a cyber espionage campaign that targeted organizations around the world, including ...
+    🎯 Techniques: T1001, T1003.001, T1003.006, T1005, T1007, T1012, T1016, T1016.001, T1018, T1021.002, T1027.005, T1027.010, T1033, T1036.005, T1041, T1046, T1047, T1049, T1053.005, T1055, T1056.001, T1057, T1059.001, T1059.003, T1059.005, T1059.006, T1069.001, T1070.001, T1070.004, T1071.001, T1074.001, T1078, T1078.002, T1078.003, T1082, T1083, T1087.002, T1090, T1090.001, T1090.003, T1095, T1105, T1106, T1111, T1112, T1115, T1119, T1120, T1124, T1133, T1135, T1190, T1505.003, T1518, T1518.001, T1552.004, T1555.005, T1558.003, T1560.001, T1562.004, T1569.002, T1570, T1571, T1573.002, T1583.004, T1585.002, T1587.001, T1588.002, T1589, T1680
+    🔍 Technique details:
+        • T1012: Query Registry (via 'uses' relationship)
+        • T1518.001: Security Software Discovery (via 'uses' relationship)
+        • T1003.001: LSASS Memory (via 'uses' relationship)
+        • T1056.001: Keylogging (via 'uses' relationship)
+        • T1119: Automated Collection (via 'uses' relationship)
+        • T1049: System Network Connections Discovery (via 'uses' relationship)
+        • T1585.002: Email Accounts (via 'uses' relationship)
+        • T1124: System Time Discovery (via 'uses' relationship)
+        • T1571: Non-Standard Port (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1573.002: Asymmetric Cryptography (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1018: Remote System Discovery (via 'uses' relationship)
+        • T1552.004: Private Keys (via 'uses' relationship)
+        • T1555.005: Password Managers (via 'uses' relationship)
+        • T1583.004: Server (via 'uses' relationship)
+        • T1115: Clipboard Data (via 'uses' relationship)
+        • T1069.001: Local Groups (via 'uses' relationship)
+        • T1106: Native API (via 'uses' relationship)
+        • T1560.001: Archive via Utility (via 'uses' relationship)
+        • T1090.003: Multi-hop Proxy (via 'uses' relationship)
+        • T1033: System Owner/User Discovery (via 'uses' relationship)
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1111: Multi-Factor Authentication Interception (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1569.002: Service Execution (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1078.002: Domain Accounts (via 'uses' relationship)
+        • T1055: Process Injection (via 'uses' relationship)
+        • T1016.001: Internet Connection Discovery (via 'uses' relationship)
+        • T1087.002: Domain Account (via 'uses' relationship)
+        • T1090: Proxy (via 'uses' relationship)
+        • T1112: Modify Registry (via 'uses' relationship)
+        • T1589: Gather Victim Identity Information (via 'uses' relationship)
+        • T1083: File and Directory Discovery (via 'uses' relationship)
+        • T1059.006: Python (via 'uses' relationship)
+        • T1090.001: Internal Proxy (via 'uses' relationship)
+        • T1078: Valid Accounts (via 'uses' relationship)
+        • T1021.002: SMB/Windows Admin Shares (via 'uses' relationship)
+        • T1558.003: Kerberoasting (via 'uses' relationship)
+        • T1570: Lateral Tool Transfer (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1001: Data Obfuscation (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1135: Network Share Discovery (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1562.004: Disable or Modify System Firewall (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1041: Exfiltration Over C2 Channel (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1027.005: Indicator Removal from Tools (via 'uses' relationship)
+        • T1007: System Service Discovery (via 'uses' relationship)
+        • T1003.006: DCSync (via 'uses' relationship)
+        • T1120: Peripheral Device Discovery (via 'uses' relationship)
+        • T1095: Non-Application Layer Protocol (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1027.010: Command Obfuscation (via 'uses' relationship)
+        • T1046: Network Service Discovery (via 'uses' relationship)
+        • T1518: Software Discovery (via 'uses' relationship)
+        • T1680: Local Storage Discovery (via 'uses' relationship)
+        • T1016: System Network Configuration Discovery (via 'uses' relationship)
+        • T1070.001: Clear Windows Event Logs (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1133: External Remote Services (via 'uses' relationship)
+        • T1057: Process Discovery (via 'uses' relationship)
+        • T1078.003: Local Accounts (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+ 3. Operation Dream Job
+    🔖 External ID: C0022
+    🔧 Direct techniques: 55
+    📝 [Operation Dream Job](https://attack.mitre.org/campaigns/C0022) was a cyber espionage operation likely conducted by [Lazarus Group](https://attack....
+    🎯 Techniques: T1005, T1027.002, T1027.013, T1036.008, T1041, T1047, T1053.005, T1059.001, T1059.003, T1059.005, T1070.004, T1071.001, T1083, T1087.002, T1105, T1106, T1110, T1204.001, T1204.002, T1218.010, T1218.011, T1220, T1221, T1497.001, T1497.003, T1505.004, T1534, T1547.001, T1553.002, T1560.001, T1566.001, T1566.002, T1566.003, T1567.002, T1573.001, T1583.001, T1583.004, T1583.006, T1584.001, T1584.004, T1585.001, T1585.002, T1587.001, T1587.002, T1588.002, T1588.003, T1589, T1591, T1591.004, T1593.001, T1608.001, T1608.002, T1614.001, T1622, T1656
+    🔍 Technique details:
+        • T1608.001: Upload Malware (via 'uses' relationship)
+        • T1218.011: Rundll32 (via 'uses' relationship)
+        • T1614.001: System Language Discovery (via 'uses' relationship)
+        • T1608.002: Upload Tool (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1584.001: Domains (via 'uses' relationship)
+        • T1585.002: Email Accounts (via 'uses' relationship)
+        • T1106: Native API (via 'uses' relationship)
+        • T1497.001: System Checks (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1036.008: Masquerade File Type (via 'uses' relationship)
+        • T1547.001: Registry Run Keys / Startup Folder (via 'uses' relationship)
+        • T1585.001: Social Media Accounts (via 'uses' relationship)
+        • T1497.003: Time Based Checks (via 'uses' relationship)
+        • T1221: Template Injection (via 'uses' relationship)
+        • T1553.002: Code Signing (via 'uses' relationship)
+        • T1589: Gather Victim Identity Information (via 'uses' relationship)
+        • T1110: Brute Force (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1204.001: Malicious Link (via 'uses' relationship)
+        • T1573.001: Symmetric Cryptography (via 'uses' relationship)
+        • T1583.004: Server (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1591: Gather Victim Org Information (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1087.002: Domain Account (via 'uses' relationship)
+        • T1588.003: Code Signing Certificates (via 'uses' relationship)
+        • T1656: Impersonation (via 'uses' relationship)
+        • T1505.004: IIS Components (via 'uses' relationship)
+        • T1566.001: Spearphishing Attachment (via 'uses' relationship)
+        • T1587.002: Code Signing Certificates (via 'uses' relationship)
+        • T1583.006: Web Services (via 'uses' relationship)
+        • T1041: Exfiltration Over C2 Channel (via 'uses' relationship)
+        • T1534: Internal Spearphishing (via 'uses' relationship)
+        • T1566.003: Spearphishing via Service (via 'uses' relationship)
+        • T1591.004: Identify Roles (via 'uses' relationship)
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1083: File and Directory Discovery (via 'uses' relationship)
+        • T1567.002: Exfiltration to Cloud Storage (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1622: Debugger Evasion (via 'uses' relationship)
+        • T1027.002: Software Packing (via 'uses' relationship)
+        • T1218.010: Regsvr32 (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1220: XSL Script Processing (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1566.002: Spearphishing Link (via 'uses' relationship)
+        • T1593.001: Social Media (via 'uses' relationship)
+        • T1560.001: Archive via Utility (via 'uses' relationship)
+        • T1584.004: Server (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+ 4. SharePoint ToolShell Exploitation
+    🔖 External ID: C0058
+    🔧 Direct techniques: 35
+    📝 The [SharePoint ToolShell Exploitation](https://attack.mitre.org/campaigns/C0058) campaign was conducted in July 2025 and encompassed the first wav...
+    🎯 Techniques: T1003.001, T1005, T1027.002, T1027.010, T1033, T1041, T1047, T1053.005, T1059.001, T1059.003, T1071.001, T1074.001, T1082, T1083, T1090, T1105, T1112, T1119, T1140, T1190, T1484.001, T1486, T1505.003, T1505.004, T1552.001, T1562.001, T1569.002, T1570, T1572, T1583.001, T1585.002, T1588.002, T1595.002, T1620, T1657
+    🔍 Technique details:
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1027.002: Software Packing (via 'uses' relationship)
+        • T1033: System Owner/User Discovery (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1552.001: Credentials In Files (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1657: Financial Theft (via 'uses' relationship)
+        • T1003.001: LSASS Memory (via 'uses' relationship)
+        • T1562.001: Disable or Modify Tools (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1083: File and Directory Discovery (via 'uses' relationship)
+        • T1484.001: Group Policy Modification (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1585.002: Email Accounts (via 'uses' relationship)
+        • T1572: Protocol Tunneling (via 'uses' relationship)
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1486: Data Encrypted for Impact (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1119: Automated Collection (via 'uses' relationship)
+        • T1505.004: IIS Components (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1090: Proxy (via 'uses' relationship)
+        • T1027.010: Command Obfuscation (via 'uses' relationship)
+        • T1112: Modify Registry (via 'uses' relationship)
+        • T1569.002: Service Execution (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1595.002: Vulnerability Scanning (via 'uses' relationship)
+        • T1620: Reflective Code Loading (via 'uses' relationship)
+        • T1570: Lateral Tool Transfer (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1041: Exfiltration Over C2 Channel (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+ 5. C0015
+    🔖 External ID: C0015
+    🔧 Direct techniques: 34
+    📝 [C0015](https://attack.mitre.org/campaigns/C0015) was a ransomware intrusion during which the unidentified attackers used [Bazar](https://attack.mi...
+    🎯 Techniques: T1005, T1016, T1018, T1021.001, T1027, T1030, T1036, T1039, T1047, T1055.001, T1057, T1059.003, T1059.005, T1059.007, T1069.001, T1069.002, T1074.001, T1083, T1105, T1124, T1135, T1204.002, T1218.005, T1218.010, T1218.011, T1219.002, T1482, T1486, T1553.002, T1566.001, T1567.002, T1570, T1588.001, T1588.002
+    🔍 Technique details:
+        • T1135: Network Share Discovery (via 'uses' relationship)
+        • T1083: File and Directory Discovery (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1069.001: Local Groups (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1057: Process Discovery (via 'uses' relationship)
+        • T1566.001: Spearphishing Attachment (via 'uses' relationship)
+        • T1218.011: Rundll32 (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1069.002: Domain Groups (via 'uses' relationship)
+        • T1567.002: Exfiltration to Cloud Storage (via 'uses' relationship)
+        • T1553.002: Code Signing (via 'uses' relationship)
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1486: Data Encrypted for Impact (via 'uses' relationship)
+        • T1055.001: Dynamic-link Library Injection (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1027: Obfuscated Files or Information (via 'uses' relationship)
+        • T1588.001: Malware (via 'uses' relationship)
+        • T1218.010: Regsvr32 (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1030: Data Transfer Size Limits (via 'uses' relationship)
+        • T1124: System Time Discovery (via 'uses' relationship)
+        • T1021.001: Remote Desktop Protocol (via 'uses' relationship)
+        • T1039: Data from Network Shared Drive (via 'uses' relationship)
+        • T1219.002: Remote Desktop Software (via 'uses' relationship)
+        • T1016: System Network Configuration Discovery (via 'uses' relationship)
+        • T1018: Remote System Discovery (via 'uses' relationship)
+        • T1570: Lateral Tool Transfer (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1059.007: JavaScript (via 'uses' relationship)
+        • T1482: Domain Trust Discovery (via 'uses' relationship)
+        • T1036: Masquerading (via 'uses' relationship)
+        • T1218.005: Mshta (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+ 6. Operation CuckooBees
+    🔖 External ID: C0012
+    🔧 Direct techniques: 33
+    📝 [Operation CuckooBees](https://attack.mitre.org/campaigns/C0012) was a cyber espionage campaign targeting technology and manufacturing companies in...
+    🎯 Techniques: T1003.002, T1005, T1007, T1016, T1018, T1027.010, T1027.011, T1033, T1036.005, T1049, T1053.005, T1057, T1059.003, T1059.005, T1069.001, T1071.001, T1078.002, T1082, T1083, T1087.001, T1087.002, T1120, T1124, T1133, T1135, T1190, T1201, T1505.003, T1543.003, T1547.006, T1560.001, T1574.001, T1588.002
+    🔍 Technique details:
+        • T1120: Peripheral Device Discovery (via 'uses' relationship)
+        • T1078.002: Domain Accounts (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1124: System Time Discovery (via 'uses' relationship)
+        • T1016: System Network Configuration Discovery (via 'uses' relationship)
+        • T1560.001: Archive via Utility (via 'uses' relationship)
+        • T1543.003: Windows Service (via 'uses' relationship)
+        • T1018: Remote System Discovery (via 'uses' relationship)
+        • T1133: External Remote Services (via 'uses' relationship)
+        • T1083: File and Directory Discovery (via 'uses' relationship)
+        • T1201: Password Policy Discovery (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1069.001: Local Groups (via 'uses' relationship)
+        • T1027.011: Fileless Storage (via 'uses' relationship)
+        • T1027.010: Command Obfuscation (via 'uses' relationship)
+        • T1087.002: Domain Account (via 'uses' relationship)
+        • T1087.001: Local Account (via 'uses' relationship)
+        • T1033: System Owner/User Discovery (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1049: System Network Connections Discovery (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1003.002: Security Account Manager (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1135: Network Share Discovery (via 'uses' relationship)
+        • T1574.001: DLL (via 'uses' relationship)
+        • T1057: Process Discovery (via 'uses' relationship)
+        • T1547.006: Kernel Modules and Extensions (via 'uses' relationship)
+        • T1007: System Service Discovery (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+ 7. Cutting Edge
+    🔖 External ID: C0029
+    🔧 Direct techniques: 31
+    📝 [Cutting Edge](https://attack.mitre.org/campaigns/C0029) was a campaign conducted by suspected China-nexus espionage actors, variously identified a...
+    🎯 Techniques: T1003.001, T1003.003, T1005, T1021.001, T1021.002, T1021.004, T1027.013, T1055, T1056.001, T1056.003, T1059, T1059.006, T1070, T1070.004, T1070.006, T1071.004, T1078.002, T1082, T1095, T1105, T1190, T1205, T1505.003, T1554, T1560.001, T1562.001, T1572, T1584.008, T1588.002, T1594, T1595.002
+    🔍 Technique details:
+        • T1070: Indicator Removal (via 'uses' relationship)
+        • T1021.004: SSH (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1003.001: LSASS Memory (via 'uses' relationship)
+        • T1055: Process Injection (via 'uses' relationship)
+        • T1205: Traffic Signaling (via 'uses' relationship)
+        • T1595.002: Vulnerability Scanning (via 'uses' relationship)
+        • T1594: Search Victim-Owned Websites (via 'uses' relationship)
+        • T1021.001: Remote Desktop Protocol (via 'uses' relationship)
+        • T1095: Non-Application Layer Protocol (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1070.006: Timestomp (via 'uses' relationship)
+        • T1554: Compromise Host Software Binary (via 'uses' relationship)
+        • T1071.004: DNS (via 'uses' relationship)
+        • T1059: Command and Scripting Interpreter (via 'uses' relationship)
+        • T1003.003: NTDS (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1560.001: Archive via Utility (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1572: Protocol Tunneling (via 'uses' relationship)
+        • T1059.006: Python (via 'uses' relationship)
+        • T1584.008: Network Devices (via 'uses' relationship)
+        • T1021.002: SMB/Windows Admin Shares (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1078.002: Domain Accounts (via 'uses' relationship)
+        • T1056.003: Web Portal Capture (via 'uses' relationship)
+        • T1562.001: Disable or Modify Tools (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1056.001: Keylogging (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+ 8. Night Dragon
+    🔖 External ID: C0002
+    🔧 Direct techniques: 29
+    📝 [Night Dragon](https://attack.mitre.org/campaigns/C0002) was a cyber espionage campaign that targeted oil, energy, and petrochemical companies, alo...
+    🎯 Techniques: T1003.002, T1005, T1008, T1027.002, T1027.013, T1033, T1059.003, T1071.001, T1074.002, T1078, T1078.002, T1083, T1105, T1110.002, T1112, T1114.001, T1133, T1190, T1204.001, T1219, T1550.002, T1562.001, T1566.002, T1568, T1583.004, T1584.004, T1588.001, T1588.002, T1608.001
+    🔍 Technique details:
+        • T1204.001: Malicious Link (via 'uses' relationship)
+        • T1133: External Remote Services (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1588.001: Malware (via 'uses' relationship)
+        • T1078.002: Domain Accounts (via 'uses' relationship)
+        • T1608.001: Upload Malware (via 'uses' relationship)
+        • T1566.002: Spearphishing Link (via 'uses' relationship)
+        • T1112: Modify Registry (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1078: Valid Accounts (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1027.002: Software Packing (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1033: System Owner/User Discovery (via 'uses' relationship)
+        • T1114.001: Local Email Collection (via 'uses' relationship)
+        • T1008: Fallback Channels (via 'uses' relationship)
+        • T1003.002: Security Account Manager (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1083: File and Directory Discovery (via 'uses' relationship)
+        • T1583.004: Server (via 'uses' relationship)
+        • T1550.002: Pass the Hash (via 'uses' relationship)
+        • T1110.002: Password Cracking (via 'uses' relationship)
+        • T1219: Remote Access Tools (via 'uses' relationship)
+        • T1568: Dynamic Resolution (via 'uses' relationship)
+        • T1584.004: Server (via 'uses' relationship)
+        • T1074.002: Remote Data Staging (via 'uses' relationship)
+        • T1562.001: Disable or Modify Tools (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+ 9. C0017
+    🔖 External ID: C0017
+    🔧 Direct techniques: 29
+    📝 [C0017](https://attack.mitre.org/campaigns/C0017) was an [APT41](https://attack.mitre.org/groups/G0096) campaign conducted between May 2021 and Feb...
+    🎯 Techniques: T1001.003, T1003.002, T1005, T1016, T1027, T1027.002, T1033, T1036.004, T1036.005, T1041, T1048.003, T1053.005, T1059.003, T1059.007, T1071.001, T1074.001, T1090, T1102, T1102.001, T1105, T1134, T1140, T1190, T1505.003, T1560.003, T1567, T1574, T1588.002, T1680
+    🔍 Technique details:
+        • T1033: System Owner/User Discovery (via 'uses' relationship)
+        • T1036.004: Masquerade Task or Service (via 'uses' relationship)
+        • T1016: System Network Configuration Discovery (via 'uses' relationship)
+        • T1680: Local Storage Discovery (via 'uses' relationship)
+        • T1027.002: Software Packing (via 'uses' relationship)
+        • T1027: Obfuscated Files or Information (via 'uses' relationship)
+        • T1041: Exfiltration Over C2 Channel (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1003.002: Security Account Manager (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1048.003: Exfiltration Over Unencrypted Non-C2 Protocol (via 'uses' relationship)
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1090: Proxy (via 'uses' relationship)
+        • T1574: Hijack Execution Flow (via 'uses' relationship)
+        • T1059.007: JavaScript (via 'uses' relationship)
+        • T1102.001: Dead Drop Resolver (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1001.003: Protocol or Service Impersonation (via 'uses' relationship)
+        • T1567: Exfiltration Over Web Service (via 'uses' relationship)
+        • T1134: Access Token Manipulation (via 'uses' relationship)
+        • T1560.003: Archive via Custom Method (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1102: Web Service (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+10. Operation Honeybee
+    🔖 External ID: C0006
+    🔧 Direct techniques: 28
+    📝 [Operation Honeybee](https://attack.mitre.org/campaigns/C0006) was a campaign that targeted humanitarian aid and inter-Korean affairs organizations...
+    🎯 Techniques: T1005, T1027.013, T1036, T1036.005, T1041, T1057, T1059.003, T1059.005, T1070.004, T1071.002, T1074.001, T1082, T1083, T1105, T1106, T1112, T1140, T1204.002, T1543.003, T1548.002, T1553.002, T1560.001, T1569.002, T1574.011, T1583.001, T1583.004, T1585.002, T1588.004
+    🔍 Technique details:
+        • T1585.002: Email Accounts (via 'uses' relationship)
+        • T1106: Native API (via 'uses' relationship)
+        • T1083: File and Directory Discovery (via 'uses' relationship)
+        • T1553.002: Code Signing (via 'uses' relationship)
+        • T1041: Exfiltration Over C2 Channel (via 'uses' relationship)
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1071.002: File Transfer Protocols (via 'uses' relationship)
+        • T1574.011: Services Registry Permissions Weakness (via 'uses' relationship)
+        • T1588.004: Digital Certificates (via 'uses' relationship)
+        • T1560.001: Archive via Utility (via 'uses' relationship)
+        • T1569.002: Service Execution (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1112: Modify Registry (via 'uses' relationship)
+        • T1543.003: Windows Service (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1548.002: Bypass User Account Control (via 'uses' relationship)
+        • T1583.004: Server (via 'uses' relationship)
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1057: Process Discovery (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1036: Masquerading (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+11. C0027
+    🔖 External ID: C0027
+    🔧 Direct techniques: 28
+    📝 [C0027](https://attack.mitre.org/campaigns/C0027) was a financially-motivated campaign linked to [Scattered Spider](https://attack.mitre.org/groups...
+    🎯 Techniques: T1003.006, T1021.007, T1046, T1047, T1069.003, T1078.004, T1087.003, T1087.004, T1090, T1098.001, T1098.003, T1098.005, T1102, T1105, T1133, T1190, T1213.002, T1219.002, T1530, T1566.004, T1572, T1578.002, T1588.002, T1589.001, T1598.001, T1598.004, T1621, T1656
+    🔍 Technique details:
+        • T1572: Protocol Tunneling (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1087.004: Cloud Account (via 'uses' relationship)
+        • T1102: Web Service (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1069.003: Cloud Groups (via 'uses' relationship)
+        • T1003.006: DCSync (via 'uses' relationship)
+        • T1598.004: Spearphishing Voice (via 'uses' relationship)
+        • T1578.002: Create Cloud Instance (via 'uses' relationship)
+        • T1021.007: Cloud Services (via 'uses' relationship)
+        • T1046: Network Service Discovery (via 'uses' relationship)
+        • T1098.003: Additional Cloud Roles (via 'uses' relationship)
+        • T1598.001: Spearphishing Service (via 'uses' relationship)
+        • T1621: Multi-Factor Authentication Request Generation (via 'uses' relationship)
+        • T1087.003: Email Account (via 'uses' relationship)
+        • T1078.004: Cloud Accounts (via 'uses' relationship)
+        • T1213.002: Sharepoint (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1219.002: Remote Desktop Software (via 'uses' relationship)
+        • T1656: Impersonation (via 'uses' relationship)
+        • T1098.005: Device Registration (via 'uses' relationship)
+        • T1133: External Remote Services (via 'uses' relationship)
+        • T1098.001: Additional Cloud Credentials (via 'uses' relationship)
+        • T1530: Data from Cloud Storage (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1589.001: Credentials (via 'uses' relationship)
+        • T1566.004: Spearphishing Voice (via 'uses' relationship)
+        • T1090: Proxy (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+12. Frankenstein
+    🔖 External ID: C0001
+    🔧 Direct techniques: 27
+    📝 [Frankenstein](https://attack.mitre.org/campaigns/C0001) was described by security researchers as a highly-targeted campaign conducted by moderatel...
+    🎯 Techniques: T1005, T1016, T1020, T1027.010, T1033, T1036.004, T1041, T1047, T1053.005, T1057, T1059.001, T1059.003, T1059.005, T1071.001, T1082, T1105, T1119, T1127.001, T1140, T1203, T1204.002, T1221, T1497.001, T1518.001, T1566.001, T1573.001, T1588.002
+    🔍 Technique details:
+        • T1057: Process Discovery (via 'uses' relationship)
+        • T1027.010: Command Obfuscation (via 'uses' relationship)
+        • T1020: Automated Exfiltration (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1518.001: Security Software Discovery (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1566.001: Spearphishing Attachment (via 'uses' relationship)
+        • T1497.001: System Checks (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1221: Template Injection (via 'uses' relationship)
+        • T1203: Exploitation for Client Execution (via 'uses' relationship)
+        • T1119: Automated Collection (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1036.004: Masquerade Task or Service (via 'uses' relationship)
+        • T1041: Exfiltration Over C2 Channel (via 'uses' relationship)
+        • T1016: System Network Configuration Discovery (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1127.001: MSBuild (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1573.001: Symmetric Cryptography (via 'uses' relationship)
+        • T1033: System Owner/User Discovery (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+13. RedPenguin
+    🔖 External ID: C0056
+    🔧 Direct techniques: 26
+    📝 The [RedPenguin](https://attack.mitre.org/campaigns/C0056) project was launched by Juniper in July 2024 to investigate reported malware infections ...
+    🎯 Techniques: T1014, T1016, T1027.013, T1036.005, T1040, T1041, T1055, T1057, T1059.004, T1059.008, T1070.004, T1070.007, T1078, T1090, T1090.003, T1095, T1104, T1105, T1140, T1203, T1205, T1554, T1562.003, T1571, T1573.001, T1587.001
+    🔍 Technique details:
+        • T1057: Process Discovery (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1104: Multi-Stage Channels (via 'uses' relationship)
+        • T1040: Network Sniffing (via 'uses' relationship)
+        • T1562.003: Impair Command History Logging (via 'uses' relationship)
+        • T1571: Non-Standard Port (via 'uses' relationship)
+        • T1070.007: Clear Network Connection History and Configurat... (via 'uses' relationship)
+        • T1059.008: Network Device CLI (via 'uses' relationship)
+        • T1090: Proxy (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1059.004: Unix Shell (via 'uses' relationship)
+        • T1203: Exploitation for Client Execution (via 'uses' relationship)
+        • T1573.001: Symmetric Cryptography (via 'uses' relationship)
+        • T1078: Valid Accounts (via 'uses' relationship)
+        • T1016: System Network Configuration Discovery (via 'uses' relationship)
+        • T1055: Process Injection (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1095: Non-Application Layer Protocol (via 'uses' relationship)
+        • T1554: Compromise Host Software Binary (via 'uses' relationship)
+        • T1205: Traffic Signaling (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1090.003: Multi-hop Proxy (via 'uses' relationship)
+        • T1014: Rootkit (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1041: Exfiltration Over C2 Channel (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+14. Leviathan Australian Intrusions
+    🔖 External ID: C0049
+    🔧 Direct techniques: 26
+    📝 [Leviathan Australian Intrusions](https://attack.mitre.org/campaigns/C0049) consisted of at least two long-term intrusions against victims in Austr...
+    🎯 Techniques: T1018, T1021.002, T1021.004, T1041, T1056, T1068, T1074.001, T1078, T1078.002, T1078.003, T1082, T1111, T1135, T1190, T1212, T1213.006, T1482, T1505.003, T1528, T1552, T1552.001, T1558.003, T1562.004, T1588.006, T1594, T1615
+    🔍 Technique details:
+        • T1078.002: Domain Accounts (via 'uses' relationship)
+        • T1552: Unsecured Credentials (via 'uses' relationship)
+        • T1615: Group Policy Discovery (via 'uses' relationship)
+        • T1021.002: SMB/Windows Admin Shares (via 'uses' relationship)
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1213.006: Databases (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1018: Remote System Discovery (via 'uses' relationship)
+        • T1041: Exfiltration Over C2 Channel (via 'uses' relationship)
+        • T1558.003: Kerberoasting (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1552.001: Credentials In Files (via 'uses' relationship)
+        • T1078: Valid Accounts (via 'uses' relationship)
+        • T1135: Network Share Discovery (via 'uses' relationship)
+        • T1594: Search Victim-Owned Websites (via 'uses' relationship)
+        • T1482: Domain Trust Discovery (via 'uses' relationship)
+        • T1056: Input Capture (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1078.003: Local Accounts (via 'uses' relationship)
+        • T1068: Exploitation for Privilege Escalation (via 'uses' relationship)
+        • T1562.004: Disable or Modify System Firewall (via 'uses' relationship)
+        • T1212: Exploitation for Credential Access (via 'uses' relationship)
+        • T1588.006: Vulnerabilities (via 'uses' relationship)
+        • T1528: Steal Application Access Token (via 'uses' relationship)
+        • T1111: Multi-Factor Authentication Interception (via 'uses' relationship)
+        • T1021.004: SSH (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+15. HomeLand Justice
+    🔖 External ID: C0038
+    🔧 Direct techniques: 25
+    📝 [HomeLand Justice](https://attack.mitre.org/campaigns/C0038) was a disruptive campaign involving the use of ransomware, wiper malware, and sensitiv...
+    🎯 Techniques: T1003.001, T1021.001, T1021.002, T1036.005, T1041, T1046, T1047, T1059.001, T1059.003, T1078, T1078.001, T1087.003, T1098.002, T1105, T1114.002, T1134.001, T1190, T1486, T1505.003, T1561.002, T1562.001, T1562.002, T1570, T1588.002, T1588.003
+    🔍 Technique details:
+        • T1046: Network Service Discovery (via 'uses' relationship)
+        • T1561.002: Disk Structure Wipe (via 'uses' relationship)
+        • T1041: Exfiltration Over C2 Channel (via 'uses' relationship)
+        • T1486: Data Encrypted for Impact (via 'uses' relationship)
+        • T1021.001: Remote Desktop Protocol (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1588.003: Code Signing Certificates (via 'uses' relationship)
+        • T1098.002: Additional Email Delegate Permissions (via 'uses' relationship)
+        • T1114.002: Remote Email Collection (via 'uses' relationship)
+        • T1134.001: Token Impersonation/Theft (via 'uses' relationship)
+        • T1078.001: Default Accounts (via 'uses' relationship)
+        • T1562.001: Disable or Modify Tools (via 'uses' relationship)
+        • T1003.001: LSASS Memory (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1021.002: SMB/Windows Admin Shares (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1570: Lateral Tool Transfer (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1562.002: Disable Windows Event Logging (via 'uses' relationship)
+        • T1087.003: Email Account (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1078: Valid Accounts (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+16. ArcaneDoor
+    🔖 External ID: C0046
+    🔧 Direct techniques: 25
+    📝 [ArcaneDoor](https://attack.mitre.org/campaigns/C0046) is a campaign targeting networking devices from Cisco and other vendors between July 2023 an...
+    🎯 Techniques: T1014, T1020, T1036, T1037, T1040, T1041, T1055, T1059, T1070.004, T1071.001, T1082, T1102.003, T1119, T1133, T1140, T1190, T1556, T1557, T1562.001, T1562.003, T1583.003, T1583.006, T1587.001, T1587.003, T1653
+    🔍 Technique details:
+        • T1102.003: One-Way Communication (via 'uses' relationship)
+        • T1037: Boot or Logon Initialization Scripts (via 'uses' relationship)
+        • T1036: Masquerading (via 'uses' relationship)
+        • T1562.003: Impair Command History Logging (via 'uses' relationship)
+        • T1583.006: Web Services (via 'uses' relationship)
+        • T1020: Automated Exfiltration (via 'uses' relationship)
+        • T1653: Power Settings (via 'uses' relationship)
+        • T1587.003: Digital Certificates (via 'uses' relationship)
+        • T1041: Exfiltration Over C2 Channel (via 'uses' relationship)
+        • T1583.003: Virtual Private Server (via 'uses' relationship)
+        • T1014: Rootkit (via 'uses' relationship)
+        • T1556: Modify Authentication Process (via 'uses' relationship)
+        • T1557: Adversary-in-the-Middle (via 'uses' relationship)
+        • T1119: Automated Collection (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1040: Network Sniffing (via 'uses' relationship)
+        • T1562.001: Disable or Modify Tools (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1059: Command and Scripting Interpreter (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1133: External Remote Services (via 'uses' relationship)
+        • T1055: Process Injection (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+17. APT41 DUST
+    🔖 External ID: C0040
+    🔧 Direct techniques: 23
+    📝 [APT41 DUST](https://attack.mitre.org/campaigns/C0040) was conducted by [APT41](https://attack.mitre.org/groups/G0096) from 2023 to July 2024 again...
+    🎯 Techniques: T1027.013, T1036.004, T1070.004, T1071.001, T1074.001, T1102, T1105, T1119, T1213.006, T1505.003, T1543.003, T1553.002, T1560.001, T1567.002, T1569.002, T1573.002, T1574.001, T1583.007, T1586.003, T1588.003, T1593.002, T1594, T1596.005
+    🔍 Technique details:
+        • T1102: Web Service (via 'uses' relationship)
+        • T1213.006: Databases (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1593.002: Search Engines (via 'uses' relationship)
+        • T1543.003: Windows Service (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1119: Automated Collection (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1586.003: Cloud Accounts (via 'uses' relationship)
+        • T1588.003: Code Signing Certificates (via 'uses' relationship)
+        • T1567.002: Exfiltration to Cloud Storage (via 'uses' relationship)
+        • T1596.005: Scan Databases (via 'uses' relationship)
+        • T1574.001: DLL (via 'uses' relationship)
+        • T1036.004: Masquerade Task or Service (via 'uses' relationship)
+        • T1560.001: Archive via Utility (via 'uses' relationship)
+        • T1569.002: Service Execution (via 'uses' relationship)
+        • T1583.007: Serverless (via 'uses' relationship)
+        • T1594: Search Victim-Owned Websites (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1573.002: Asymmetric Cryptography (via 'uses' relationship)
+        • T1553.002: Code Signing (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+18. RedDelta Modified PlugX Infection Chain Operations
+    🔖 External ID: C0047
+    🔧 Direct techniques: 22
+    📝 [RedDelta Modified PlugX Infection Chain Operations](https://attack.mitre.org/campaigns/C0047) was executed by [Mustang Panda](https://attack.mitre...
+    🎯 Techniques: T1027.013, T1036.004, T1059.001, T1071.001, T1082, T1090, T1095, T1203, T1204.001, T1204.002, T1218.007, T1218.014, T1480, T1547.001, T1553.002, T1564.001, T1566.001, T1566.002, T1574.001, T1583.001, T1588.004, T1608.001
+    🔍 Technique details:
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1608.001: Upload Malware (via 'uses' relationship)
+        • T1574.001: DLL (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1553.002: Code Signing (via 'uses' relationship)
+        • T1090: Proxy (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1547.001: Registry Run Keys / Startup Folder (via 'uses' relationship)
+        • T1095: Non-Application Layer Protocol (via 'uses' relationship)
+        • T1480: Execution Guardrails (via 'uses' relationship)
+        • T1566.002: Spearphishing Link (via 'uses' relationship)
+        • T1203: Exploitation for Client Execution (via 'uses' relationship)
+        • T1566.001: Spearphishing Attachment (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1036.004: Masquerade Task or Service (via 'uses' relationship)
+        • T1218.007: Msiexec (via 'uses' relationship)
+        • T1564.001: Hidden Files and Directories (via 'uses' relationship)
+        • T1588.004: Digital Certificates (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1204.001: Malicious Link (via 'uses' relationship)
+        • T1218.014: MMC (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+19. 3CX Supply Chain Attack
+    🔖 External ID: C0057
+    🔧 Direct techniques: 22
+    📝 The [3CX Supply Chain Attack](https://attack.mitre.org/campaigns/C0057) was the first publicly reported case of one supply chain compromise trigger...
+    🎯 Techniques: T1027, T1027.009, T1027.013, T1055, T1055.002, T1071.001, T1078, T1102.001, T1189, T1195.002, T1203, T1217, T1218.007, T1218.015, T1543.004, T1546.016, T1553.002, T1559, T1573.001, T1574.001, T1620, T1678
+    🔍 Technique details:
+        • T1027: Obfuscated Files or Information (via 'uses' relationship)
+        • T1195.002: Compromise Software Supply Chain (via 'uses' relationship)
+        • T1189: Drive-by Compromise (via 'uses' relationship)
+        • T1218.007: Msiexec (via 'uses' relationship)
+        • T1678: Delay Execution (via 'uses' relationship)
+        • T1543.004: Launch Daemon (via 'uses' relationship)
+        • T1078: Valid Accounts (via 'uses' relationship)
+        • T1559: Inter-Process Communication (via 'uses' relationship)
+        • T1620: Reflective Code Loading (via 'uses' relationship)
+        • T1102.001: Dead Drop Resolver (via 'uses' relationship)
+        • T1574.001: DLL (via 'uses' relationship)
+        • T1553.002: Code Signing (via 'uses' relationship)
+        • T1217: Browser Information Discovery (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1055: Process Injection (via 'uses' relationship)
+        • T1573.001: Symmetric Cryptography (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1027.009: Embedded Payloads (via 'uses' relationship)
+        • T1055.002: Portable Executable Injection (via 'uses' relationship)
+        • T1546.016: Installer Packages (via 'uses' relationship)
+        • T1218.015: Electron Applications (via 'uses' relationship)
+        • T1203: Exploitation for Client Execution (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+20. 2016 Ukraine Electric Power Attack
+    🔖 External ID: C0025
+    🔧 Direct techniques: 21
+    📝 [2016 Ukraine Electric Power Attack](https://attack.mitre.org/campaigns/C0025) was a [Sandworm Team](https://attack.mitre.org/groups/G0034) campaig...
+    🎯 Techniques: T1003.001, T1018, T1021.002, T1027, T1027.002, T1036.005, T1036.008, T1036.010, T1047, T1059.001, T1059.003, T1059.005, T1098, T1110, T1136, T1136.002, T1505.001, T1543.003, T1554, T1562.002, T1570
+    🔍 Technique details:
+        • T1036.008: Masquerade File Type (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1505.001: SQL Stored Procedures (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1570: Lateral Tool Transfer (via 'uses' relationship)
+        • T1136: Create Account (via 'uses' relationship)
+        • T1543.003: Windows Service (via 'uses' relationship)
+        • T1027.002: Software Packing (via 'uses' relationship)
+        • T1027: Obfuscated Files or Information (via 'uses' relationship)
+        • T1036.010: Masquerade Account Name (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1003.001: LSASS Memory (via 'uses' relationship)
+        • T1110: Brute Force (via 'uses' relationship)
+        • T1098: Account Manipulation (via 'uses' relationship)
+        • T1018: Remote System Discovery (via 'uses' relationship)
+        • T1136.002: Domain Account (via 'uses' relationship)
+        • T1554: Compromise Host Software Binary (via 'uses' relationship)
+        • T1562.002: Disable Windows Event Logging (via 'uses' relationship)
+        • T1021.002: SMB/Windows Admin Shares (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+21. KV Botnet Activity
+    🔖 External ID: C0035
+    🔧 Direct techniques: 20
+    📝 [KV Botnet Activity](https://attack.mitre.org/campaigns/C0035) consisted of exploitation of primarily “end-of-life” small office-home office (SOHO)...
+    🎯 Techniques: T1016, T1036, T1036.004, T1055.009, T1057, T1059.004, T1070.004, T1082, T1083, T1095, T1105, T1222.002, T1518.001, T1546, T1562.001, T1564.013, T1571, T1573, T1583.003, T1584.008
+    🔍 Technique details:
+        • T1562.001: Disable or Modify Tools (via 'uses' relationship)
+        • T1584.008: Network Devices (via 'uses' relationship)
+        • T1016: System Network Configuration Discovery (via 'uses' relationship)
+        • T1057: Process Discovery (via 'uses' relationship)
+        • T1059.004: Unix Shell (via 'uses' relationship)
+        • T1222.002: Linux and Mac File and Directory Permissions Mo... (via 'uses' relationship)
+        • T1036.004: Masquerade Task or Service (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1095: Non-Application Layer Protocol (via 'uses' relationship)
+        • T1055.009: Proc Memory (via 'uses' relationship)
+        • T1583.003: Virtual Private Server (via 'uses' relationship)
+        • T1573: Encrypted Channel (via 'uses' relationship)
+        • T1036: Masquerading (via 'uses' relationship)
+        • T1546: Event Triggered Execution (via 'uses' relationship)
+        • T1564.013: Bind Mounts (via 'uses' relationship)
+        • T1571: Non-Standard Port (via 'uses' relationship)
+        • T1083: File and Directory Discovery (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1518.001: Security Software Discovery (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+22. C0018
+    🔖 External ID: C0018
+    🔧 Direct techniques: 19
+    📝 
+[C0018](https://attack.mitre.org/campaigns/C0018) was a month-long ransomware intrusion that successfully deployed [AvosLocker](https://attack.mit...
+    🎯 Techniques: T1016, T1021.001, T1027.010, T1033, T1036, T1036.005, T1046, T1047, T1059.001, T1071.001, T1072, T1105, T1190, T1218.011, T1219.002, T1486, T1570, T1571, T1588.002
+    🔍 Technique details:
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1570: Lateral Tool Transfer (via 'uses' relationship)
+        • T1033: System Owner/User Discovery (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1021.001: Remote Desktop Protocol (via 'uses' relationship)
+        • T1219.002: Remote Desktop Software (via 'uses' relationship)
+        • T1571: Non-Standard Port (via 'uses' relationship)
+        • T1027.010: Command Obfuscation (via 'uses' relationship)
+        • T1046: Network Service Discovery (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1486: Data Encrypted for Impact (via 'uses' relationship)
+        • T1016: System Network Configuration Discovery (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1036: Masquerading (via 'uses' relationship)
+        • T1072: Software Deployment Tools (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1218.011: Rundll32 (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+23. Salesforce Data Exfiltration
+    🔖 External ID: C0059
+    🔧 Direct techniques: 18
+    📝 The [Salesforce Data Exfiltration](https://attack.mitre.org/campaigns/C0059) campaign began in October 2024 with financially-motivated threat actor...
+    🎯 Techniques: T1020, T1036, T1059.006, T1078.002, T1083, T1090, T1090.003, T1213.004, T1567, T1585, T1585.002, T1586.002, T1587.001, T1588.002, T1598.004, T1608.005, T1656, T1671
+    🔍 Technique details:
+        • T1608.005: Link Target (via 'uses' relationship)
+        • T1059.006: Python (via 'uses' relationship)
+        • T1213.004: Customer Relationship Management Software (via 'uses' relationship)
+        • T1078.002: Domain Accounts (via 'uses' relationship)
+        • T1671: Cloud Application Integration (via 'uses' relationship)
+        • T1090: Proxy (via 'uses' relationship)
+        • T1585.002: Email Accounts (via 'uses' relationship)
+        • T1567: Exfiltration Over Web Service (via 'uses' relationship)
+        • T1036: Masquerading (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1090.003: Multi-hop Proxy (via 'uses' relationship)
+        • T1585: Establish Accounts (via 'uses' relationship)
+        • T1083: File and Directory Discovery (via 'uses' relationship)
+        • T1020: Automated Exfiltration (via 'uses' relationship)
+        • T1586.002: Email Accounts (via 'uses' relationship)
+        • T1598.004: Spearphishing Voice (via 'uses' relationship)
+        • T1656: Impersonation (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+24. APT28 Nearest Neighbor Campaign
+    🔖 External ID: C0051
+    🔧 Direct techniques: 18
+    📝 [APT28 Nearest Neighbor Campaign](https://attack.mitre.org/campaigns/C0051) was conducted by [APT28](https://attack.mitre.org/groups/G0007) from ea...
+    🎯 Techniques: T1003.002, T1003.003, T1006, T1016.002, T1021.001, T1021.002, T1059.001, T1059.003, T1074.001, T1090.001, T1110.003, T1140, T1560.001, T1561.001, T1562.004, T1567, T1584, T1669
+    🔍 Technique details:
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1560.001: Archive via Utility (via 'uses' relationship)
+        • T1003.003: NTDS (via 'uses' relationship)
+        • T1567: Exfiltration Over Web Service (via 'uses' relationship)
+        • T1669: Wi-Fi Networks (via 'uses' relationship)
+        • T1016.002: Wi-Fi Discovery (via 'uses' relationship)
+        • T1110.003: Password Spraying (via 'uses' relationship)
+        • T1562.004: Disable or Modify System Firewall (via 'uses' relationship)
+        • T1021.001: Remote Desktop Protocol (via 'uses' relationship)
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1003.002: Security Account Manager (via 'uses' relationship)
+        • T1561.001: Disk Content Wipe (via 'uses' relationship)
+        • T1584: Compromise Infrastructure (via 'uses' relationship)
+        • T1021.002: SMB/Windows Admin Shares (via 'uses' relationship)
+        • T1006: Direct Volume Access (via 'uses' relationship)
+        • T1090.001: Internal Proxy (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+25. Operation Spalax
+    🔖 External ID: C0005
+    🔧 Direct techniques: 17
+    📝 [Operation Spalax](https://attack.mitre.org/campaigns/C0005) was a campaign that primarily targeted Colombian government organizations and private ...
+    🎯 Techniques: T1027.002, T1027.003, T1027.013, T1059, T1102, T1140, T1204.001, T1204.002, T1218.011, T1497, T1566.001, T1566.002, T1568, T1583.001, T1588.001, T1588.002, T1608.001
+    🔍 Technique details:
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1204.001: Malicious Link (via 'uses' relationship)
+        • T1059: Command and Scripting Interpreter (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1588.001: Malware (via 'uses' relationship)
+        • T1027.003: Steganography (via 'uses' relationship)
+        • T1568: Dynamic Resolution (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1608.001: Upload Malware (via 'uses' relationship)
+        • T1027.002: Software Packing (via 'uses' relationship)
+        • T1102: Web Service (via 'uses' relationship)
+        • T1497: Virtualization/Sandbox Evasion (via 'uses' relationship)
+        • T1566.002: Spearphishing Link (via 'uses' relationship)
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1566.001: Spearphishing Attachment (via 'uses' relationship)
+        • T1218.011: Rundll32 (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+26. Operation MidnightEclipse
+    🔖 External ID: C0048
+    🔧 Direct techniques: 17
+    📝 [Operation MidnightEclipse](https://attack.mitre.org/campaigns/C0048) was a campaign conducted in March and April 2024 that involved initial exploi...
+    🎯 Techniques: T1003.003, T1005, T1021.002, T1021.006, T1053.003, T1059.004, T1071.001, T1074.001, T1078, T1078.002, T1090, T1105, T1190, T1559, T1584.003, T1584.006, T1588.002
+    🔍 Technique details:
+        • T1090: Proxy (via 'uses' relationship)
+        • T1559: Inter-Process Communication (via 'uses' relationship)
+        • T1003.003: NTDS (via 'uses' relationship)
+        • T1078.002: Domain Accounts (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1059.004: Unix Shell (via 'uses' relationship)
+        • T1078: Valid Accounts (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1053.003: Cron (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1021.002: SMB/Windows Admin Shares (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1584.003: Virtual Private Server (via 'uses' relationship)
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1021.006: Windows Remote Management (via 'uses' relationship)
+        • T1584.006: Web Services (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+27. Operation Dust Storm
+    🔖 External ID: C0016
+    🔧 Direct techniques: 17
+    📝 [Operation Dust Storm](https://attack.mitre.org/campaigns/C0016) was a long-standing persistent cyber espionage campaign that targeted multiple ind...
+    🎯 Techniques: T1027.002, T1027.013, T1036, T1059.005, T1059.007, T1140, T1189, T1203, T1204.001, T1204.002, T1218.005, T1518, T1566.001, T1566.002, T1568, T1583.001, T1585.002
+    🔍 Technique details:
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1027.002: Software Packing (via 'uses' relationship)
+        • T1204.001: Malicious Link (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1566.001: Spearphishing Attachment (via 'uses' relationship)
+        • T1189: Drive-by Compromise (via 'uses' relationship)
+        • T1036: Masquerading (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1568: Dynamic Resolution (via 'uses' relationship)
+        • T1218.005: Mshta (via 'uses' relationship)
+        • T1203: Exploitation for Client Execution (via 'uses' relationship)
+        • T1518: Software Discovery (via 'uses' relationship)
+        • T1059.007: JavaScript (via 'uses' relationship)
+        • T1566.002: Spearphishing Link (via 'uses' relationship)
+        • T1585.002: Email Accounts (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+28. 2015 Ukraine Electric Power Attack
+    🔖 External ID: C0028
+    🔧 Direct techniques: 17
+    📝 [2015 Ukraine Electric Power Attack](https://attack.mitre.org/campaigns/C0028) was a [Sandworm Team](https://attack.mitre.org/groups/G0034) campaig...
+    🎯 Techniques: T1018, T1040, T1055, T1056.001, T1059.005, T1070.004, T1071.001, T1078, T1105, T1112, T1133, T1136.002, T1204.002, T1218.011, T1562.001, T1566.001, T1570
+    🔍 Technique details:
+        • T1112: Modify Registry (via 'uses' relationship)
+        • T1566.001: Spearphishing Attachment (via 'uses' relationship)
+        • T1018: Remote System Discovery (via 'uses' relationship)
+        • T1133: External Remote Services (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1136.002: Domain Account (via 'uses' relationship)
+        • T1040: Network Sniffing (via 'uses' relationship)
+        • T1218.011: Rundll32 (via 'uses' relationship)
+        • T1078: Valid Accounts (via 'uses' relationship)
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1570: Lateral Tool Transfer (via 'uses' relationship)
+        • T1056.001: Keylogging (via 'uses' relationship)
+        • T1055: Process Injection (via 'uses' relationship)
+        • T1562.001: Disable or Modify Tools (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+29. C0032
+    🔖 External ID: C0032
+    🔧 Direct techniques: 17
+    📝 [C0032](https://attack.mitre.org/campaigns/C0032) was an extended campaign suspected to involve the [Triton](https://attack.mitre.org/software/S100...
+    🎯 Techniques: T1003.001, T1021.001, T1021.004, T1036.005, T1053.005, T1059.001, T1070.004, T1070.006, T1074.001, T1078, T1133, T1505.003, T1546.012, T1571, T1572, T1583.003, T1588.002
+    🔍 Technique details:
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1583.003: Virtual Private Server (via 'uses' relationship)
+        • T1078: Valid Accounts (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1572: Protocol Tunneling (via 'uses' relationship)
+        • T1021.001: Remote Desktop Protocol (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1021.004: SSH (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1571: Non-Standard Port (via 'uses' relationship)
+        • T1070.004: File Deletion (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1070.006: Timestomp (via 'uses' relationship)
+        • T1133: External Remote Services (via 'uses' relationship)
+        • T1546.012: Image File Execution Options Injection (via 'uses' relationship)
+        • T1003.001: LSASS Memory (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+30. C0021
+    🔖 External ID: C0021
+    🔧 Direct techniques: 15
+    📝 [C0021](https://attack.mitre.org/campaigns/C0021) was a spearphishing campaign conducted in November 2018 that targeted public sector institutions,...
+    🎯 Techniques: T1027.009, T1027.010, T1059.001, T1071.001, T1095, T1105, T1140, T1204.001, T1218.011, T1566.002, T1573.002, T1583.001, T1584.001, T1588.002, T1608.001
+    🔍 Technique details:
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1218.011: Rundll32 (via 'uses' relationship)
+        • T1204.001: Malicious Link (via 'uses' relationship)
+        • T1027.010: Command Obfuscation (via 'uses' relationship)
+        • T1584.001: Domains (via 'uses' relationship)
+        • T1608.001: Upload Malware (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1095: Non-Application Layer Protocol (via 'uses' relationship)
+        • T1566.002: Spearphishing Link (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1573.002: Asymmetric Cryptography (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1027.009: Embedded Payloads (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+31. Quad7 Activity
+    🔖 External ID: C0055
+    🔧 Direct techniques: 15
+    📝  Quad7 Activity, also known as CovertNetwork-1658 or the 7777 Botnet, is a network of compromised small office/home office (SOHO) routers. (Citatio...
+    🎯 Techniques: T1027.011, T1059.004, T1071.001, T1071.002, T1090.002, T1090.003, T1105, T1110.003, T1190, T1562.001, T1571, T1584.005, T1584.008, T1589.002, T1665
+    🔍 Technique details:
+        • T1584.008: Network Devices (via 'uses' relationship)
+        • T1665: Hide Infrastructure (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1071.002: File Transfer Protocols (via 'uses' relationship)
+        • T1589.002: Email Addresses (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1090.003: Multi-hop Proxy (via 'uses' relationship)
+        • T1571: Non-Standard Port (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1027.011: Fileless Storage (via 'uses' relationship)
+        • T1110.003: Password Spraying (via 'uses' relationship)
+        • T1090.002: External Proxy (via 'uses' relationship)
+        • T1562.001: Disable or Modify Tools (via 'uses' relationship)
+        • T1059.004: Unix Shell (via 'uses' relationship)
+        • T1584.005: Botnet (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+32. Juicy Mix
+    🔖 External ID: C0044
+    🔧 Direct techniques: 14
+    📝 [Juicy Mix](https://attack.mitre.org/campaigns/C0044) was a campaign conducted by [OilRig](https://attack.mitre.org/groups/G0049) throughout 2022 t...
+    🎯 Techniques: T1053.005, T1059.001, T1059.005, T1071.001, T1074.001, T1082, T1132.001, T1140, T1217, T1518, T1555.003, T1555.004, T1584.004, T1587.001
+    🔍 Technique details:
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1217: Browser Information Discovery (via 'uses' relationship)
+        • T1518: Software Discovery (via 'uses' relationship)
+        • T1132.001: Standard Encoding (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1074.001: Local Data Staging (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1555.004: Windows Credential Manager (via 'uses' relationship)
+        • T1584.004: Server (via 'uses' relationship)
+        • T1555.003: Credentials from Web Browsers (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+33. FunnyDream
+    🔖 External ID: C0007
+    🔧 Direct techniques: 14
+    📝 [FunnyDream](https://attack.mitre.org/campaigns/C0007) was a suspected Chinese cyber espionage campaign that targeted government and foreign organi...
+    🎯 Techniques: T1016, T1018, T1047, T1049, T1057, T1059.003, T1059.005, T1082, T1105, T1560.001, T1583.001, T1585.002, T1588.001, T1588.002
+    🔍 Technique details:
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1018: Remote System Discovery (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1057: Process Discovery (via 'uses' relationship)
+        • T1588.001: Malware (via 'uses' relationship)
+        • T1560.001: Archive via Utility (via 'uses' relationship)
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1016: System Network Configuration Discovery (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1049: System Network Connections Discovery (via 'uses' relationship)
+        • T1585.002: Email Accounts (via 'uses' relationship)
+        • T1047: Windows Management Instrumentation (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1082: System Information Discovery (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+34. Operation Sharpshooter
+    🔖 External ID: C0013
+    🔧 Direct techniques: 13
+    📝 [Operation Sharpshooter](https://attack.mitre.org/campaigns/C0013) was a global cyber espionage campaign that targeted nuclear, defense, government...
+    🎯 Techniques: T1036.005, T1055, T1059.005, T1090, T1105, T1106, T1204.002, T1547.001, T1559.002, T1583.006, T1584.004, T1587.001, T1608.001
+    🔍 Technique details:
+        • T1584.004: Server (via 'uses' relationship)
+        • T1559.002: Dynamic Data Exchange (via 'uses' relationship)
+        • T1608.001: Upload Malware (via 'uses' relationship)
+        • T1055: Process Injection (via 'uses' relationship)
+        • T1583.006: Web Services (via 'uses' relationship)
+        • T1106: Native API (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1547.001: Registry Run Keys / Startup Folder (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1090: Proxy (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+35. Triton Safety Instrumented System Attack
+    🔖 External ID: C0030
+    🔧 Direct techniques: 10
+    📝 [Triton Safety Instrumented System Attack](https://attack.mitre.org/campaigns/C0030) was a campaign employed by [TEMP.Veles](https://attack.mitre.o...
+    🎯 Techniques: T1003.001, T1027.005, T1036.005, T1053.005, T1056.003, T1059.001, T1573, T1587.001, T1588.002, T1595
+    🔍 Technique details:
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1003.001: LSASS Memory (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1056.003: Web Portal Capture (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1027.005: Indicator Removal from Tools (via 'uses' relationship)
+        • T1573: Encrypted Channel (via 'uses' relationship)
+        • T1595: Active Scanning (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+36. Water Curupira Pikabot Distribution
+    🔖 External ID: C0037
+    🔧 Direct techniques: 10
+    📝 [Pikabot](https://attack.mitre.org/software/S1145) was distributed in [Water Curupira Pikabot Distribution](https://attack.mitre.org/campaigns/C003...
+    🎯 Techniques: T1059.003, T1059.007, T1105, T1140, T1204, T1204.001, T1204.002, T1218.011, T1566.001, T1589.002
+    🔍 Technique details:
+        • T1059.003: Windows Command Shell (via 'uses' relationship)
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1204.001: Malicious Link (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1204: User Execution (via 'uses' relationship)
+        • T1589.002: Email Addresses (via 'uses' relationship)
+        • T1566.001: Spearphishing Attachment (via 'uses' relationship)
+        • T1059.007: JavaScript (via 'uses' relationship)
+        • T1140: Deobfuscate/Decode Files or Information (via 'uses' relationship)
+        • T1218.011: Rundll32 (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+37. ShadowRay
+    🔖 External ID: C0045
+    🔧 Direct techniques: 10
+    📝 [ShadowRay](https://attack.mitre.org/campaigns/C0045) was a campaign that began in late 2023 targeting the education, cryptocurrency, biopharma, an...
+    🎯 Techniques: T1003.008, T1016, T1027.013, T1059.006, T1068, T1105, T1190, T1496.001, T1546.004, T1588.002
+    🔍 Technique details:
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1546.004: Unix Shell Configuration Modification (via 'uses' relationship)
+        • T1003.008: /etc/passwd and /etc/shadow (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1059.006: Python (via 'uses' relationship)
+        • T1016: System Network Configuration Discovery (via 'uses' relationship)
+        • T1068: Exploitation for Privilege Escalation (via 'uses' relationship)
+        • T1496.001: Compute Hijacking (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+38. 2022 Ukraine Electric Power Attack
+    🔖 External ID: C0034
+    🔧 Direct techniques: 10
+    📝 The [2022 Ukraine Electric Power Attack](https://attack.mitre.org/campaigns/C0034) was a [Sandworm Team](https://attack.mitre.org/groups/G0034) cam...
+    🎯 Techniques: T1036.004, T1053.005, T1059.001, T1095, T1484.001, T1485, T1505.003, T1543.002, T1570, T1572
+    🔍 Technique details:
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1036.004: Masquerade Task or Service (via 'uses' relationship)
+        • T1095: Non-Application Layer Protocol (via 'uses' relationship)
+        • T1543.002: Systemd Service (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1572: Protocol Tunneling (via 'uses' relationship)
+        • T1485: Data Destruction (via 'uses' relationship)
+        • T1570: Lateral Tool Transfer (via 'uses' relationship)
+        • T1484.001: Group Policy Modification (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+39. CostaRicto
+    🔖 External ID: C0004
+    🔧 Direct techniques: 10
+    📝 [CostaRicto](https://attack.mitre.org/campaigns/C0004) was a suspected hacker-for-hire cyber espionage campaign that targeted multiple industries w...
+    🎯 Techniques: T1005, T1046, T1053.005, T1090.003, T1105, T1133, T1572, T1583.001, T1587.001, T1588.002
+    🔍 Technique details:
+        • T1046: Network Service Discovery (via 'uses' relationship)
+        • T1090.003: Multi-hop Proxy (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1133: External Remote Services (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+        • T1053.005: Scheduled Task (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+        • T1572: Protocol Tunneling (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+40. C0010
+    🔖 External ID: C0010
+    🔧 Direct techniques: 9
+    📝 [C0010](https://attack.mitre.org/campaigns/C0010) was a cyber espionage campaign conducted by UNC3890 that targeted Israeli shipping, government, a...
+    🎯 Techniques: T1105, T1189, T1583.001, T1584.001, T1587.001, T1588.002, T1608.001, T1608.002, T1608.004
+    🔍 Technique details:
+        • T1584.001: Domains (via 'uses' relationship)
+        • T1608.001: Upload Malware (via 'uses' relationship)
+        • T1608.004: Drive-by Target (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1189: Drive-by Compromise (via 'uses' relationship)
+        • T1608.002: Upload Tool (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+41. Indian Critical Infrastructure Intrusions
+    🔖 External ID: C0043
+    🔧 Direct techniques: 8
+    📝 [Indian Critical Infrastructure Intrusions](https://attack.mitre.org/campaigns/C0043) is a sequence of intrusions from 2021 through early 2022 link...
+    🎯 Techniques: T1071.001, T1568, T1571, T1573.002, T1583.001, T1584, T1588.004, T1599
+    🔍 Technique details:
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1584: Compromise Infrastructure (via 'uses' relationship)
+        • T1588.004: Digital Certificates (via 'uses' relationship)
+        • T1568: Dynamic Resolution (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1599: Network Boundary Bridging (via 'uses' relationship)
+        • T1573.002: Asymmetric Cryptography (via 'uses' relationship)
+        • T1571: Non-Standard Port (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+42. Operation Ghost
+    🔖 External ID: C0023
+    🔧 Direct techniques: 8
+    📝 [Operation Ghost](https://attack.mitre.org/campaigns/C0023) was an [APT29](https://attack.mitre.org/groups/G0016) campaign starting in 2013 that in...
+    🎯 Techniques: T1001.002, T1027.003, T1078.002, T1102.002, T1546.003, T1583.001, T1585.001, T1587.001
+    🔍 Technique details:
+        • T1078.002: Domain Accounts (via 'uses' relationship)
+        • T1102.002: Bidirectional Communication (via 'uses' relationship)
+        • T1001.002: Steganography (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1546.003: Windows Management Instrumentation Event Subscr... (via 'uses' relationship)
+        • T1585.001: Social Media Accounts (via 'uses' relationship)
+        • T1027.003: Steganography (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+43. Outer Space
+    🔖 External ID: C0042
+    🔧 Direct techniques: 8
+    📝 [Outer Space](https://attack.mitre.org/campaigns/C0042) was a campaign conducted by [OilRig](https://attack.mitre.org/groups/G0049) throughout 2021...
+    🎯 Techniques: T1027.013, T1059.005, T1071.001, T1105, T1217, T1584.004, T1585.003, T1587.001
+    🔍 Technique details:
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1584.004: Server (via 'uses' relationship)
+        • T1217: Browser Information Discovery (via 'uses' relationship)
+        • T1585.003: Cloud Accounts (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1027.013: Encrypted/Encoded File (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+44. Versa Director Zero Day Exploitation
+    🔖 External ID: C0039
+    🔧 Direct techniques: 8
+    📝 [Versa Director Zero Day Exploitation](https://attack.mitre.org/campaigns/C0039) was conducted by [Volt Typhoon](https://attack.mitre.org/groups/G1...
+    🎯 Techniques: T1056, T1071.001, T1095, T1190, T1505.003, T1573.002, T1584.008, T1587.001
+    🔍 Technique details:
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1056: Input Capture (via 'uses' relationship)
+        • T1584.008: Network Devices (via 'uses' relationship)
+        • T1573.002: Asymmetric Cryptography (via 'uses' relationship)
+        • T1071.001: Web Protocols (via 'uses' relationship)
+        • T1587.001: Malware (via 'uses' relationship)
+        • T1095: Non-Application Layer Protocol (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+45. C0011
+    🔖 External ID: C0011
+    🔧 Direct techniques: 8
+    📝 [C0011](https://attack.mitre.org/campaigns/C0011) was a suspected cyber espionage campaign conducted by [Transparent Tribe](https://attack.mitre.or...
+    🎯 Techniques: T1059.005, T1204.001, T1204.002, T1566.001, T1566.002, T1583.001, T1587.003, T1608.001
+    🔍 Technique details:
+        • T1608.001: Upload Malware (via 'uses' relationship)
+        • T1566.002: Spearphishing Link (via 'uses' relationship)
+        • T1566.001: Spearphishing Attachment (via 'uses' relationship)
+        • T1204.001: Malicious Link (via 'uses' relationship)
+        • T1204.002: Malicious File (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1059.005: Visual Basic (via 'uses' relationship)
+        • T1587.003: Digital Certificates (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+46. FLORAHOX Activity
+    🔖 External ID: C0053
+    🔧 Direct techniques: 6
+    📝 [FLORAHOX Activity](https://attack.mitre.org/campaigns/C0053) is conducted using a hybrid operational relay box (ORB) network, which combines two t...
+    🎯 Techniques: T1059, T1059.004, T1090.003, T1190, T1583.003, T1584.008
+    🔍 Technique details:
+        • T1584.008: Network Devices (via 'uses' relationship)
+        • T1583.003: Virtual Private Server (via 'uses' relationship)
+        • T1090.003: Multi-hop Proxy (via 'uses' relationship)
+        • T1059.004: Unix Shell (via 'uses' relationship)
+        • T1059: Command and Scripting Interpreter (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+47. C0026
+    🔖 External ID: C0026
+    🔧 Direct techniques: 6
+    📝 [C0026](https://attack.mitre.org/campaigns/C0026) was a campaign identified in September 2022 that included the selective distribution of [KOPILUWA...
+    🎯 Techniques: T1005, T1030, T1105, T1560.001, T1568, T1583.001
+    🔍 Technique details:
+        • T1030: Data Transfer Size Limits (via 'uses' relationship)
+        • T1583.001: Domains (via 'uses' relationship)
+        • T1560.001: Archive via Utility (via 'uses' relationship)
+        • T1568: Dynamic Resolution (via 'uses' relationship)
+        • T1105: Ingress Tool Transfer (via 'uses' relationship)
+        • T1005: Data from Local System (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+48. FrostyGoop Incident
+    🔖 External ID: C0041
+    🔧 Direct techniques: 5
+    📝 [FrostyGoop Incident](https://attack.mitre.org/campaigns/C0041) took place in January 2024 against a municipal district heating company in Ukraine....
+    🎯 Techniques: T1003.002, T1071, T1190, T1505.003, T1562.010
+    🔍 Technique details:
+        • T1003.002: Security Account Manager (via 'uses' relationship)
+        • T1071: Application Layer Protocol (via 'uses' relationship)
+        • T1562.010: Downgrade Attack (via 'uses' relationship)
+        • T1505.003: Web Shell (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+49. J-magic Campaign
+    🔖 External ID: C0050
+    🔧 Direct techniques: 4
+    📝 The [J-magic Campaign](https://attack.mitre.org/campaigns/C0050) was active from mid-2023 to at least mid-2024 and featured the use of the [J-magic...
+    🎯 Techniques: T1036.005, T1583.003, T1587.003, T1588.001
+    🔍 Technique details:
+        • T1583.003: Virtual Private Server (via 'uses' relationship)
+        • T1036.005: Match Legitimate Resource Name or Location (via 'uses' relationship)
+        • T1588.001: Malware (via 'uses' relationship)
+        • T1587.003: Digital Certificates (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+50. Pikabot Distribution February 2024
+    🔖 External ID: C0036
+    🔧 Direct techniques: 4
+    📝 [Pikabot](https://attack.mitre.org/software/S1145) was distributed in [Pikabot Distribution February 2024](https://attack.mitre.org/campaigns/C0036...
+    🎯 Techniques: T1059.001, T1059.007, T1566.002, T1574
+    🔍 Technique details:
+        • T1574: Hijack Execution Flow (via 'uses' relationship)
+        • T1059.007: JavaScript (via 'uses' relationship)
+        • T1059.001: PowerShell (via 'uses' relationship)
+        • T1566.002: Spearphishing Link (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+51. SPACEHOP Activity
+    🔖 External ID: C0052
+    🔧 Direct techniques: 4
+    📝 [SPACEHOP Activity](https://attack.mitre.org/campaigns/C0052) is conducted through commercially leased Virtual Private Servers (VPS), otherwise kno...
+    🎯 Techniques: T1090.003, T1190, T1583.003, T1588.002
+    🔍 Technique details:
+        • T1090.003: Multi-hop Proxy (via 'uses' relationship)
+        • T1190: Exploit Public-Facing Application (via 'uses' relationship)
+        • T1583.003: Virtual Private Server (via 'uses' relationship)
+        • T1588.002: Tool (via 'uses' relationship)
+    ──────────────────────────────────────────────────
+
+52. C0033
+    🔖 External ID: C0033
+    🔧 Direct techniques: 0
+    📝 [C0033](https://attack.mitre.org/campaigns/C0033) was a [PROMETHIUM](https://attack.mitre.org/groups/G0056) campaign during which they used [Strong...
+    ⚠️ No direct techniques found
+    ──────────────────────────────────────────────────
+
+📊 DISTRIBUTION OF DIRECT TECHNIQUES:
+--------------------------------------------------------------------------------
+       0 techniques:   1 campaigns (  1.9%)
+    11-20 techniques:  14 campaigns ( 26.9%)
+     20+ techniques:  20 campaigns ( 38.5%)
+     4-5 techniques:   4 campaigns (  7.7%)
+    6-10 techniques:  13 campaigns ( 25.0%)
+
+🔍 UNIQUE DIRECT TECHNIQUES IN THIS FILE (297 total):
+--------------------------------------------------------------------------------
+    T10xx techniques (106): T1001, T1001.002, T1001.003, T1003.001, T1003.002, T1003.003, T1003.006, T1003.008, T1005, T1006, T1007, T1008, T1012, T1014, T1016, T1016.001, T1016.002, T1018, T1020, T1021.001, T1021.002, T1021.004, T1021.006, T1021.007, T1027, T1027.002, T1027.003, T1027.005, T1027.009, T1027.010, T1027.011, T1027.013, T1030, T1033, T1036, T1036.004, T1036.005, T1036.008, T1036.010, T1037, T1039, T1040, T1041, T1046, T1047, T1048.002, T1048.003, T1049, T1053.003, T1053.005, T1055, T1055.001, T1055.002, T1055.009, T1056, T1056.001, T1056.003, T1057, T1059, T1059.001, T1059.003, T1059.004, T1059.005, T1059.006, T1059.007, T1059.008, T1068, T1069, T1069.001, T1069.002, T1069.003, T1070, T1070.001, T1070.004, T1070.006, T1070.007, T1070.008, T1071, T1071.001, T1071.002, T1071.004, T1072, T1074.001, T1074.002, T1078, T1078.001, T1078.002, T1078.003, T1078.004, T1082, T1083, T1087, T1087.001, T1087.002, T1087.003, T1087.004, T1090, T1090.001, T1090.002, T1090.003, T1095, T1098, T1098.001, T1098.002, T1098.003, T1098.005
+    T11xx techniques (31): T1102, T1102.001, T1102.002, T1102.003, T1104, T1105, T1106, T1110, T1110.002, T1110.003, T1111, T1112, T1114.001, T1114.002, T1115, T1119, T1120, T1124, T1127.001, T1132.001, T1133, T1134, T1134.001, T1135, T1136, T1136.002, T1140, T1189, T1190, T1195.002, T1199
+    T12xx techniques (24): T1201, T1203, T1204, T1204.001, T1204.002, T1205, T1212, T1213, T1213.002, T1213.003, T1213.004, T1213.006, T1217, T1218.005, T1218.007, T1218.010, T1218.011, T1218.014, T1218.015, T1219, T1219.002, T1220, T1221, T1222.002
+    T14xx techniques (10): T1480, T1482, T1484.001, T1484.002, T1485, T1486, T1496.001, T1497, T1497.001, T1497.003
+    T15xx techniques (107): T1505.001, T1505.003, T1505.004, T1518, T1518.001, T1528, T1530, T1534, T1539, T1543.002, T1543.003, T1543.004, T1546, T1546.003, T1546.004, T1546.012, T1546.016, T1547.001, T1547.006, T1548.002, T1550, T1550.001, T1550.002, T1550.004, T1552, T1552.001, T1552.004, T1553.002, T1554, T1555, T1555.003, T1555.004, T1555.005, T1556, T1557, T1558.003, T1559, T1559.002, T1560.001, T1560.003, T1561.001, T1561.002, T1562.001, T1562.002, T1562.003, T1562.004, T1562.010, T1564.001, T1564.013, T1566.001, T1566.002, T1566.003, T1566.004, T1567, T1567.002, T1568, T1569.002, T1570, T1571, T1572, T1573, T1573.001, T1573.002, T1574, T1574.001, T1574.011, T1578.002, T1583.001, T1583.003, T1583.004, T1583.006, T1583.007, T1584, T1584.001, T1584.003, T1584.004, T1584.005, T1584.006, T1584.008, T1585, T1585.001, T1585.002, T1585.003, T1586.002, T1586.003, T1587.001, T1587.002, T1587.003, T1588.001, T1588.002, T1588.003, T1588.004, T1588.006, T1589, T1589.001, T1589.002, T1591, T1591.004, T1593.001, T1593.002, T1594, T1595, T1595.002, T1596.005, T1598.001, T1598.004, T1599
+    T16xx techniques (19): T1606.001, T1606.002, T1608.001, T1608.002, T1608.004, T1608.005, T1614.001, T1615, T1620, T1621, T1622, T1653, T1656, T1657, T1665, T1669, T1671, T1678, T1680
+================================================================================

@@ -1,0 +1,10 @@
+# STICKS — Structured CTI to Executable Emulation Pipeline
+# Core dependencies
+stix2>=3.0
+ijson>=3.2
+pyyaml>=6.0
+requests>=2.28
+
+# Optional: LLM-assisted Stage 2 translation (not required for core pipeline)
+# anthropic>=0.25
+# openai>=1.0

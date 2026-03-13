@@ -1,0 +1,355 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: SolarWinds Compromise
+# Campaign ID: campaign--808d6b30-df4e-4341-8248-724da4bac650
+# Generated: 2026-03-06T14:57:51.200631
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__808d6b30_df4e_4341_8248_724da4bac650:
+
+  # --- Windows SUT Variant ---
+  windows:
+    os: ["Windows Server 2019 Datacenter, fully patched except for SolarWinds Orion vulnerability (pre-patch)"]
+
+    services:
+      wmi: running
+      winrm: running
+      smb: running
+      schedule: running
+      firewall: running
+      powershell: running
+      solarwinds_orion: running # SolarWinds Orion Platform 2019.4 HF5 or earlier
+      dns_client: running
+      eventlog: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      rdp_enabled: true
+      smb_shares: enabled
+      winrm_ports: open
+      firewall_rules:
+        - allow_inbound_smb
+        - allow_outbound_https
+        - allow_inbound_rdp
+      # Required for lateral movement, C2, and exfiltration
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      kerberos_enabled: true
+      saml_provider_configured: true
+      adfs_enabled: true
+      domain_accounts: present
+      local_accounts: present
+
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wmic.exe
+        - rundll32.exe
+      scripting_languages:
+        - powershell
+        - vbscript
+      task_scheduler: enabled
+
+    installed_software:
+      - SolarWinds Orion Platform 2019.4 HF5 or earlier
+      - Microsoft Office 2016 or later
+      - 7-Zip 19.00
+      - WinRAR 5.80
+      - Chrome 87
+      - Firefox 83
+      - Visual Studio Tools
+      - Windows Defender (enabled)
+      - Sysinternals Suite
+      - OpenSSH Client
+      - .NET Framework 4.8
+      - Python 3.8
+
+    privilege: "Domain Admin" # Required for DCSync, Kerberoasting, trust modification, etc.
+
+    domain_role: "Domain-joined workstation/server" # Not DC, but must be able to reach DC
+
+    persistence_surfaces:
+      - Scheduled Task
+      - Windows Service
+      - WMI Event Subscription
+      - Registry Run Keys
+
+    security_controls:
+      windows_defender: enabled
+      applocker: disabled # Disabled to allow arbitrary code execution
+      uac: enabled
+      logging:
+        eventlog: enabled
+        powershell: enabled
+      firewall: enabled
+      smartscreen: disabled
+      tamper_protection: disabled # To allow disabling/modifying tools
+
+    artifacts:
+      host:
+        directories:
+          - "C:\\Program Files\\SolarWinds\\Orion"
+          - "C:\\Users\\Public\\"
+          - "C:\\Windows\\System32\\Tasks"
+          - "C:\\Windows\\System32\\winevt\\Logs"
+          - "C:\\Windows\\System32\\wbem"
+        processes:
+          - "SolarWinds.BusinessLayerHost.exe"
+          - "powershell.exe"
+          - "cmd.exe"
+          - "rundll32.exe"
+          - "svchost.exe"
+          - "explorer.exe"
+          - "wmiprvse.exe"
+          - "taskhostw.exe"
+        registry_keys:
+          - "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"
+          - "HKLM\\SYSTEM\\CurrentControlSet\\Services"
+          - "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Schedule\\TaskCache\\Tasks"
+          - "HKLM\\SOFTWARE\\Microsoft\\WBEM\\CIMOM"
+      network:
+        protocols:
+          - SMB
+          - RDP
+          - HTTP
+          - HTTPS
+          - DNS
+          - LDAP
+          - Kerberos
+          - SAML
+          - WebDAV
+
+  # --- Linux SUT Variant ---
+  linux:
+    os: ["Ubuntu Server 20.04 LTS, kernel 5.4.x, fully patched except for vulnerable packages if required"]
+
+    services:
+      ssh: running
+      cron: running
+      samba: running
+      firewall: running
+      postfix: running
+      rsyslog: running
+      docker: running # For container techniques
+      apache2: running # For public-facing application
+      dns_client: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true # SSSD/Realmd for AD integration
+      samba_shares: enabled
+      firewall_rules:
+        - allow_inbound_ssh
+        - allow_inbound_samba
+        - allow_outbound_https
+        - allow_inbound_http
+      # Required for lateral movement, C2, and exfiltration
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      kerberos_enabled: true
+      domain_accounts: present
+      local_accounts: present
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - python3
+      scripting_languages:
+        - python3
+        - perl
+        - bash
+      cron: enabled
+
+    installed_software:
+      - sudo
+      - python3
+      - tar
+      - gzip
+      - zip
+      - openssl
+      - docker-ce 19.03
+      - samba
+      - apache2
+      - git
+      - gpg
+      - rsyslog
+      - net-tools
+      - curl
+      - wget
+      - nmap
+      - chromium-browser
+
+    privilege: "sudo/root"
+
+    domain_role: "Domain-joined workstation/server"
+
+    persistence_surfaces:
+      - Cron Job
+      - Systemd Service
+      - SSH Authorized Keys
+
+    security_controls:
+      selinux: disabled
+      apparmor: disabled
+      auditd: enabled
+      firewall: enabled
+      logging: enabled
+
+    artifacts:
+      host:
+        directories:
+          - "/etc/cron.d/"
+          - "/var/log/"
+          - "/home/"
+          - "/etc/ssh/"
+          - "/var/www/html/"
+          - "/etc/samba/"
+        processes:
+          - "sshd"
+          - "cron"
+          - "smbd"
+          - "apache2"
+          - "bash"
+          - "python3"
+        files:
+          - "/etc/passwd"
+          - "/etc/shadow"
+          - "/etc/krb5.keytab"
+          - "/etc/sudoers"
+      network:
+        protocols:
+          - SSH
+          - SMB
+          - HTTP
+          - HTTPS
+          - DNS
+          - LDAP
+          - Kerberos
+
+  # --- macOS SUT Variant ---
+  macos:
+    os: ["macOS Catalina 10.15.7, fully patched except for vulnerable third-party apps"]
+
+    services:
+      ssh: running
+      launchd: running
+      firewall: running
+      apache: running
+      cron: running
+      dns_client: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true # Bound to AD via Directory Utility
+      firewall_rules:
+        - allow_inbound_ssh
+        - allow_outbound_https
+        - allow_inbound_http
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      kerberos_enabled: true
+      domain_accounts: present
+      local_accounts: present
+
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - python3
+      scripting_languages:
+        - python3
+        - applescript
+        - bash
+      launchd: enabled
+
+    installed_software:
+      - python3
+      - tar
+      - zip
+      - openssl
+      - git
+      - Google Chrome
+      - Firefox
+      - Microsoft Office 2019
+      - Homebrew
+      - gpg
+      - apache2
+      - rsyslog
+
+    privilege: "admin/root"
+
+    domain_role: "Domain-joined workstation"
+
+    persistence_surfaces:
+      - Launch Agent
+      - Launch Daemon
+      - Cron Job
+
+    security_controls:
+      gatekeeper: disabled
+      sip: disabled
+      firewall: enabled
+      logging: enabled
+
+    artifacts:
+      host:
+        directories:
+          - "/Library/LaunchDaemons/"
+          - "/Users/Shared/"
+          - "/var/log/"
+          - "/etc/ssh/"
+          - "/Applications/SolarWinds/"
+        processes:
+          - "launchd"
+          - "sshd"
+          - "bash"
+          - "python3"
+          - "httpd"
+        files:
+          - "/etc/passwd"
+          - "/etc/krb5.keytab"
+          - "/etc/sudoers"
+      network:
+        protocols:
+          - SSH
+          - HTTP
+          - HTTPS
+          - DNS
+          - LDAP
+          - Kerberos
+
+  # --- Containers SUT Variant ---
+  containers:
+    os: ["Ubuntu 20.04 base image, Docker 19.03"]
+
+    services:
+      ssh: running
+      cron: running
+      apache2: running
+      firewall: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      container_networking: bridge
+      firewall_rules:
+        - allow_inbound_ssh
+        - allow_inbound_http
+        - allow_outbound_https
+
+   

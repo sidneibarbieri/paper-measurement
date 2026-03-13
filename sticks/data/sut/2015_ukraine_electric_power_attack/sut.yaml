@@ -1,0 +1,366 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: 2015 Ukraine Electric Power Attack
+# Campaign ID: campaign--46421788-b6e1-4256-b351-f8beffd1afba
+# Generated: 2026-03-06T15:00:55.809346
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__46421788_b6e1_4256_b351_f8beffd1afba:
+
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows Server 2012 R2", "Windows 10 Pro 1909"]
+    services:
+      wmi: enabled
+      winrm: enabled
+      rdp: enabled
+      smb: enabled
+      rpc: enabled
+      outlook: enabled
+      antivirus: enabled # Required for Disable or Modify Tools technique
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      netbios: enabled
+      firewall: enabled # Should allow lateral movement protocols (SMB, RDP)
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      kerberos: enabled
+      ntlm: enabled
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      scripting_languages:
+        - powershell
+        - vbscript
+      rundll32: present
+    installed_software:
+      - Microsoft Office 2016
+      - BlackEnergy3 # Emulation binary
+      - KillDisk # Emulation binary
+      - WinPcap 4.1.3 # For network sniffing
+      - 7-Zip 19.00
+      - Python 3.8
+    privilege: local_admin
+    domain_role: member_workstation
+    persistence_surfaces:
+      - registry_run_keys
+      - scheduled_tasks
+      - services
+      - startup_folder
+    security_controls:
+      applocker: disabled
+      uac: enabled
+      defender: enabled
+      tamper_protection: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public
+          - C:\Windows\System32
+          - C:\ProgramData
+        processes:
+          - rundll32.exe
+          - powershell.exe
+          - outlook.exe
+          - explorer.exe
+          - winword.exe
+        registry_keys:
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - smb
+          - rdp
+          - dns
+          - https
+          - http
+          - ldap
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7.9"]
+    services:
+      ssh: enabled
+      cron: enabled
+      samba: enabled
+      postfix: enabled # For spearphishing emulation
+      auditd: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      firewall: enabled # Allow SSH, SMB, and required lateral movement ports
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      passwd_file: present
+      shadow_file: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      scripting_languages:
+        - python3
+        - perl
+        - bash
+    installed_software:
+      - BlackEnergy3 # Emulation binary
+      - KillDisk # Emulation binary
+      - tcpdump 4.9.3
+      - netcat-openbsd 1.206
+      - samba 4.11
+      - postfix 3.4
+      - python3
+      - gcc
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - systemd_service
+      - rc.local
+      - ssh_authorized_keys
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      auditd: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /etc/systemd/system
+          - /home
+        processes:
+          - sshd
+          - bash
+          - python3
+          - tcpdump
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - /etc/rc.local
+      network:
+        protocols:
+          - ssh
+          - smb
+          - dns
+          - https
+          - http
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS 10.15 Catalina"]
+    services:
+      ssh: enabled
+      cron: enabled
+      launchd: enabled
+      postfix: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      keychain: present
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+      scripting_languages:
+        - python3
+        - applescript
+    installed_software:
+      - BlackEnergy3 # Emulation binary
+      - KillDisk # Emulation binary
+      - tcpdump 4.9.3
+      - python3
+      - postfix
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launchd
+      - cron
+      - login_hook
+      - ssh_authorized_keys
+    security_controls:
+      gatekeeper: disabled
+      sip: disabled # System Integrity Protection
+      xprotect: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /Users/Shared
+          - /Library/LaunchAgents
+          - /Library/LaunchDaemons
+        processes:
+          - sshd
+          - bash
+          - zsh
+          - tcpdump
+        files:
+          - /etc/passwd
+          - /etc/hosts
+      network:
+        protocols:
+          - ssh
+          - dns
+          - https
+          - http
+
+  # --- ESXi Variant ---
+  esxi:
+    os: ["VMware ESXi 6.7"]
+    services:
+      ssh: enabled
+      web_client: enabled
+      vmotion: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled # Allow SSH, web client
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - esxcli
+        - sh
+    installed_software:
+      - BlackEnergy3 # Emulation binary
+      - KillDisk # Emulation binary
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+    security_controls:
+      lockdown_mode: disabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/core
+        processes:
+          - hostd
+          - sshd
+        files:
+          - /etc/rc.local.d/local.sh
+      network:
+        protocols:
+          - ssh
+          - https
+
+  # --- Containers Variant ---
+  containers:
+    os: ["Ubuntu 20.04 LTS (container base)", "Alpine 3.12"]
+    services:
+      ssh: enabled
+      cron: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - sh
+        - bash
+      scripting_languages:
+        - python3
+    installed_software:
+      - BlackEnergy3 # Emulation binary
+      - KillDisk # Emulation binary
+      - netcat-openbsd
+      - python3
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - ssh_authorized_keys
+    security_controls:
+      apparmor: disabled
+      seccomp: disabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+        processes:
+          - bash
+          - sh
+        files:
+          - /etc/passwd
+      network:
+        protocols:
+          - ssh
+          - https
+          - http
+
+  # --- Network Devices Variant ---
+  network_devices:
+    os: ["Cisco IOS XE 16.9", "MikroTik RouterOS 6.47"]
+    services:
+      ssh: enabled
+      snmp: enabled
+      telnet: enabled # For legacy access
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_accounts: present
+    execution_environment:
+      shells:
+        - cli
+    installed_software:
+      - BlackEnergy3 # Emulation binary (if supported)
+    privilege: enable
+    domain_role: standalone
+    persistence_surfaces:
+      - startup_config
+      - scheduled_script
+    security_controls:
+      aaa_new_model: enabled
+      snmp: enabled
+    artifacts:
+      host:
+        directories:
+          - flash:
+        processes:
+          - sshd
+          - snmpd
+        files:
+          - startup-config
+      network:
+        protocols:
+          - ssh
+          - telnet
+          - snmp
+          - https
+          - http
+
+  # --- Identity Provider Variant ---
+  identity_provider:
+    os: ["Windows Server 2016 (Active Directory Federation Services)", "Ubuntu 20.04 (OpenLDAP)"]
+    services:
+      adfs: enabled
+      ldap: enabled
+      kerberos: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+    identity:
+      domain_controller_re

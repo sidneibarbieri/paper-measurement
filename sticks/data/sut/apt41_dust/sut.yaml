@@ -1,0 +1,324 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: APT41 DUST
+# Campaign ID: campaign--add4d9de-1256-4166-83b8-57087288dced
+# Generated: 2026-03-06T14:56:59.312316
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__add4d9de_1256_4166_83b8_57087288dced:
+
+  # ---- WINDOWS SUT ----
+  windows:
+    os: [Windows Server 2019, Windows 10 Enterprise 21H2]
+    services:
+      w32time: running
+      eventlog: running
+      winrm: running
+      w3svc: running         # Required for Web Shell/Web Service
+      MSSQLSERVER: running   # Required for Database/Scan Databases
+      TermService: running
+      dnscache: running
+      # Add other services as needed for persistence and execution
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smb: allowed
+      rdp: allowed
+      # Required for exfiltration and ingress tool transfer
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_account: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      .NET_Framework: 4.8
+      python: 3.10
+      # Required for script-based and binary execution
+    installed_software:
+      - 7-Zip 22.01           # Archive via Utility
+      - WinRAR 6.11
+      - Microsoft Office 365  # Office Suite
+      - Google Chrome 121
+      - OpenSSL 3.0.8         # Asymmetric Cryptography
+      - SQL Server 2019       # Database
+      - IIS 10                # Web Service/Web Shell
+      - Python 3.10
+      - Git 2.40
+      - Visual Studio 2022    # Code Signing
+      - AWS CLI 2.13          # Exfil to Cloud Storage
+      - Azure CLI 2.53
+      - VMware Tools 12.2
+      - Sysinternals Suite
+      - Windows Defender (enabled, but exclusions for test directories)
+    privilege: local_admin
+    domain_role: member_server
+    persistence_surfaces:
+      - Scheduled Task
+      - Windows Service
+      - Registry Run Keys
+      - DLL Search Order Hijacking
+      - IIS Web Shell
+    security_controls:
+      antivirus: enabled # Exclusions for test directories
+      EDR: disabled      # To allow full technique execution
+      firewall: enabled  # Outbound HTTPS allowed
+      applocker: disabled
+      UAC: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Temp
+          - C:\inetpub\wwwroot
+          - C:\ProgramData
+          - C:\Users\Public
+          - C:\Windows\System32
+        processes:
+          - explorer.exe
+          - powershell.exe
+          - cmd.exe
+          - svchost.exe
+          - w3wp.exe
+          - sqlservr.exe
+          - msiexec.exe
+          - msedge.exe
+          - python.exe
+        registry_keys:
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Services
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - HTTP
+          - HTTPS
+          - SMB
+          - DNS
+          - RDP
+
+  # ---- LINUX SUT ----
+  linux:
+    os: [Ubuntu 22.04 LTS, CentOS 7.9]
+    services:
+      sshd: running
+      apache2: running      # Web Service/Web Shell
+      mysql: running        # Database/Scan Databases
+      cron: running
+      rsyslog: running
+      systemd: running
+      # Add other services as needed for persistence and execution
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      smb: allowed
+      # Required for exfiltration and ingress tool transfer
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+        - /usr/bin/python3
+      python: 3.10
+      perl: 5.34
+    installed_software:
+      - zip 3.0
+      - tar 1.34
+      - gzip 1.10
+      - MySQL 8.0
+      - Apache 2.4
+      - OpenSSL 3.0.2
+      - Python 3.10
+      - AWS CLI 2.13
+      - Azure CLI 2.53
+      - Docker 24.0
+      - Git 2.40
+      - cron
+      - netcat
+      - socat
+      - curl
+      - wget
+    privilege: sudo
+    domain_role: standalone
+    persistence_surfaces:
+      - cron job
+      - systemd service
+      - SSH authorized_keys
+      - Web Shell in /var/www/html
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      auditd: enabled
+      firewall: enabled # Outbound HTTPS allowed
+      antivirus: disabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/www/html
+          - /etc/systemd/system
+          - /home/testuser
+          - /var/log
+        processes:
+          - bash
+          - python3
+          - apache2
+          - mysqld
+          - cron
+          - systemd
+          - nc
+          - curl
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - HTTP
+          - HTTPS
+          - DNS
+          - SMB
+
+  # ---- MACOS SUT ----
+  macos:
+    os: [macOS Ventura 13.4]
+    services:
+      ssh: running
+      apache: running
+      launchd: running
+      # Add other services as needed for persistence and execution
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      credential_cache: present
+      admin_account: present
+    execution_environment:
+      shells:
+        - /bin/zsh
+        - /bin/bash
+        - /usr/bin/python3
+      python: 3.10
+    installed_software:
+      - zip 3.0
+      - tar 1.34
+      - gzip 1.10
+      - Apache 2.4
+      - MySQL 8.0
+      - OpenSSL 3.0.2
+      - Python 3.10
+      - AWS CLI 2.13
+      - Azure CLI 2.53
+      - Git 2.40
+      - Microsoft Office 365
+      - Xcode 14.3 # For code signing
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launchd plist
+      - cron job
+      - Web Shell in /Library/WebServer/Documents
+    security_controls:
+      gatekeeper: disabled
+      sip: disabled
+      firewall: enabled # Outbound HTTPS allowed
+      antivirus: disabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /Library/WebServer/Documents
+          - /Users/testuser
+          - /etc/cron.d
+          - /var/log
+        processes:
+          - zsh
+          - bash
+          - httpd
+          - mysqld
+          - python3
+          - launchd
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - HTTP
+          - HTTPS
+          - DNS
+
+  # ---- ESXi SUT ----
+  esxi:
+    os: [VMware ESXi 7.0 Update 3]
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+      webAccess: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      management_network: enabled
+    identity:
+      root_account: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/bash
+    installed_software:
+      - OpenSSL 1.1.1
+      - Python 3.10
+      - VMware Tools 12.2
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+      - cron job
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled # Outbound HTTPS allowed
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/log
+          - /etc/rc.local.d
+        processes:
+          - hostd
+          - vpxa
+          - python3
+          - bash
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - HTTP
+          - HTTPS
+          - DNS
+
+  # ---- NETWORK DEVICES SUT ----
+  network_devices:
+    os: [Cisco IOS XE 17.6, JunOS 21.4]
+    services:
+      ssh: running
+      http: running
+      snmp: running
+      tftp: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      management_vlan: enabled
+    identity:
+      local_admin_account: present
+    execution_environment:
+      shells:
+        - cli
+    installed_software:
+      - OpenSSL 1.1.1

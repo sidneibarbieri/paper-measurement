@@ -1,0 +1,339 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Quad7 Activity
+# Campaign ID: campaign--e7511089-1076-4a3b-984d-1a0a8afe31e9
+# Generated: 2026-03-06T15:07:54.708755
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__e7511089_1076_4a3b_984d_1a0a8afe31e9:
+
+  # --- WINDOWS VARIANT ---
+  windows:
+    os: ["Windows Server 2019", "Windows 10 Pro 21H2"]
+    services:
+      winrm: enabled
+      smb: enabled
+      ftp: enabled
+      ssh: enabled
+      http: enabled
+      https: enabled
+      telnet: enabled
+      rdp: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      non_standard_ports:
+        - 7777   # Required for Quad7 botnet emulation
+        - 8080
+        - 8443
+      inbound_ports:
+        - 21    # FTP
+        - 22    # SSH
+        - 80    # HTTP
+        - 443   # HTTPS
+        - 7777  # Quad7 botnet port
+      external_proxy_access: allowed
+      multi_hop_proxy_capable: true
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      multiple_user_accounts: present
+      password_policy: weak   # To allow password spraying
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wsl.exe
+      fileless_execution: enabled   # For fileless storage technique
+    installed_software:
+      - Microsoft Office 2019
+      - OpenSSH for Windows
+      - FileZilla Server 1.1.0
+      - Python 3.9
+      - WinSCP 5.19
+      - 7-Zip 19.00
+      - Docker Desktop 4.x
+      - VMware Workstation 16.x
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - registry_run_keys
+      - scheduled_tasks
+      - services
+      - startup_folder
+    security_controls:
+      antivirus: disabled   # To allow tool modification/disabling
+      firewall: enabled
+      applocker: disabled
+      edr: disabled
+      logging: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public
+          - C:\Windows\Temp
+          - C:\ProgramData
+        processes:
+          - svchost.exe
+          - powershell.exe
+          - cmd.exe
+          - explorer.exe
+          - python.exe
+        registry_keys:
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - http
+          - https
+          - ftp
+          - ssh
+          - telnet
+          - custom_tcp_7777
+
+  # --- LINUX VARIANT ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "Debian 11"]
+    services:
+      ssh: enabled
+      ftp: enabled
+      http: enabled
+      https: enabled
+      telnet: enabled
+      cron: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      non_standard_ports:
+        - 7777
+        - 8080
+        - 8443
+      inbound_ports:
+        - 21
+        - 22
+        - 80
+        - 443
+        - 7777
+      external_proxy_access: allowed
+      multi_hop_proxy_capable: true
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      multiple_user_accounts: present
+      password_policy: weak
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      fileless_execution: enabled
+    installed_software:
+      - openssh-server 8.2p1
+      - vsftpd 3.0.3
+      - apache2 2.4.41
+      - python3.8
+      - netcat-openbsd 1.206
+      - curl 7.68.0
+      - docker-ce 20.10
+      - cron
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - crontab
+      - systemd_service
+      - rc.local
+      - ~/.bashrc
+    security_controls:
+      selinux: disabled
+      apparmor: disabled
+      firewall: enabled
+      auditd: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /etc
+          - /home
+        processes:
+          - sshd
+          - vsftpd
+          - apache2
+          - python3
+          - bash
+        files:
+          - /etc/passwd
+          - /etc/shadow
+      network:
+        protocols:
+          - http
+          - https
+          - ftp
+          - ssh
+          - telnet
+          - custom_tcp_7777
+
+  # --- MACOS VARIANT ---
+  macos:
+    os: ["macOS Monterey 12.6"]
+    services:
+      ssh: enabled
+      ftp: enabled
+      http: enabled
+      https: enabled
+      telnet: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      non_standard_ports:
+        - 7777
+        - 8080
+        - 8443
+      inbound_ports:
+        - 21
+        - 22
+        - 80
+        - 443
+        - 7777
+      external_proxy_access: allowed
+      multi_hop_proxy_capable: true
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      multiple_user_accounts: present
+      password_policy: weak
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - sh
+      fileless_execution: enabled
+    installed_software:
+      - python3.9
+      - openssh 8.6p1
+      - vsftpd 3.0.3
+      - docker 20.10
+      - curl 7.79.1
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launch_agents
+      - launch_daemons
+      - crontab
+      - ~/.zshrc
+    security_controls:
+      gatekeeper: disabled
+      firewall: enabled
+      xprotect: disabled
+      logging: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /Users/Shared
+        processes:
+          - sshd
+          - python3
+          - bash
+          - zsh
+        files:
+          - /etc/passwd
+      network:
+        protocols:
+          - http
+          - https
+          - ftp
+          - ssh
+          - telnet
+          - custom_tcp_7777
+
+  # --- NETWORK DEVICE VARIANT (SOHO Router Emulation) ---
+  network_device:
+    os: ["OpenWRT 21.02", "TP-Link custom firmware"]
+    services:
+      telnet: enabled
+      ssh: enabled
+      http: enabled
+      https: enabled
+      ftp: enabled
+      xlogin: enabled   # Emulate Quad7 xlogin banner on TCP 7777
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      non_standard_ports:
+        - 7777
+        - 8080
+      inbound_ports:
+        - 21
+        - 22
+        - 23
+        - 80
+        - 443
+        - 7777
+      external_proxy_access: allowed
+      multi_hop_proxy_capable: true
+    identity:
+      credential_cache: present
+      multiple_user_accounts: present
+      password_policy: weak
+    execution_environment:
+      shells:
+        - ash
+        - sh
+      fileless_execution: enabled
+    installed_software:
+      - dropbear 2020.81
+      - busybox 1.33.1
+      - vsftpd 3.0.3
+      - custom xlogin service
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - /etc/rc.local
+      - /etc/init.d/
+    security_controls:
+      firewall: enabled
+      logging: enabled
+      firmware_updates: disabled   # To allow exploitation of public-facing apps
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+        processes:
+          - dropbear
+          - vsftpd
+          - xlogin
+        files:
+          - /etc/passwd
+      network:
+        protocols:
+          - http
+          - https
+          - ftp
+          - ssh
+          - telnet
+          - custom_tcp_7777
+
+  # --- CONTAINER / IAAS / ESXi / SAAS / OFFICE SUITE / IDENTITY PROVIDER ---
+  # These platforms are covered by the above base OS configurations, but for completeness:
+  container:
+    os: ["Ubuntu 20.04 LTS (containerized)", "Alpine Linux 3.15"]
+    services:
+      ssh: enabled
+      ftp: enabled
+      http: enabled
+      https: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      non_standard_ports:
+        - 7777
+        - 808

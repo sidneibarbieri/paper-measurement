@@ -1,0 +1,6 @@
+{
+  "name": "Triton Safety Instrumented System Attack",
+  "id": "campaign--45a98f02-852f-49b2-94c0-c63207bebbbf",
+  "generated": "2026-03-06T15:12:30.729369",
+  "sut_file": "sut.yaml"
+}

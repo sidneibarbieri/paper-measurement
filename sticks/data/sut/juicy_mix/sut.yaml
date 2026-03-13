@@ -1,0 +1,390 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Juicy Mix
+# Campaign ID: campaign--7ab2f1a1-26af-4204-ad84-d640fde391da
+# Generated: 2026-03-06T14:58:52.486313
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__7ab2f1a1_26af_4204_ad84_d640fde391da:
+
+  # --- Windows Variant ---
+  windows_10_22h2:
+    os: [Windows 10 Enterprise, 22H2]
+
+    services:
+      Schedule: running         # Required for Scheduled Task
+      WinRM: running           # Remote management, often abused
+      W32Time: running         # Time sync, may be used in persistence
+      PowerShell: enabled      # Required for PowerShell execution
+      WebClient: running       # For web protocol access
+      CredentialManager: running # For Windows Credential Manager access
+
+    network:
+      outbound_https: allowed  # Required for C2, exfiltration, web protocols
+      dns_resolution: enabled
+      domain_joined: true      # Enables domain credential scenarios
+      smb: allowed             # For lateral movement, staging
+      rdp: allowed             # For remote access
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present # For credential access techniques
+
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wscript.exe           # For Visual Basic execution
+      scripting_languages:
+        - PowerShell
+        - VBScript
+      scheduled_task_access: enabled
+
+    installed_software:
+      - Google Chrome 120.0    # For browser credential techniques
+      - Mozilla Firefox 121.0
+      - Microsoft Edge 120.0
+      - Microsoft Office 2019  # For VB macro execution
+      - 7-Zip 23.01            # For staging, encoding/decoding
+      - Python 3.11            # For custom scripts
+      - Mango Backdoor (test sample) # For malware technique emulation
+
+    privilege: local_admin     # Required for some discovery and credential access
+
+    domain_role: workstation   # Typical target role
+
+    persistence_surfaces:
+      - Scheduled Task
+      - Registry Run Key
+      - Startup Folder
+
+    security_controls:
+      WindowsDefender: enabled
+      AMSI: enabled
+      CredentialGuard: disabled # Disabled to allow credential theft
+      UAC: enabled
+      AppLocker: disabled       # Disabled for unrestricted execution
+
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\Downloads
+          - C:\Windows\Temp
+          - C:\ProgramData
+        processes:
+          - powershell.exe
+          - schtasks.exe
+          - explorer.exe
+          - wscript.exe
+          - Mango.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SMB
+          - RDP
+
+  # --- Linux Variant ---
+  ubuntu_22_04:
+    os: [Ubuntu Linux 22.04 LTS]
+
+    services:
+      cron: running            # Required for scheduled tasks
+      ssh: running             # For remote access
+      apache2: stopped         # Web server not required by default
+      systemd: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      smb: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present # For browser credential theft
+
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+        - /usr/bin/python3
+      scripting_languages:
+        - Python 3.10+
+        - Bash
+
+    installed_software:
+      - Google Chrome 120.0
+      - Mozilla Firefox 121.0
+      - 7zip 19.00
+      - base64 (coreutils)
+      - Mango Backdoor (test sample)
+
+    privilege: sudoer          # Required for some discovery and persistence
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - systemd service
+      - ~/.config/autostart
+
+    security_controls:
+      AppArmor: enabled
+      SELinux: disabled        # Disabled for easier emulation
+      auditd: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /home/testuser/Downloads
+        processes:
+          - bash
+          - cron
+          - python3
+          - Mango
+        files:
+          - /etc/cron.d/testjob
+          - /home/testuser/.config/autostart/mango.desktop
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SSH
+
+  # --- macOS Variant ---
+  macos_ventura_13:
+    os: [macOS Ventura 13.6]
+
+    services:
+      launchd: running         # For persistence and scheduled tasks
+      ssh: running
+      system_profiler: available
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - /bin/zsh
+        - /bin/bash
+        - /usr/bin/python3
+      scripting_languages:
+        - Python 3.10+
+        - AppleScript
+
+    installed_software:
+      - Google Chrome 120.0
+      - Mozilla Firefox 121.0
+      - base64 (coreutils)
+      - Mango Backdoor (test sample)
+
+    privilege: admin
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - launchd
+      - cron
+      - ~/Library/LaunchAgents
+
+    security_controls:
+      Gatekeeper: enabled
+      SIP: enabled
+      XProtect: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /Users/testuser/Downloads
+          - /Library/LaunchDaemons
+        processes:
+          - bash
+          - launchd
+          - Mango
+        files:
+          - /Users/testuser/Library/LaunchAgents/com.mango.agent.plist
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SSH
+
+  # --- ESXi Variant ---
+  vmware_esxi_7_0:
+    os: [VMware ESXi 7.0 Update 3]
+
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/bash
+
+    installed_software:
+      - base64 (busybox)
+      - Mango Backdoor (test sample)
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - rc.local
+      - cron
+
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+        processes:
+          - sh
+          - hostd
+          - Mango
+        files:
+          - /etc/rc.local.d/local.sh
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SSH
+
+  # --- IaaS Variant (Generic Cloud VM) ---
+  iaas_ubuntu_22_04:
+    os: [Ubuntu Linux 22.04 LTS, cloud image]
+
+    services:
+      ssh: running
+      cron: running
+      cloud-init: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+        - /usr/bin/python3
+
+    installed_software:
+      - base64 (coreutils)
+      - Mango Backdoor (test sample)
+
+    privilege: sudoer
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - cloud-init
+
+    security_controls:
+      AppArmor: enabled
+      SELinux: disabled
+
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+        processes:
+          - bash
+          - cron
+          - Mango
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SSH
+
+  # --- Network Device Variant (Cisco IOS Example) ---
+  cisco_ios_xe_17:
+    os: [Cisco IOS XE 17.6]
+
+    services:
+      ssh: running
+      http: running
+      https: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - CLI
+
+    installed_software:
+      - Mango Backdoor (test sample) # Emulated via TCL or EEM script
+
+    privilege: enable
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - EEM script
+      - Startup config
+
+    security_controls:
+      aaa: enabled
+      snmp: enabled
+
+    artifacts:
+      host:
+        directories:
+          - flash:/
+          - nvram:/
+        processes:
+          - sshd
+          - httpd
+        files:
+         

@@ -1,0 +1,406 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: 2016 Ukraine Electric Power Attack
+# Campaign ID: campaign--aa73efef-1418-4dbe-b43c-87a498e97234
+# Generated: 2026-03-06T15:00:06.069732
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__aa73efef_1418_4dbe_b43c_87a498e97234:
+
+  # --- Windows Variant ---
+  windows:
+    os: [Windows Server 2016, Windows 10 Enterprise 1809]
+    
+    services:
+      wmi: running
+      winrm: running
+      eventlog: running
+      lanmanserver: running
+      lanmanworkstation: running
+      powershell: enabled
+      sqlserver: running # Required for SQL Stored Procedures
+      smb: running
+      netlogon: running
+      termservice: running
+      # Add others as needed for lateral movement
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smb_shares_accessible: true
+      rdp_access: allowed
+      firewall: enabled # But allow required ports
+      # Ensure lateral movement protocols are not blocked
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present # For LSASS credential access
+      local_admin_account: present
+      domain_accounts: present
+      # Permit creation/manipulation of accounts
+
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wmic.exe
+      scripting_languages:
+        - powershell
+        - vbscript
+        - visual_basic
+      sql_cli: present # For SQL stored procedures
+      # Enable unsigned PowerShell scripts for emulation
+
+    installed_software:
+      - Microsoft Office 2016
+      - PowerShell 5.1
+      - Visual Basic for Applications
+      - SQL Server 2016
+      - 7-Zip 19.00 # For file packing/obfuscation
+      - Sysinternals Suite
+      - WinRAR 5.80
+      - Python 3.7
+      - Industroyer sample # For adversary emulation
+      # Ensure all are unpatched or at least not latest
+
+    privilege: local_admin # Required for most techniques
+
+    domain_role: member_workstation # Or member_server for lateral movement
+
+    persistence_surfaces:
+      - windows_service
+      - scheduled_task
+      - registry_run_key
+      - startup_folder
+
+    security_controls:
+      windows_defender: enabled # But allow exclusions for emulation
+      applocker: disabled
+      uac: enabled
+      event_log: enabled
+      tamper_protection: disabled # To allow event log manipulation
+      smb_signing: disabled # For easier lateral movement
+
+    artifacts:
+      host:
+        directories:
+          - C:\Windows\System32
+          - C:\ProgramData
+          - C:\Users\Public
+          - C:\Temp
+        processes:
+          - lsass.exe
+          - svchost.exe
+          - winlogon.exe
+          - powershell.exe
+          - wscript.exe
+          - sqlservr.exe
+        registry_keys:
+          - HKLM\SYSTEM\CurrentControlSet\Services
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Control\Lsa
+      network:
+        protocols:
+          - SMB
+          - RDP
+          - DNS
+          - HTTP
+          - HTTPS
+          - LDAP
+
+  # --- Linux Variant ---
+  linux:
+    os: [Ubuntu 18.04 LTS, CentOS 7.9]
+    
+    services:
+      sshd: running
+      cron: running
+      samba: running # For SMB lateral movement
+      sqlserver: running # If SQL stored procedures are to be emulated
+      sudo: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      firewall: enabled # Allow required ports
+      smb_shares_accessible: true
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_admin_account: present
+      passwd_file: present
+      shadow_file: present
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - python3
+      scripting_languages:
+        - python3
+        - bash
+        - perl
+      sql_cli: present
+
+    installed_software:
+      - samba 4.7
+      - python3
+      - gcc
+      - cron
+      - sudo
+      - netcat
+      - socat
+      - unzip
+      - Industroyer sample
+      - LibreOffice 6.0 # For Office Suite emulation
+      - 7-Zip
+      - sqlcmd
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - systemd_service
+      - rc.local
+      - /etc/passwd
+      - /etc/shadow
+
+    security_controls:
+      selinux: disabled
+      apparmor: disabled
+      auditd: enabled
+      fail2ban: disabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+          - /usr/local/bin
+        processes:
+          - sshd
+          - smbd
+          - cron
+          - bash
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - /etc/sudoers
+      network:
+        protocols:
+          - SSH
+          - SMB
+          - DNS
+          - HTTP
+          - HTTPS
+
+  # --- macOS Variant ---
+  macos:
+    os: [macOS 10.15 Catalina]
+    
+    services:
+      ssh: running
+      cron: running
+      smbd: running # For SMB lateral movement
+      applescript: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      firewall: enabled
+
+    identity:
+      credential_cache: present
+      local_admin_account: present
+
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - python3
+      scripting_languages:
+        - applescript
+        - python3
+        - bash
+
+    installed_software:
+      - python3
+      - smbd
+      - cron
+      - Industroyer sample
+      - Microsoft Office 2016 for Mac
+      - 7-Zip
+
+    privilege: admin
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - launch_agent
+      - cron
+      - login_hook
+
+    security_controls:
+      gatekeeper: disabled
+      sip: disabled
+      filevault: disabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+          - /Users/Shared
+        processes:
+          - bash
+          - smbd
+          - cron
+          - loginwindow
+        files:
+          - /etc/passwd
+          - /etc/sudoers
+      network:
+        protocols:
+          - SMB
+          - SSH
+          - DNS
+          - HTTP
+          - HTTPS
+
+  # --- ESXi Variant ---
+  esxi:
+    os: [VMware ESXi 6.5]
+    
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+      cron: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled
+
+    identity:
+      root_account: present
+      local_accounts: present
+
+    execution_environment:
+      shells:
+        - sh
+      scripting_languages:
+        - python
+        - shell
+
+    installed_software:
+      - python
+      - Industroyer sample
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - rc.local
+      - cron
+
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+        processes:
+          - hostd
+          - vpxa
+          - sshd
+        files:
+          - /etc/passwd
+      network:
+        protocols:
+          - SSH
+          - DNS
+          - HTTPS
+
+  # --- Containers Variant ---
+  containers:
+    os: [Ubuntu 18.04 LTS, Alpine 3.12]
+    
+    services:
+      sshd: running
+      cron: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled
+
+    identity:
+      local_admin_account: present
+
+    execution_environment:
+      shells:
+        - sh
+        - bash
+      scripting_languages:
+        - python3
+        - bash
+
+    installed_software:
+      - python3
+      - cron
+      - Industroyer sample
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - /etc/passwd
+
+    security_controls:
+      apparmor: disabled
+      selinux: disabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /tmp
+        processes:
+          - bash
+          - cron
+        files:
+          - /etc/passwd
+      network:
+        protocols:
+          - SSH
+          - DNS
+          - HTTPS
+
+  # --- SaaS/Office Suite/Identity Provider/Network Devices/IaaS ---
+  # These platforms are typically emulated via testbed or simulated environments.
+  # Below are minimal SUT requirements for adversary emulation.
+
+  saas:
+    os: [N/A]
+    services:
+      office365: enabled
+      gsuite: enabled

@@ -2,7 +2,6 @@
 %% This is file `acmart.cls',
 %% generated with the docstrip utility.
 %%
-% texlab: ignore
 %% The original source files were:
 %%
 %% acmart.dtx  (with options: `class')
@@ -2949,14 +2948,14 @@
     \if@ACM@journal@bibstrip
        \textit{\@journalNameShort}
        \@acmVolume, \@acmNumber \@article@string (\@acmPubDate),
-       \csname ref\endcsname{TotPages}~\@pages@word.
+       \ref{TotPages}~\@pages@word.
     \else
        In \textit{\@acmBooktitle}%
        \ifx\@acmEditors\@empty\textit{.}\else
          \andify\@acmEditors\textit{, }\@acmEditors~\@editorsAbbrev.%
        \fi\
        ACM, New York, NY, USA%
-         \@article@string\unskip, \csname ref\endcsname{TotPages}~\@pages@word.
+         \@article@string\unskip, \ref{TotPages}~\@pages@word.
     \fi
   \fi
   \ifx\@acmDOI\@empty\else\@formatdoi{\@acmDOI}\fi

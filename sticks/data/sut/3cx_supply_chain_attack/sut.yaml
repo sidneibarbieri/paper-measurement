@@ -1,0 +1,316 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: 3CX Supply Chain Attack
+# Campaign ID: campaign--4fd53ccc-c6b1-4e3c-abe8-a456d46d789e
+# Generated: 2026-03-06T15:11:21.049497
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__4fd53ccc_c6b1_4e3c_abe8_a456d46d789e:
+
+  # --- WINDOWS VARIANT ---
+  windows:
+    os: [Windows 10 Pro 21H2, Windows 11 Pro 22H2, Windows Server 2019]
+    services:
+      wmi: running
+      winrm: running
+      rpc: running
+      lsass: running
+      msiexec: running
+      # Required for DLL loading, process injection, msiexec, etc.
+      electron: running
+      # For Electron-based applications (e.g., 3CX Desktop App)
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smb: allowed
+      web_protocols: allowed
+      # Outbound web protocols required for C2, dead drop resolver, drive-by compromise
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      # Cached credentials required for Valid Accounts
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wsl.exe
+      code_signing_enabled: true
+      # For code signing technique
+      allow_reflective_loading: true
+      # For reflective code loading
+    installed_software:
+      - 3CX Desktop App 18.12.416 (or vulnerable version)
+      - Electron 22.x
+      - Microsoft Office 2019
+      - Microsoft Visual C++ Redistributable 2015-2022
+      - Trading Technologies X_Trader 7.17.43 (EOL, trojanized)
+      - Google Chrome 114.x
+      - Mozilla Firefox 114.x
+      - 7-Zip 21.07
+      - Python 3.10.x
+      - .NET Framework 4.8
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - registry_run_key
+      - scheduled_task
+      - service
+      - startup_folder
+      - dll_search_order_hijack
+    security_controls:
+      windows_defender: disabled   # Required for process injection, reflective code loading, etc.
+      applocker: disabled
+      smartscreen: disabled
+      uac: enabled
+      firewall: enabled
+      tamper_protection: disabled
+    artifacts:
+      host:
+        directories:
+          - 'C:\Program Files\3CXDesktopApp'
+          - 'C:\Program Files (x86)\Trading Technologies\X_TRADER'
+          - 'C:\Users\*\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup'
+          - 'C:\Windows\System32'
+        processes:
+          - 3CXDesktopApp.exe
+          - msiexec.exe
+          - rundll32.exe
+          - explorer.exe
+          - X_TRADER.exe
+        registry_keys:
+          - 'HKCU\Software\Microsoft\Windows\CurrentVersion\Run'
+          - 'HKLM\SYSTEM\CurrentControlSet\Services'
+          - 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
+      network:
+        protocols:
+          - https
+          - dns
+          - smb
+          - http
+
+  # --- LINUX VARIANT ---
+  linux:
+    os: [Ubuntu 20.04 LTS, Ubuntu 22.04 LTS, CentOS 7.9, RHEL 8.7]
+    services:
+      sshd: running
+      systemd: running
+      dbus: running
+      cron: running
+      electron: running
+      # For Electron-based applications
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      web_protocols: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      allow_ptrace: true
+      # For process injection
+      allow_ld_preload: true
+      # For reflective code loading, PE injection
+    installed_software:
+      - 3cx-desktop-app 18.12.416
+      - electron 22.x
+      - python3 3.10.x
+      - gnome-keyring 3.36.x
+      - curl 7.68.x
+      - wget 1.20.x
+      - chromium-browser 114.x
+      - firefox 114.x
+      - unzip 6.0
+      - gcc 9.x
+      - make 4.2.x
+    privilege: sudo
+    domain_role: standalone
+    persistence_surfaces:
+      - systemd_service
+      - cron
+      - rc_local
+      - ~/.config/autostart
+      - ld_preload
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      auditd: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - '/opt/3cx-desktop-app'
+          - '/usr/lib'
+          - '/etc/systemd/system'
+          - '/home/*/.config/autostart'
+        processes:
+          - 3cx-desktop-app
+          - electron
+          - python3
+          - gnome-keyring-daemon
+        files:
+          - '/etc/ld.so.preload'
+          - '/tmp/*.so'
+      network:
+        protocols:
+          - https
+          - dns
+          - http
+
+  # --- MACOS VARIANT ---
+  macos:
+    os: [macOS Monterey 12.6, macOS Ventura 13.4]
+    services:
+      launchd: running
+      electron: running
+      # For Electron-based applications
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      web_protocols: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+        - sh
+      allow_dyld_insert_libraries: true
+      # For reflective code loading, process injection
+      allow_launch_daemon: true
+    installed_software:
+      - 3CXDesktopApp 18.12.416
+      - Electron 22.x
+      - Python 3.10.x
+      - Google Chrome 114.x
+      - Firefox 114.x
+      - Homebrew 4.x
+      - Xcode Command Line Tools 14.x
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launch_daemon
+      - login_item
+      - cron
+      - ~/.config/autostart
+      - dylib_injection
+    security_controls:
+      gatekeeper: disabled
+      sip: disabled
+      xprotect: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - '/Applications/3CXDesktopApp.app'
+          - '/Library/LaunchDaemons'
+          - '/Users/*/Library/LaunchAgents'
+          - '/usr/local/lib'
+        processes:
+          - 3CXDesktopApp
+          - electron
+          - python3
+        files:
+          - '/Library/LaunchDaemons/*.plist'
+          - '/tmp/*.dylib'
+      network:
+        protocols:
+          - https
+          - dns
+          - http
+
+  # --- ESXi VARIANT ---
+  esxi:
+    os: [VMware ESXi 7.0 Update 3]
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      web_protocols: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - sh
+      allow_shell_access: true
+    installed_software:
+      - open-vm-tools 11.x
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+      - cron
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - '/etc/rc.local.d'
+          - '/var/spool/cron/crontabs'
+        processes:
+          - hostd
+          - vpxa
+          - sh
+      network:
+        protocols:
+          - https
+          - dns
+          - http
+
+  # --- NETWORK DEVICES VARIANT ---
+  network_devices:
+    os: [Cisco IOS XE 17.3, JunOS 21.2]
+    services:
+      ssh: running
+      http: running
+      https: running
+      snmp: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      web_protocols: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - cli
+      allow_config_mode: true
+    installed_software:
+      - iosxe 17.3
+      - junos 21.2
+    privilege: enable
+    domain_role: standalone
+    persistence_surfaces:
+      - startup_config
+      - scheduled_script
+    security_controls:
+      aaa: enabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - 'flash:/'
+          - '/var/db/scripts/'
+        processes:
+          - sshd
+          - httpd
+      network:
+        protocols:
+          - https
+          -

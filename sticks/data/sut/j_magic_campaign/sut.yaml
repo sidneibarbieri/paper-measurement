@@ -1,0 +1,342 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: J-magic Campaign
+# Campaign ID: campaign--58c4fd17-88f5-433a-8242-e9cac31f3c45
+# Generated: 2026-03-06T15:12:15.411614
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__58c4fd17_88f5_433a_8242_e9cac31f3c45:
+  # --- Platform Variant: Juniper Junos OS (Linux-based) Router as VPN Gateway ---
+  os: [Junos OS 21.4R3-S3 (Linux-based), Kernel 3.18.x]
+  
+  services:
+    sshd: enabled
+    web-management: enabled
+    snmpd: enabled
+    routing-engine: enabled
+    vpn: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+    vpn_tunnel: active
+    # Juniper router must be accessible from Internet for C2
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: absent
+
+  execution_environment:
+    shells:
+      - csh
+      - sh
+    junos_cli: enabled
+
+  installed_software:
+    - J-magic backdoor (cd00r variant) # Custom implant for Junos
+    - Junos OS core packages
+    - OpenSSL 1.0.2u
+
+  privilege: root
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - /var/db/scripts/op/ # Junos custom script directory
+    - /etc/rc.local # For implant persistence
+
+  security_controls:
+    juniper_idp: disabled
+    file_integrity_monitoring: disabled
+    logging: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /var/db/scripts/op/
+        - /etc/
+      processes:
+        - jmgd # J-magic daemon
+        - sshd
+        - mgd
+      files:
+        - /var/db/scripts/op/jmgd.sh
+        - /etc/rc.local
+    network:
+      protocols:
+        - ssh
+        - https
+        - snmp
+        - custom_c2 # Backdoor C2 channel
+
+  # --- Platform Variant: Linux Host (for C2, staging, or lateral movement) ---
+  os: [Ubuntu 20.04 LTS, Kernel 5.4.x]
+
+  services:
+    sshd: enabled
+    cron: enabled
+    systemd: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: absent
+
+  execution_environment:
+    shells:
+      - bash
+      - sh
+
+  installed_software:
+    - OpenSSL 1.1.1f
+    - curl
+    - wget
+
+  privilege: root
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - /etc/rc.local
+    - crontab
+
+  security_controls:
+    selinux: disabled
+    auditd: disabled
+
+  artifacts:
+    host:
+      directories:
+        - /tmp/
+        - /etc/
+      processes:
+        - sshd
+        - cron
+      files:
+        - /etc/rc.local
+        - /tmp/jmgd
+    network:
+      protocols:
+        - ssh
+        - https
+
+  # --- Platform Variant: Windows Server (for PRE, C2, or certificate operations) ---
+  os: [Windows Server 2019 Standard, Build 17763.2300]
+
+  services:
+    WinRM: enabled
+    W32Time: enabled
+    TermService: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: present
+
+  execution_environment:
+    shells:
+      - powershell
+      - cmd
+
+  installed_software:
+    - OpenSSL 1.1.1q (Win64)
+    - Sysinternals Suite
+
+  privilege: Administrator
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - Scheduled Task
+    - Registry Run Key
+
+  security_controls:
+    Defender: disabled
+    AppLocker: not_configured
+
+  artifacts:
+    host:
+      directories:
+        - C:\Windows\System32\
+        - C:\Temp\
+      processes:
+        - powershell.exe
+        - cmd.exe
+      registry_keys:
+        - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+    network:
+      protocols:
+        - https
+        - rdp
+
+  # --- Platform Variant: macOS Host (for C2, staging, or certificate operations) ---
+  os: [macOS Ventura 13.4]
+
+  services:
+    ssh: enabled
+    launchd: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: absent
+
+  execution_environment:
+    shells:
+      - zsh
+      - bash
+
+  installed_software:
+    - OpenSSL 3.0.8
+    - curl
+
+  privilege: root
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - launchd plist
+    - /etc/rc.common
+
+  security_controls:
+    Gatekeeper: disabled
+    XProtect: disabled
+
+  artifacts:
+    host:
+      directories:
+        - /Library/LaunchDaemons/
+        - /tmp/
+      processes:
+        - sshd
+        - launchd
+      files:
+        - /Library/LaunchDaemons/com.jmgd.plist
+    network:
+      protocols:
+        - ssh
+        - https
+
+  # --- Platform Variant: ESXi Host (for lateral movement or persistence) ---
+  os: [VMware ESXi 7.0 Update 3c, Build 19193900]
+
+  services:
+    ssh: enabled
+    hostd: enabled
+    vpxa: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: absent
+
+  execution_environment:
+    shells:
+      - sh
+      - esxcli
+
+  installed_software:
+    - OpenSSL 1.0.2zb
+    - esxcli
+
+  privilege: root
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - /etc/rc.local.d/local.sh
+
+  security_controls:
+    lockdown_mode: disabled
+    logging: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /etc/
+        - /var/core/
+      processes:
+        - hostd
+        - sshd
+      files:
+        - /etc/rc.local.d/local.sh
+    network:
+      protocols:
+        - ssh
+        - https
+
+  # --- Platform Variant: PRE (for infrastructure, VPS, and certificate operations) ---
+  os: [Ubuntu 22.04 LTS, Kernel 5.15.x]
+
+  services:
+    sshd: enabled
+    nginx: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+    vps_provider: present # VPS must be provisioned for PRE techniques
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: absent
+
+  execution_environment:
+    shells:
+      - bash
+      - sh
+
+  installed_software:
+    - OpenSSL 3.0.2
+    - certbot
+    - nginx
+
+  privilege: root
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - systemd service
+    - /etc/rc.local
+
+  security_controls:
+    ufw: disabled
+    fail2ban: disabled
+
+  artifacts:
+    host:
+      directories:
+        - /etc/letsencrypt/
+        - /var/www/html/
+      processes:
+        - nginx
+        - sshd
+      files:
+        - /etc/letsencrypt/live/
+        - /etc/systemd/system/jmgd.service
+    network:
+      protocols:
+        - https
+        - ssh
+```

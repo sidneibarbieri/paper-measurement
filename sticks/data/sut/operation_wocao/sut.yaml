@@ -1,0 +1,358 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Operation Wocao
+# Campaign ID: campaign--b03d5112-e23a-4ac8-add0-be7502d24eff
+# Generated: 2026-03-06T14:56:44.066147
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__b03d5112_e23a_4ac8_add0_be7502d24eff:
+
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows Server 2019", "Windows 10 Pro, Version 21H2"]
+    services:
+      wmi: running
+      winrm: running
+      schedule: running
+      smb: running
+      rpc: running
+      lsass: running
+      eventlog: running
+      firewall: running
+      # PowerShell Remoting for remote execution
+      powershell: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      network_shares_accessible: true
+      rdp_enabled: true
+      non_standard_ports_open: true   # For C2, proxies, etc.
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      kerberos_enabled: true
+      local_admin_account: present
+      domain_accounts: present
+      mfa_enabled: false  # To allow MFA interception
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - python.exe
+        - wmic.exe
+      scripting_languages:
+        - powershell
+        - python
+        - vbscript
+      office_macros_enabled: true
+    installed_software:
+      - Microsoft Office 2019
+      - Python 3.9.x
+      - 7-Zip 19.00
+      - WinRAR 6.0
+      - Chrome 114
+      - Firefox 102
+      - Sysinternals Suite
+      - OpenSSH Client
+      - Visual Studio Tools for Office
+      - Password Manager (e.g., KeePass 2.48)
+      - VMware Tools (if VM)
+    privilege: "Domain Admin"
+    domain_role: "Domain Member"
+    persistence_surfaces:
+      - Scheduled Tasks
+      - Registry Run Keys
+      - Services
+      - WMI Event Subscriptions
+      - Startup Folder
+      - Windows Admin Shares
+    security_controls:
+      defender: enabled
+      uac: enabled
+      applocker: disabled  # To allow unsigned code execution
+      firewall: enabled
+      logging: enabled
+      tamper_protection: disabled  # To allow registry and log modifications
+    artifacts:
+      host:
+        directories:
+          - "C:\\Users\\"
+          - "C:\\Windows\\System32\\"
+          - "C:\\ProgramData\\"
+          - "C:\\Temp\\"
+        processes:
+          - explorer.exe
+          - lsass.exe
+          - svchost.exe
+          - winlogon.exe
+          - powershell.exe
+          - cmd.exe
+          - wmiprvse.exe
+          - python.exe
+          - mshta.exe
+        registry_keys:
+          - "HKLM\\SYSTEM\\CurrentControlSet\\Services"
+          - "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+          - "HKLM\\SYSTEM\\CurrentControlSet\\Control\\Lsa"
+      network:
+        protocols:
+          - SMB
+          - RDP
+          - HTTP
+          - HTTPS
+          - DNS
+          - LDAP
+          - Kerberos
+          - ICMP
+          - TCP
+          - UDP
+          - Non-standard ports (e.g., 8080, 8443)
+          - WebDAV
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7.9"]
+    services:
+      sshd: running
+      cron: running
+      rsyslog: running
+      apache2: running
+      samba: running
+      firewall: running
+      python3: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      nfs_shares_accessible: true
+      non_standard_ports_open: true
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_admin_account: present
+      mfa_enabled: false
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - python3
+      scripting_languages:
+        - python3
+        - bash
+        - perl
+      office_suite_installed: true
+    installed_software:
+      - LibreOffice 6.4
+      - Python 3.8.x
+      - OpenSSH 8.2
+      - netcat
+      - nmap
+      - tar
+      - gzip
+      - zip
+      - unzip
+      - rsync
+      - curl
+      - wget
+      - KeePassXC 2.6
+      - Samba 4.11
+      - Apache 2.4
+      - iptables
+      - sudo
+      - cron
+      - GnuPG
+    privilege: "root"
+    domain_role: "Standalone"
+    persistence_surfaces:
+      - Cron Jobs
+      - Systemd Services
+      - rc.local
+      - SSH Authorized Keys
+      - /etc/rc.d/
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      firewall: enabled
+      auditd: enabled
+      logging: enabled
+    artifacts:
+      host:
+        directories:
+          - "/home/"
+          - "/etc/"
+          - "/var/log/"
+          - "/tmp/"
+          - "/usr/local/bin/"
+        processes:
+          - sshd
+          - bash
+          - python3
+          - apache2
+          - cron
+          - systemd
+          - rsyslogd
+        files:
+          - "/etc/passwd"
+          - "/etc/shadow"
+          - "/etc/sudoers"
+          - "/var/log/auth.log"
+      network:
+        protocols:
+          - SSH
+          - HTTP
+          - HTTPS
+          - DNS
+          - SMB
+          - NFS
+          - ICMP
+          - TCP
+          - UDP
+          - Non-standard ports
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS 12 Monterey"]
+    services:
+      ssh: running
+      cron: running
+      launchd: running
+      python3: running
+      firewall: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      non_standard_ports_open: true
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_admin_account: present
+      mfa_enabled: false
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+        - python3
+      scripting_languages:
+        - python3
+        - bash
+        - AppleScript
+      office_suite_installed: true
+    installed_software:
+      - Microsoft Office 2019
+      - Python 3.9.x
+      - Homebrew
+      - netcat
+      - nmap
+      - zip
+      - unzip
+      - KeePassXC 2.6
+      - GPG Suite
+      - Chrome 114
+      - Firefox 102
+    privilege: "admin"
+    domain_role: "Standalone"
+    persistence_surfaces:
+      - Launch Agents
+      - Launch Daemons
+      - Cron Jobs
+      - Login Items
+      - SSH Authorized Keys
+    security_controls:
+      gatekeeper: disabled
+      sip: disabled
+      firewall: enabled
+      logging: enabled
+    artifacts:
+      host:
+        directories:
+          - "/Users/"
+          - "/Library/LaunchAgents/"
+          - "/Library/LaunchDaemons/"
+          - "/Applications/"
+          - "/tmp/"
+        processes:
+          - bash
+          - zsh
+          - python3
+          - launchd
+          - loginwindow
+          - sshd
+        files:
+          - "/etc/passwd"
+          - "/etc/sudoers"
+          - "/var/log/system.log"
+      network:
+        protocols:
+          - SSH
+          - HTTP
+          - HTTPS
+          - DNS
+          - SMB
+          - ICMP
+          - TCP
+          - UDP
+          - Non-standard ports
+
+  # --- ESXi Variant ---
+  esxi:
+    os: ["VMware ESXi 7.0"]
+    services:
+      ssh: running
+      esxcli: running
+      firewall: running
+      web: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      non_standard_ports_open: true
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_admin_account: present
+    execution_environment:
+      shells:
+        - esxcli
+        - sh
+      scripting_languages:
+        - python3
+        - bash
+    installed_software:
+      - Python 3.7.x
+      - esxcli
+      - netcat
+      - tar
+      - gzip
+      - curl
+      - wget
+    privilege: "root"
+    domain_role: "Standalone"
+    persistence_surfaces:
+      - rc.local
+      - SSH Keys
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+      logging: enabled
+    artifacts:
+      host:
+        directories:
+          - "/etc/vmware/"
+          - "/var/log/"
+          - "/tmp/"
+        processes:
+          - hostd
+          - vpxa
+          - sshd
+          - python3
+        files:
+          - "/etc/shadow"
+          - "/var/log/hostd.log"
+      network:
+        protocols:
+          - SSH
+          -

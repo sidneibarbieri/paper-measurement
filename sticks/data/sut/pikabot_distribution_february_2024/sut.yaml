@@ -1,0 +1,278 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Pikabot Distribution February 2024
+# Campaign ID: campaign--81e89fb4-8d07-4d8a-82f4-bf084f9d5d53
+# Generated: 2026-03-06T15:14:10.248933
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__81e89fb4_8d07_4d8a_82f4_bf084f9d5d53:
+
+  # =========================
+  # Windows Variant
+  # =========================
+  windows:
+    os: [Windows 10 Enterprise 22H2, Windows 11 Pro 23H2]
+
+    services:
+      wuauserv: running         # Windows Update (ensure patch level)
+      winrm: running            # Remote Management for PowerShell
+      smb: running              # Required for lateral movement/hijack execution flow
+      defender: running         # Defender enabled, but default config
+
+    network:
+      outbound_https: allowed   # Required for spearphishing link and payload retrieval
+      dns_resolution: enabled
+      domain_joined: true
+      local_firewall: enabled   # Default configuration
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present # For potential credential access
+      user_account: present
+      office365_identity: present # For SaaS/Office integration
+
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      scripting_host:
+        - wscript.exe
+        - cscript.exe
+      office_macro_execution: enabled # Required for Office Suite attack surface
+
+    installed_software:
+      - Microsoft Office 365 Apps for Enterprise (Version 2402)
+      - Google Chrome 121.0
+      - Mozilla Firefox 123.0
+      - 7-Zip 23.01
+      - Windows Defender Antivirus
+      - PowerShell 5.1
+      - .NET Framework 4.8
+
+    privilege: user             # Initial access via user-level phishing
+    domain_role: workstation
+
+    persistence_surfaces:
+      - registry_run_key        # For hijack execution flow
+      - startup_folder
+      - scheduled_task
+
+    security_controls:
+      defender_realtime: enabled
+      macro_settings: default   # Macros disabled, but user can enable
+      powershell_logging: enabled
+      applocker: disabled       # To allow script execution for emulation
+
+    artifacts:
+      host:
+        directories:
+          - C:\Users\%USERNAME%\Downloads
+          - C:\Users\%USERNAME%\AppData\Local\Temp
+          - C:\ProgramData\
+        processes:
+          - powershell.exe
+          - wscript.exe
+          - explorer.exe
+          - WINWORD.EXE
+          - OUTLOOK.EXE
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+          - SMB
+
+  # =========================
+  # Linux Variant
+  # =========================
+  linux:
+    os: [Ubuntu 22.04 LTS, CentOS 8.5]
+
+    services:
+      sshd: running
+      cron: running
+      avahi-daemon: stopped
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false      # Typical for Linux workstations
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      user_account: present
+
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+      javascript_runtime:
+        - nodejs 18.x           # For JavaScript execution
+
+    installed_software:
+      - LibreOffice 7.6
+      - Google Chrome 121.0
+      - unzip 6.0
+      - curl 7.81
+      - nodejs 18.20.0
+
+    privilege: user
+    domain_role: workstation
+
+    persistence_surfaces:
+      - ~/.config/autostart
+      - crontab
+
+    security_controls:
+      apparmor: disabled        # To allow unrestricted execution
+      selinux: disabled
+      antivirus: absent
+
+    artifacts:
+      host:
+        directories:
+          - /home/[username]/Downloads
+          - /tmp
+        processes:
+          - bash
+          - node
+          - soffice.bin
+        files:
+          - /home/[username]/.config/autostart/[malware].desktop
+          - /etc/cron.d/[malware]
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+
+  # =========================
+  # macOS Variant
+  # =========================
+  macos:
+    os: [macOS Ventura 13.6, macOS Sonoma 14.2]
+
+    services:
+      ssh: running
+      launchd: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      user_account: present
+      apple_id: present
+
+    execution_environment:
+      shells:
+        - /bin/zsh
+        - /bin/bash
+      javascript_runtime:
+        - nodejs 18.x
+
+    installed_software:
+      - Microsoft Office 365 for Mac (Version 16.82)
+      - Google Chrome 121.0
+      - The Unarchiver 4.3.6
+      - nodejs 18.20.0
+
+    privilege: user
+    domain_role: workstation
+
+    persistence_surfaces:
+      - ~/Library/LaunchAgents
+      - crontab
+
+    security_controls:
+      gatekeeper: disabled      # To allow unsigned code execution
+      xprotect: enabled
+      sip: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /Users/[username]/Downloads
+          - /tmp
+        processes:
+          - zsh
+          - node
+          - Microsoft Word
+        files:
+          - ~/Library/LaunchAgents/[malware].plist
+          - /tmp/[malware].js
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+
+  # =========================
+  # Office Suite/SaaS/Identity Provider Variant
+  # =========================
+  office_saas_identity:
+    os: [Windows 10 Enterprise 22H2, macOS Ventura 13.6, Ubuntu 22.04 LTS] # Representative endpoints
+
+    services:
+      office365: enabled
+      google_workspace: optional
+      azure_ad: enabled
+      okta: optional
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      user_account: present
+      office365_identity: present
+      mfa: disabled # For emulation, can be enabled for detection testing
+
+    execution_environment:
+      browsers:
+        - chrome
+        - edge
+        - safari
+      office_macro_execution: enabled
+
+    installed_software:
+      - Microsoft Office 365 Apps for Enterprise (Version 2402)
+      - Google Chrome 121.0
+
+    privilege: user
+    domain_role: workstation
+
+    persistence_surfaces:
+      - office_addins
+      - browser_extensions
+
+    security_controls:
+      safe_links: disabled # For successful spearphishing emulation
+      safe_attachments: disabled
+      macro_settings: default
+
+    artifacts:
+      host:
+        directories:
+          - [Downloads folder per OS]
+        processes:
+          - WINWORD.EXE
+          - OUTLOOK.EXE
+          - chrome.exe
+        files:
+          - [Downloaded ZIP and extracted payloads]
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+```

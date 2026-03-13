@@ -65,6 +65,80 @@ JACCARD_DELTA = 0.1
 # CVE regex pattern
 CVE_PATTERN = re.compile(r'CVE-\d{4}-\d{4,7}', re.IGNORECASE)
 
+# ─────────────────────────────────────────────────────────────────
+# Tactic dependency and capability models
+# Adapted from inNervoso operational model (run_campaign.py).
+# Used for environment inference and campaign factual analysis.
+# ─────────────────────────────────────────────────────────────────
+
+# Each tactic lists which prior tactics typically must have occurred.
+TACTIC_DEPENDENCIES = {
+    "reconnaissance": [],
+    "resource-development": [],
+    "initial-access": [],
+    "execution": ["initial-access"],
+    "persistence": ["execution"],
+    "privilege-escalation": ["execution"],
+    "defense-evasion": [],
+    "credential-access": ["execution", "discovery"],
+    "discovery": ["initial-access", "execution"],
+    "lateral-movement": ["discovery", "credential-access"],
+    "collection": ["discovery", "lateral-movement"],
+    "command-and-control": ["initial-access"],
+    "exfiltration": ["collection"],
+    "impact": ["lateral-movement", "collection", "privilege-escalation"],
+}
+
+# What each tactic provides when successfully executed.
+TACTIC_PROVIDES = {
+    "initial-access": ["initial_access", "foothold"],
+    "execution": ["code_execution"],
+    "persistence": ["persistent_access"],
+    "privilege-escalation": ["privileged_access", "higher_privileges"],
+    "defense-evasion": ["evasion_capability"],
+    "credential-access": ["credentials", "password_hashes", "secrets"],
+    "discovery": ["system_info", "network_info", "user_info"],
+    "lateral-movement": ["lateral_capability", "remote_access"],
+    "collection": ["collected_data"],
+    "command-and-control": ["c2_channel"],
+    "exfiltration": ["exfiltrated_data"],
+    "impact": ["disruption"],
+    "reconnaissance": ["target_intel"],
+    "resource-development": ["resources", "infrastructure"],
+}
+
+# Technique-specific capabilities (supplements tactic-level provides).
+TECHNIQUE_SPECIFIC_PROVIDES = {
+    "T1078": ["valid_accounts"],
+    "T1098": ["account_manipulation"],
+    "T1136": ["new_account"],
+    "T1003": ["password_hashes", "credentials"],
+    "T1555": ["credentials_from_stores"],
+    "T1087": ["account_discovery"],
+    "T1482": ["domain_trust_discovery"],
+    "T1018": ["remote_system_discovery"],
+    "T1049": ["network_connections"],
+    "T1057": ["process_discovery"],
+    "T1082": ["system_info_discovery"],
+    "T1016": ["network_config_discovery"],
+    "T1033": ["user_discovery"],
+    "T1071": ["c2_communication"],
+    "T1572": ["protocol_tunneling"],
+    "T1090": ["proxy_use"],
+    "T1573": ["encrypted_channel"],
+    "T1041": ["exfiltration_over_c2"],
+    "T1048": ["exfiltration_over_alt_protocol"],
+    "T1029": ["scheduled_exfiltration"],
+}
+
+# All 14 ATT&CK Enterprise tactics in kill-chain order.
+TACTIC_ORDER = [
+    "reconnaissance", "resource-development", "initial-access", "execution",
+    "persistence", "privilege-escalation", "defense-evasion", "credential-access",
+    "discovery", "lateral-movement", "collection", "command-and-control",
+    "exfiltration", "impact",
+]
+
 
 # ─────────────────────────────────────────────────────────────────
 # Helper functions
@@ -213,8 +287,54 @@ def analyze_domain_bundle(filepath, domain_name):
     techniques = by_type.get('attack-pattern', [])
     total = len(techniques)
     with_platform = sum(1 for t in techniques if t.get('x_mitre_platforms'))
-    sw_link_pct = compute_software_link_rate(by_type, rel_fwd, rel_rev)
-    cve_link_pct = compute_cve_link_rate_for_techniques(techniques)
+
+    software_ids = {
+        o['id'] for o in (by_type.get('malware', []) + by_type.get('tool', []))
+    }
+    software_link_counts = []
+    with_software_link = 0
+    cve_mention_counts = []
+    with_cve_mention = 0
+
+    for tech in techniques:
+        tech_id = tech['id']
+        linked_software = set()
+        for rtype, tgt, _ in rel_fwd.get(tech_id, []):
+            if rtype == 'uses' and tgt in software_ids:
+                linked_software.add(tgt)
+        for rtype, src, _ in rel_rev.get(tech_id, []):
+            if rtype == 'uses' and src in software_ids:
+                linked_software.add(src)
+
+        sw_count = len(linked_software)
+        software_link_counts.append(sw_count)
+        if sw_count > 0:
+            with_software_link += 1
+
+        cve_structured, cve_freetext = extract_cves_from_object(tech)
+        cve_count = len(cve_structured | cve_freetext)
+        cve_mention_counts.append(cve_count)
+        if cve_count > 0:
+            with_cve_mention += 1
+
+    sw_link_pct = pct(with_software_link, total)
+    cve_link_pct = pct(with_cve_mention, total)
+
+    software_link_counts_sorted = sorted(software_link_counts)
+    cve_mention_counts_sorted = sorted(cve_mention_counts)
+    if software_link_counts_sorted:
+        mid = len(software_link_counts_sorted) // 2
+        if len(software_link_counts_sorted) % 2 == 1:
+            median_sw_links = software_link_counts_sorted[mid]
+        else:
+            median_sw_links = round(
+                (software_link_counts_sorted[mid - 1] + software_link_counts_sorted[mid]) / 2, 2
+            )
+        p90_index = max(0, math.ceil(0.90 * len(software_link_counts_sorted)) - 1)
+        p90_sw_links = software_link_counts_sorted[p90_index]
+    else:
+        median_sw_links = 0
+        p90_sw_links = 0
 
     return {
         'domain': domain_name,
@@ -223,6 +343,14 @@ def analyze_domain_bundle(filepath, domain_name):
         'platform_pct': pct(with_platform, total),
         'software_link_pct': sw_link_pct,
         'cve_link_pct': cve_link_pct,
+        'avg_software_links_per_attack_pattern': round(
+            sum(software_link_counts) / total, 3
+        ) if total else 0.0,
+        'median_software_links_per_attack_pattern': median_sw_links,
+        'p90_software_links_per_attack_pattern': p90_sw_links,
+        'avg_cve_mentions_per_attack_pattern': round(
+            sum(cve_mention_counts) / total, 3
+        ) if total else 0.0,
         'num_relationships': len(relationships),
         'num_software': len(by_type.get('malware', [])) + len(by_type.get('tool', [])),
         'num_intrusion_sets': len(by_type.get('intrusion-set', [])),
@@ -382,6 +510,9 @@ def analyze_software_references(campaigns, intrusion_sets, software_objects,
 
     software_with_version = 0
     software_with_cpe = 0
+    software_with_both = 0
+    software_version_no_cpe = 0
+    software_no_version_no_cpe = 0
     total_software = len(software_objects)
     software_precision_by_id = {}
 
@@ -395,6 +526,12 @@ def analyze_software_references(campaigns, intrusion_sets, software_objects,
             software_with_version += 1
         if has_cpe:
             software_with_cpe += 1
+        if has_version and has_cpe:
+            software_with_both += 1
+        elif has_version:
+            software_version_no_cpe += 1
+        elif not has_version and not has_cpe:
+            software_no_version_no_cpe += 1
 
     # Add campaign-level precision anchors based on linked software.
     for row in campaign_platform_details:
@@ -428,6 +565,10 @@ def analyze_software_references(campaigns, intrusion_sets, software_objects,
         'software_with_version_pct': pct(software_with_version, total_software),
         'software_with_cpe': software_with_cpe,
         'software_with_cpe_pct': pct(software_with_cpe, total_software),
+        'software_with_both': software_with_both,
+        'software_version_no_cpe': software_version_no_cpe,
+        'software_no_version_no_cpe': software_no_version_no_cpe,
+        'software_no_version_no_cpe_pct': pct(software_no_version_no_cpe, total_software),
         'campaign_details': campaign_software_details,
         'campaign_platform_details': campaign_platform_details,
         'campaign_unknown_platform_names': sorted(
@@ -437,6 +578,82 @@ def analyze_software_references(campaigns, intrusion_sets, software_objects,
         'campaign_non_os_platform_counts': dict(campaign_non_os_platform_counts.most_common()),
         'is_details': is_software_details,
         'software_precision_by_id': software_precision_by_id,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────
+# 2b. Software Version Enrichment from Descriptions
+# ─────────────────────────────────────────────────────────────────
+
+def analyze_software_version_enrichment(software_objects):
+    """
+    Scan software description fields for version mentions absent from
+    structured fields (name, aliases, external_references).
+
+    This measures the 'enrichment headroom' — how many software objects
+    that currently lack version signal could gain it from free-text
+    description mining.
+    """
+    VERSION_RE = re.compile(
+        r'(?:v?\d+\.\d+|\bversion\s+\d+|\b\d+\.\d+\.\d+)',
+        re.IGNORECASE,
+    )
+
+    # Reuse the structured-field version detection from analyze_software_references
+    def has_structured_version(sw_obj):
+        """Check name, aliases, external_references for version patterns."""
+        name = sw_obj.get('name', '')
+        if VERSION_RE.search(name):
+            return True
+        for alias in (sw_obj.get('aliases', []) or []):
+            if VERSION_RE.search(alias):
+                return True
+        for ref in (sw_obj.get('external_references', []) or []):
+            if VERSION_RE.search(json.dumps(ref)):
+                return True
+        return False
+
+    total = len(software_objects)
+    baseline_has_version = 0      # count with structured version signal
+    baseline_no_version = 0       # count without structured version signal
+    desc_enriched_count = 0       # of those without, how many gain signal from description
+    enriched_examples = []        # up to 10 examples for audit
+
+    for sw in software_objects:
+        if has_structured_version(sw):
+            baseline_has_version += 1
+            continue
+
+        baseline_no_version += 1
+        description = sw.get('description', '') or ''
+        if VERSION_RE.search(description):
+            desc_enriched_count += 1
+            if len(enriched_examples) < 10:
+                match = VERSION_RE.search(description)
+                enriched_examples.append({
+                    'name': sw.get('name', 'unknown'),
+                    'id': sw['id'],
+                    'matched_version': match.group(0) if match else '',
+                    'description_snippet': description[:200],
+                })
+
+    enriched_total = baseline_has_version + desc_enriched_count
+    gain_pp = round(pct(enriched_total, total) - pct(baseline_has_version, total), 1)
+
+    return {
+        'total_software': total,
+        'baseline_has_version': baseline_has_version,
+        'baseline_has_version_pct': pct(baseline_has_version, total),
+        'baseline_no_version': baseline_no_version,
+        'baseline_no_version_pct': pct(baseline_no_version, total),
+        'desc_enriched_count': desc_enriched_count,
+        'desc_enriched_pct': pct(desc_enriched_count, total),
+        'enriched_total': enriched_total,
+        'enriched_total_pct': pct(enriched_total, total),
+        'gain_pp': gain_pp,
+        'enriched_no_version': baseline_no_version - desc_enriched_count,
+        'enriched_no_version_pct': pct(baseline_no_version - desc_enriched_count, total),
+        'enriched_examples': enriched_examples,
     }
 
 
@@ -473,6 +690,66 @@ def extract_cves_from_object(obj):
                 cves_freetext.add(cve_id)
 
     return cves_structured, cves_freetext
+
+
+def validate_cve_ids(cve_set):
+    """
+    Validate a set of CVE IDs against NVD format constraints.
+
+    CVE format per MITRE/NVD specification:
+    - CVE-YYYY-NNNN+ (year + at least 4 digits, no upper bound)
+    - Year must be between 1999 and current year + 1
+    - Sequence number must have at least 4 digits
+
+    Returns a dict with validation results and a list of flagged CVEs
+    (not rejected — some edge cases like CVE-2024-3400 are valid per spec).
+    """
+    STRICT_CVE_RE = re.compile(r'^CVE-(\d{4})-(\d{4,})$', re.IGNORECASE)
+    current_year = datetime.now().year
+
+    valid = []
+    flagged = []
+
+    for cve_id in sorted(cve_set):
+        match = STRICT_CVE_RE.match(cve_id)
+        if not match:
+            flagged.append({
+                'cve_id': cve_id,
+                'reason': 'format_invalid',
+                'detail': 'Does not match CVE-YYYY-NNNN+ pattern',
+            })
+            continue
+
+        year = int(match.group(1))
+        seq = match.group(2)
+        seq_digits = len(seq)
+
+        issues = []
+        if year < 1999 or year > current_year + 1:
+            issues.append(f'year_out_of_range ({year})')
+        if seq_digits < 4:
+            issues.append(f'sequence_too_short ({seq_digits} digits)')
+
+        if issues:
+            flagged.append({
+                'cve_id': cve_id,
+                'reason': ';'.join(issues),
+                'detail': f'Year={year}, Seq={seq} ({seq_digits} digits)',
+            })
+        else:
+            valid.append({
+                'cve_id': cve_id,
+                'year': year,
+                'seq_digits': seq_digits,
+            })
+
+    return {
+        'total': len(cve_set),
+        'valid_count': len(valid),
+        'flagged_count': len(flagged),
+        'valid': valid,
+        'flagged': flagged,
+    }
 
 
 def analyze_vulnerability_references(campaigns, intrusion_sets, software_objects,
@@ -538,13 +815,16 @@ def analyze_vulnerability_references(campaigns, intrusion_sets, software_objects
 
     # --- Campaigns with CVE ---
     usable_campaigns = [c for c in campaigns if c['id'] not in excluded_campaign_ids]
+    campaigns_with_cve_structured = 0
     campaigns_with_cve = 0
     campaign_cve_details = []
 
     for camp in usable_campaigns:
+        camp_cves_structured = set()
         camp_cves = set()
         # Direct CVEs in campaign object
         s, f = extract_cves_from_object(camp)
+        camp_cves_structured.update(s)
         camp_cves.update(s | f)
 
         # CVEs from linked software (malware/tool objects)
@@ -558,24 +838,33 @@ def analyze_vulnerability_references(campaigns, intrusion_sets, software_objects
                 target_obj = by_id[tgt]
                 if target_obj.get('type') in ('malware', 'tool'):
                     s2, f2 = extract_cves_from_object(target_obj)
+                    camp_cves_structured.update(s2)
                     camp_cves.update(s2 | f2)
 
+        if camp_cves_structured:
+            campaigns_with_cve_structured += 1
         if camp_cves:
             campaigns_with_cve += 1
         campaign_cve_details.append({
             'campaign_name': camp.get('name', ''),
             'campaign_id': camp.get('id', ''),
+            'cve_count_structured': len(camp_cves_structured),
             'cve_count': len(camp_cves),
+            'cve_enrichment_gain_count': max(0, len(camp_cves) - len(camp_cves_structured)),
+            'cves_structured': sorted(camp_cves_structured),
             'cves': sorted(camp_cves),
         })
 
     # --- Intrusion sets with CVE ---
+    is_with_cve_structured = 0
     is_with_cve = 0
     is_cve_details = []
 
     for iset in intrusion_sets:
+        is_cves_structured = set()
         is_cves = set()
         s, f = extract_cves_from_object(iset)
+        is_cves_structured.update(s)
         is_cves.update(s | f)
 
         # CVEs from linked software (not techniques — see campaign note above)
@@ -584,13 +873,19 @@ def analyze_vulnerability_references(campaigns, intrusion_sets, software_objects
                 target_obj = by_id[tgt]
                 if target_obj.get('type') in ('malware', 'tool'):
                     s2, f2 = extract_cves_from_object(target_obj)
+                    is_cves_structured.update(s2)
                     is_cves.update(s2 | f2)
 
+        if is_cves_structured:
+            is_with_cve_structured += 1
         if is_cves:
             is_with_cve += 1
         is_cve_details.append({
             'is_name': iset.get('name', ''),
+            'cve_count_structured': len(is_cves_structured),
             'cve_count': len(is_cves),
+            'cve_enrichment_gain_count': max(0, len(is_cves) - len(is_cves_structured)),
+            'cves_structured': sorted(is_cves_structured),
             'cves': sorted(is_cves),
         })
 
@@ -611,10 +906,22 @@ def analyze_vulnerability_references(campaigns, intrusion_sets, software_objects
         'cves_from_software': sorted(cves_from_software),
         'cves_from_campaigns': sorted(cves_from_campaigns),
         'cves_from_is': sorted(cves_from_is),
+        'campaigns_with_cve_structured': campaigns_with_cve_structured,
+        'campaigns_with_cve_structured_pct': pct(campaigns_with_cve_structured, n_usable),
         'campaigns_with_cve': campaigns_with_cve,
         'campaigns_with_cve_pct': pct(campaigns_with_cve, n_usable),
+        'campaigns_with_cve_enrichment_gain': max(0, campaigns_with_cve - campaigns_with_cve_structured),
+        'campaigns_with_cve_enrichment_gain_pp': round(
+            pct(campaigns_with_cve, n_usable) - pct(campaigns_with_cve_structured, n_usable), 1
+        ),
+        'is_with_cve_structured': is_with_cve_structured,
+        'is_with_cve_structured_pct': pct(is_with_cve_structured, len(intrusion_sets)),
         'is_with_cve': is_with_cve,
         'is_with_cve_pct': pct(is_with_cve, len(intrusion_sets)),
+        'is_with_cve_enrichment_gain': max(0, is_with_cve - is_with_cve_structured),
+        'is_with_cve_enrichment_gain_pp': round(
+            pct(is_with_cve, len(intrusion_sets)) - pct(is_with_cve_structured, len(intrusion_sets)), 1
+        ),
         'all_cves': sorted(all_cves),
         'structured_cves': sorted(all_cves_structured),
         'freetext_only_cves': sorted(only_freetext),
@@ -633,6 +940,14 @@ def get_attack_external_id(obj):
     for ref in obj.get('external_references', []) or []:
         if ref.get('source_name') == 'mitre-attack':
             return ref.get('external_id', '')
+    return ''
+
+
+def get_attack_reference_url(obj):
+    """Return ATT&CK reference URL when present."""
+    for ref in obj.get('external_references', []) or []:
+        if ref.get('source_name') == 'mitre-attack':
+            return ref.get('url', '')
     return ''
 
 
@@ -794,6 +1109,483 @@ def analyze_campaign_profile_completeness(software_results, cve_results):
 
 
 # ─────────────────────────────────────────────────────────────────
+# 4b. Campaign Factual Structure (inNervoso consolidation)
+# ─────────────────────────────────────────────────────────────────
+
+def analyze_campaign_factual_structure(campaigns, techniques, rel_fwd, rel_rev,
+                                       by_id, tactic_objects, excluded_campaign_ids):
+    """
+    Extract per-campaign structured facts from STIX data.
+
+    For each campaign, computes:
+    - technique_ids: ATT&CK technique IDs linked to this campaign
+    - tactic_set: set of tactics covered (from technique kill_chain_phases)
+    - software_ids: linked software objects
+    - platform_signals: inferred platforms from linked software/techniques
+    - has_initial_access / has_exfiltration: tactical bookends
+    - technique_count, tactic_count
+
+    Returns dict with aggregate metrics + per-campaign rows.
+    Exports audit/campaign_factual_structure.csv.
+    """
+    usable_campaigns = [c for c in campaigns if c['id'] not in excluded_campaign_ids]
+    rows = []
+
+    all_technique_counts = []
+    all_tactic_counts = []
+    campaigns_with_ia = 0
+    campaigns_with_exfil = 0
+    campaigns_with_ia_and_exfil = 0
+    campaigns_complete_killchain = 0  # ≥ 5 distinct tactics
+
+    # Build technique lookup for quick access
+    tech_by_id = {t['id']: t for t in techniques}
+
+    for camp in usable_campaigns:
+        camp_id = camp['id']
+        camp_name = camp.get('name', 'unknown')
+
+        # --- Linked techniques ---
+        linked_tech_ids = set()
+        for rtype, target_id, _ in rel_fwd.get(camp_id, []):
+            target = by_id.get(target_id)
+            if target and target.get('type') == 'attack-pattern':
+                linked_tech_ids.add(target_id)
+        # Also check reverse relationships
+        for rtype, source_id, _ in rel_rev.get(camp_id, []):
+            source = by_id.get(source_id)
+            if source and source.get('type') == 'attack-pattern':
+                linked_tech_ids.add(source_id)
+
+        # Extract ATT&CK IDs and tactics
+        technique_ext_ids = []
+        tactic_set = set()
+        platform_set = set()
+        for tech_id in linked_tech_ids:
+            tech = by_id.get(tech_id)
+            if not tech:
+                continue
+            ext_id = get_attack_external_id(tech)
+            if ext_id:
+                technique_ext_ids.append(ext_id)
+            # Tactics
+            tech_tactics = get_technique_tactics(tech, tactic_objects)
+            tactic_set.update(tech_tactics)
+            # Platforms from technique
+            for p in tech.get('x_mitre_platforms', []):
+                fam = normalize_os_family(p)
+                if fam:
+                    platform_set.add(fam)
+
+        # --- Linked software ---
+        linked_sw_ids = set()
+        for rtype, target_id, _ in rel_fwd.get(camp_id, []):
+            target = by_id.get(target_id)
+            if target and target.get('type') in ('tool', 'malware'):
+                linked_sw_ids.add(target_id)
+        for rtype, source_id, _ in rel_rev.get(camp_id, []):
+            source = by_id.get(source_id)
+            if source and source.get('type') in ('tool', 'malware'):
+                linked_sw_ids.add(source_id)
+
+        # Software-derived platforms
+        for sw_id in linked_sw_ids:
+            sw = by_id.get(sw_id)
+            if sw:
+                for p in sw.get('x_mitre_platforms', []):
+                    fam = normalize_os_family(p)
+                    if fam:
+                        platform_set.add(fam)
+
+        # --- CVEs ---
+        cve_structured, cve_freetext = extract_cves_from_object(camp)
+        cve_set = cve_structured | cve_freetext
+
+        # --- Tactical bookends ---
+        has_ia = 'initial-access' in tactic_set
+        has_exfil = 'exfiltration' in tactic_set
+        if has_ia:
+            campaigns_with_ia += 1
+        if has_exfil:
+            campaigns_with_exfil += 1
+        if has_ia and has_exfil:
+            campaigns_with_ia_and_exfil += 1
+
+        # --- Tactic coverage assessment ---
+        n_tactics = len(tactic_set)
+        n_techs = len(technique_ext_ids)
+        all_technique_counts.append(n_techs)
+        all_tactic_counts.append(n_tactics)
+        if n_tactics >= 5:
+            campaigns_complete_killchain += 1
+
+        # Compute tactic ordering (sort by TACTIC_ORDER position)
+        tactic_sequence = sorted(
+            tactic_set,
+            key=lambda t: TACTIC_ORDER.index(t) if t in TACTIC_ORDER else 99
+        )
+
+        rows.append({
+            'campaign_name': camp_name,
+            'campaign_id': camp_id,
+            'technique_count': n_techs,
+            'technique_ids': ';'.join(sorted(technique_ext_ids)),
+            'tactic_count': n_tactics,
+            'tactic_sequence': ';'.join(tactic_sequence),
+            'software_count': len(linked_sw_ids),
+            'software_ids': ';'.join(sorted(
+                get_attack_external_id(by_id[sid]) or sid for sid in linked_sw_ids if sid in by_id
+            )),
+            'cve_count': len(cve_set),
+            'cve_ids': ';'.join(sorted(cve_set)),
+            'platform_signals': ';'.join(sorted(platform_set)),
+            'has_initial_access': has_ia,
+            'has_exfiltration': has_exfil,
+        })
+
+    n_usable = len(usable_campaigns)
+    mean_techs = round(sum(all_technique_counts) / max(n_usable, 1), 1)
+    median_techs = round(sorted(all_technique_counts)[n_usable // 2], 1) if n_usable else 0
+    mean_tactics = round(sum(all_tactic_counts) / max(n_usable, 1), 1)
+
+    # --- Export audit CSV ---
+    csv_path = AUDIT_DIR / 'campaign_factual_structure.csv'
+    if rows:
+        fieldnames = list(rows[0].keys())
+        with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(sorted(rows, key=lambda r: r['campaign_name']))
+        print(f"  [AUDIT] Wrote {csv_path.name} ({len(rows)} campaigns)")
+
+    return {
+        'total_campaigns': n_usable,
+        'campaign_mean_technique_count': mean_techs,
+        'campaign_median_technique_count': median_techs,
+        'campaign_mean_tactic_coverage': mean_tactics,
+        'campaigns_complete_killchain': campaigns_complete_killchain,
+        'campaign_complete_killchain_pct': pct(campaigns_complete_killchain, n_usable),
+        'campaigns_with_initial_access': campaigns_with_ia,
+        'campaigns_with_exfiltration': campaigns_with_exfil,
+        'campaigns_with_ia_and_exfil': campaigns_with_ia_and_exfil,
+        'campaign_with_ia_and_exfil_pct': pct(campaigns_with_ia_and_exfil, n_usable),
+        'rows': rows,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────
+# 4c. Environment Inference + IEIR (inNervoso consolidation)
+# ─────────────────────────────────────────────────────────────────
+
+# Regex for environment signals in description text
+ENV_SIGNAL_RE = re.compile(
+    r'\b(Windows|Linux|macOS|Ubuntu|Debian|CentOS|Red Hat|RHEL|'
+    r'Active Directory|Exchange Server|IIS|Apache|Nginx|Docker|'
+    r'Kubernetes|ESXi|vSphere|AWS|Azure|GCP|Citrix|VPN|RDP|SSH)\b',
+    re.IGNORECASE
+)
+
+def infer_campaign_environment(campaign_fact_rows, software_objects, by_id,
+                                rel_fwd, rel_rev):
+    """
+    Multi-signal environment inference for each campaign.
+
+    Signal tiers (from least to most campaign-specific):
+      Tier 1 (generic):    technique_platforms — x-mitre-platforms on linked
+                           techniques. Lists which OS a technique CAN run on,
+                           NOT which OS the campaign actually targeted. Nearly
+                           universal and therefore low-discriminative.
+      Tier 2 (specific):   software_platforms — platforms on campaign-linked
+                           software. Reflects actual tools used → campaign-
+                           specific targeting evidence.
+      Tier 3 (targeted):   description_mined — regex extraction from campaign
+                           descriptions. Explicit targeting statements.
+      Heuristic:           tactic_implied — tactic → environment heuristic
+                           (e.g. credential-access → Windows domain).
+
+    Metrics:
+      IEIR = fraction of campaigns with ONLY Tier 1 (generic) signals —
+             i.e., campaigns where the target environment cannot be narrowed
+             beyond technique-level platform compatibility.
+      ESR  = Environment Specificity Rate = fraction of campaigns with at
+             least one campaign-specific signal (Tier 2+).
+      Platform narrowing = mean reduction in OS family breadth when moving
+             from generic to campaign-specific signals.
+
+    Returns dict with aggregate metrics + per-campaign rows.
+    Exports audit/environment_inference.csv.
+    """
+    rows = []
+    n_campaign_specific = 0
+    n_generic_only = 0
+    n_no_signal = 0
+    confidence_counts = Counter()
+    signal_type_counts = Counter()
+    narrowing_scores = []
+
+    for fact_row in campaign_fact_rows:
+        camp_id = fact_row['campaign_id']
+        camp_name = fact_row['campaign_name']
+        camp = by_id.get(camp_id, {})
+
+        signals = {}  # signal_type → set of OS families
+
+        # --- Signal 1: technique platforms (explicit) ---
+        tech_platforms = set()
+        tech_ids_str = fact_row.get('technique_ids', '')
+        for tech_stix_id, tech in by_id.items():
+            if tech.get('type') != 'attack-pattern':
+                continue
+            ext_id = get_attack_external_id(tech)
+            if ext_id and ext_id in tech_ids_str:
+                for p in tech.get('x_mitre_platforms', []):
+                    fam = normalize_os_family(p)
+                    if fam:
+                        tech_platforms.add(fam)
+        if tech_platforms:
+            signals['technique_platforms'] = tech_platforms
+
+        # --- Signal 2: software platforms ---
+        sw_platforms = set()
+        sw_ids_str = fact_row.get('software_ids', '')
+        for sw in software_objects:
+            sw_ext = get_attack_external_id(sw)
+            if sw_ext and sw_ext in sw_ids_str:
+                for p in sw.get('x_mitre_platforms', []):
+                    fam = normalize_os_family(p)
+                    if fam:
+                        sw_platforms.add(fam)
+        if sw_platforms:
+            signals['software_platforms'] = sw_platforms
+
+        # --- Signal 3: tactic-implied environment ---
+        tactic_implied = set()
+        tactic_seq = fact_row.get('tactic_sequence', '')
+        if 'credential-access' in tactic_seq or 'lateral-movement' in tactic_seq:
+            tactic_implied.add('Windows')  # These tactics strongly indicate Windows domain
+        if tactic_implied:
+            signals['tactic_implied'] = tactic_implied
+
+        # --- Signal 4: description-mined ---
+        desc_signals = set()
+        desc = camp.get('description', '')
+        for match in ENV_SIGNAL_RE.finditer(desc):
+            token = match.group(1)
+            fam = normalize_os_family(token)
+            if fam:
+                desc_signals.add(fam)
+            else:
+                desc_signals.add(token)  # Keep non-OS signals (e.g., "Active Directory")
+        if desc_signals:
+            signals['description_mined'] = desc_signals
+
+        # --- Aggregate ---
+        all_os = set()
+        for s in signals.values():
+            all_os.update(s)
+
+        # Tiered classification:
+        # Tier 1 (generic):  technique_platforms — capability-level, not campaign-specific
+        # Tier 2+ (specific): software_platforms, description_mined, tactic_implied
+        has_generic = bool(signals.get('technique_platforms'))
+        has_campaign_specific = bool(
+            signals.get('software_platforms')
+            or signals.get('description_mined')
+            or signals.get('tactic_implied')
+        )
+        has_generic_only = has_generic and not has_campaign_specific
+        has_no_signal = not signals
+
+        # Platform narrowing: how much does campaign-specific evidence narrow
+        # the generic technique-platform set?
+        generic_os = signals.get('technique_platforms', set())
+        specific_os = set()
+        for k in ('software_platforms', 'description_mined', 'tactic_implied'):
+            specific_os.update(signals.get(k, set()))
+        if generic_os and specific_os:
+            # Narrowing = 1 - |specific ∩ generic| / |generic|
+            overlap = len(specific_os & generic_os)
+            narrowing = 1.0 - overlap / len(generic_os)
+        else:
+            narrowing = 0.0
+        narrowing_scores.append(narrowing)
+
+        # Confidence based on campaign-specific signals (not just total count)
+        n_campaign_specific_signals = sum(
+            1 for k in ('software_platforms', 'description_mined', 'tactic_implied')
+            if signals.get(k)
+        )
+        n_signals = len(signals)
+        if n_campaign_specific_signals >= 2:
+            confidence = 'high'
+        elif n_campaign_specific_signals == 1:
+            confidence = 'medium'
+        elif has_generic:
+            confidence = 'low'
+        else:
+            confidence = 'none'
+
+        if has_campaign_specific:
+            n_campaign_specific += 1
+        if has_generic_only:
+            n_generic_only += 1
+        if has_no_signal:
+            n_no_signal += 1
+        confidence_counts[confidence] += 1
+        for sig_type in signals:
+            signal_type_counts[sig_type] += 1
+
+        rows.append({
+            'campaign_name': camp_name,
+            'campaign_id': camp_id,
+            'inferred_os': ';'.join(sorted(all_os)),
+            'signal_sources': ';'.join(sorted(signals.keys())),
+            'signal_count': n_signals,
+            'confidence': confidence,
+            'has_campaign_specific': has_campaign_specific,
+            'has_generic_only': has_generic_only,
+            'narrowing_score': round(narrowing, 3),
+            'technique_platforms': ';'.join(sorted(signals.get('technique_platforms', set()))),
+            'software_platforms': ';'.join(sorted(signals.get('software_platforms', set()))),
+            'tactic_implied': ';'.join(sorted(signals.get('tactic_implied', set()))),
+            'description_mined': ';'.join(sorted(signals.get('description_mined', set()))),
+        })
+
+    n_total = len(campaign_fact_rows)
+    mean_narrowing = sum(narrowing_scores) / len(narrowing_scores) if narrowing_scores else 0.0
+
+    # --- Export audit CSV ---
+    csv_path = AUDIT_DIR / 'environment_inference.csv'
+    if rows:
+        fieldnames = list(rows[0].keys())
+        with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(sorted(rows, key=lambda r: r['campaign_name']))
+        print(f"  [AUDIT] Wrote {csv_path.name} ({len(rows)} campaigns)")
+
+    return {
+        'total_campaigns': n_total,
+        'ieir_count': n_generic_only,
+        'ieir_pct': pct(n_generic_only, n_total),
+        'campaign_specific_count': n_campaign_specific,
+        'campaign_specific_pct': pct(n_campaign_specific, n_total),
+        'no_signal_count': n_no_signal,
+        'no_signal_pct': pct(n_no_signal, n_total),
+        'environment_high_confidence_count': confidence_counts.get('high', 0),
+        'environment_high_confidence_pct': pct(confidence_counts.get('high', 0), n_total),
+        'environment_medium_count': confidence_counts.get('medium', 0),
+        'environment_medium_pct': pct(confidence_counts.get('medium', 0), n_total),
+        'environment_low_count': confidence_counts.get('low', 0),
+        'environment_low_pct': pct(confidence_counts.get('low', 0), n_total),
+        'environment_none_count': confidence_counts.get('none', 0),
+        'environment_none_pct': pct(confidence_counts.get('none', 0), n_total),
+        'signal_type_breakdown': dict(signal_type_counts.most_common()),
+        'mean_narrowing_score': round(mean_narrowing, 3),
+        'rows': rows,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────
+# 4d. Evidence Convergence Analysis (inNervoso consolidation)
+# ─────────────────────────────────────────────────────────────────
+
+def analyze_evidence_convergence(campaign_fact_rows, env_inference_rows):
+    """
+    Measure how multiple evidence signals converge (or diverge) for each campaign.
+
+    Compares:
+    - Do technique platforms agree with software platforms?
+    - Do all available signal sources point to the same OS families?
+
+    Convergence rate = % campaigns where all signals agree.
+    """
+    rows = []
+    n_convergent = 0
+    n_divergent = 0
+    all_signal_counts = []
+
+    # Index env rows by campaign_id
+    env_by_id = {r['campaign_id']: r for r in env_inference_rows}
+
+    for fact_row in campaign_fact_rows:
+        camp_id = fact_row['campaign_id']
+        env_row = env_by_id.get(camp_id, {})
+
+        # Get individual signal sets
+        tech_plats = set(filter(None, env_row.get('technique_platforms', '').split(';')))
+        sw_plats = set(filter(None, env_row.get('software_platforms', '').split(';')))
+        tactic_imp = set(filter(None, env_row.get('tactic_implied', '').split(';')))
+        desc_mined = set(filter(None, env_row.get('description_mined', '').split(';')))
+
+        # Collect all non-empty signal sets (normalized to OS families only)
+        signal_sets = []
+        if tech_plats:
+            signal_sets.append(('technique_platforms', tech_plats))
+        if sw_plats:
+            signal_sets.append(('software_platforms', sw_plats))
+        if tactic_imp:
+            signal_sets.append(('tactic_implied', tactic_imp))
+        # description_mined may contain non-OS tokens, skip for convergence
+
+        n_signals = len(signal_sets)
+        all_signal_counts.append(n_signals)
+
+        if n_signals <= 1:
+            # Cannot assess convergence with 0-1 signals
+            converges = True  # trivially convergent
+            divergence_detail = 'single_signal'
+        else:
+            # Check: do all signal sets share at least one OS family?
+            intersection = signal_sets[0][1]
+            for _, sset in signal_sets[1:]:
+                intersection = intersection & sset
+            converges = len(intersection) > 0
+            if converges:
+                divergence_detail = ''
+            else:
+                # Build divergence description
+                parts = [f"{name}={sorted(sset)}" for name, sset in signal_sets]
+                divergence_detail = ' vs '.join(parts)
+
+        if converges:
+            n_convergent += 1
+        else:
+            n_divergent += 1
+
+        rows.append({
+            'campaign_name': fact_row['campaign_name'],
+            'campaign_id': camp_id,
+            'signals_count': n_signals,
+            'signals_agree': converges,
+            'divergence_details': divergence_detail,
+        })
+
+    n_total = len(campaign_fact_rows)
+    mean_signals = round(sum(all_signal_counts) / max(n_total, 1), 1)
+
+    # --- Export audit CSV ---
+    csv_path = AUDIT_DIR / 'evidence_convergence.csv'
+    if rows:
+        fieldnames = list(rows[0].keys())
+        with open(csv_path, 'w', newline='', encoding='utf-8') as f:
+            writer = csv.DictWriter(f, fieldnames=fieldnames)
+            writer.writeheader()
+            writer.writerows(sorted(rows, key=lambda r: r['campaign_name']))
+        print(f"  [AUDIT] Wrote {csv_path.name} ({len(rows)} campaigns)")
+
+    return {
+        'total_campaigns': n_total,
+        'convergence_count': n_convergent,
+        'convergence_rate_pct': pct(n_convergent, n_total),
+        'divergence_count': n_divergent,
+        'divergence_pct': pct(n_divergent, n_total),
+        'evidence_mean_signal_count': mean_signals,
+        'rows': rows,
+    }
+
+
+# ─────────────────────────────────────────────────────────────────
 # 5. SUT Compatibility Classification
 # ─────────────────────────────────────────────────────────────────
 
@@ -829,15 +1621,10 @@ def get_technique_tactics(technique, tactic_objects):
     return tactics
 
 
-def classify_technique_compatibility(technique, rel_fwd, by_id, default_class='VMR'):
+def classify_technique_compatibility_trace(technique, rel_fwd, by_id, default_class='VMR'):
     """
-    Classify a technique as CF, VMR, or ID.
-    Rules (in order of precedence, matching paper methodology):
-    1. If platforms include domain/identity/SaaS keywords → ID
-    2. If kernel/boot keywords in name or is in priv-esc/defense-evasion boot cluster → VMR
-    3. If permissions include Admin/SYSTEM/root → VMR
-    4. If platforms are only Containers or Linux (user-space) → CF
-    5. Default → VMR
+    Classify a technique as CF, VMR, ID (or UNRESOLVED) and return rule trace.
+    This enables auditability of heuristic classifications.
     """
     platforms = set(technique.get('x_mitre_platforms', []))
     permissions = set(technique.get('x_mitre_permissions_required', []) or [])
@@ -848,36 +1635,61 @@ def classify_technique_compatibility(technique, rel_fwd, by_id, default_class='V
         if phase.get('kill_chain_name') == 'mitre-attack':
             tactics.add(phase.get('phase_name', ''))
 
-    # Rule 3 (check first for ID): Infrastructure-dependent
-    # Lateral Movement with AD/domain dependency
-    if platforms & ID_PLATFORM_KEYWORDS:
-        return 'ID'
+    # Rule 1: ID from platform keywords.
+    id_platform_hits = sorted(platforms & ID_PLATFORM_KEYWORDS)
+    if id_platform_hits:
+        return {
+            'class': 'ID',
+            'rule_id': 'R1_ID_PLATFORM_KEYWORD',
+            'rule_desc': 'platform includes identity/domain/IaaS/SaaS signal',
+            'evidence': ';'.join(id_platform_hits),
+            'is_fallback': False,
+        }
 
-    # Check if it's Lateral Movement with software dependency on AD
+    # Rule 2/3: Lateral Movement handling.
     if 'lateral-movement' in tactics:
-        # Check linked software for AD-related tools
         tech_id = technique['id']
         for rtype, tgt, _ in rel_fwd.get(tech_id, []):
             if rtype == 'uses' and tgt in by_id:
                 sw = by_id[tgt]
                 sw_name = sw.get('name', '').lower()
                 if any(kw in sw_name for kw in ['active directory', 'kerberos', 'ldap', 'domain']):
-                    return 'ID'
-        # Lateral Movement techniques generally need multi-host → ID
-        # But some may be CF/VMR depending on platform
-        # Conservative: if lateral movement, default to ID
-        return 'ID'
+                    return {
+                        'class': 'ID',
+                        'rule_id': 'R2_ID_LATERAL_SW_SIGNAL',
+                        'rule_desc': 'lateral movement with AD/domain software linkage',
+                        'evidence': sw.get('name', ''),
+                        'is_fallback': False,
+                    }
+        return {
+            'class': 'ID',
+            'rule_id': 'R3_ID_LATERAL_TACTIC',
+            'rule_desc': 'lateral-movement tactic fallback to infrastructure-dependent',
+            'evidence': 'phase_name=lateral-movement',
+            'is_fallback': False,
+        }
 
-    # Rule 2: VM-required
-    # Kernel/boot keywords
+    # Rule 4: VMR from kernel/boot signal.
     if KERNEL_BOOT_KEYWORDS.search(name) or KERNEL_BOOT_KEYWORDS.search(description[:200]):
-        return 'VMR'
+        return {
+            'class': 'VMR',
+            'rule_id': 'R4_VMR_KERNEL_BOOT',
+            'rule_desc': 'kernel/boot/firmware interaction pattern',
+            'evidence': name,
+            'is_fallback': False,
+        }
 
-    # Privilege escalation with elevated permissions
+    # Rule 5: VMR from elevated permissions.
     if permissions & VMR_PERMISSIONS:
-        return 'VMR'
+        return {
+            'class': 'VMR',
+            'rule_id': 'R5_VMR_PRIVILEGED_PERMISSION',
+            'rule_desc': 'permissions require elevated/system privileges',
+            'evidence': ';'.join(sorted(permissions & VMR_PERMISSIONS)),
+            'is_fallback': False,
+        }
 
-    # Process injection, hooking (common VMR patterns)
+    # Rule 6: VMR from name pattern.
     vmr_name_patterns = re.compile(
         r'process\s+inject|hook|dll\s+side|hijack|token\s+manipul|'
         r'access\s+token|credential\s+dump|lsass|sam\s+database|'
@@ -887,24 +1699,57 @@ def classify_technique_compatibility(technique, rel_fwd, by_id, default_class='V
         re.IGNORECASE
     )
     if vmr_name_patterns.search(name):
-        return 'VMR'
+        return {
+            'class': 'VMR',
+            'rule_id': 'R6_VMR_NAME_PATTERN',
+            'rule_desc': 'name pattern indicates kernel/privileged execution mode',
+            'evidence': name,
+            'is_fallback': False,
+        }
 
-    # Rule 1: Container-feasible
-    # Only if platforms are limited to container-compatible ones
+    # Rule 7: CF from container-compatible platforms.
     container_compatible = {'Containers', 'Linux'}
     if platforms and platforms.issubset(container_compatible):
-        # But check for kernel interaction
         if 'privilege-escalation' in tactics or 'defense-evasion' in tactics:
-            # Even on Linux, priv-esc often needs kernel → VMR
             if permissions & VMR_PERMISSIONS:
-                return 'VMR'
-        return 'CF'
+                return {
+                    'class': 'VMR',
+                    'rule_id': 'R5_VMR_PRIVILEGED_PERMISSION',
+                    'rule_desc': 'permissions require elevated/system privileges',
+                    'evidence': ';'.join(sorted(permissions & VMR_PERMISSIONS)),
+                    'is_fallback': False,
+                }
+        return {
+            'class': 'CF',
+            'rule_id': 'R7_CF_CONTAINER_COMPATIBLE',
+            'rule_desc': 'platforms restricted to container-compatible targets',
+            'evidence': ';'.join(sorted(platforms)),
+            'is_fallback': False,
+        }
 
-    # Rule 4: Default → configurable class (VMR in main analysis).
-    # If default_class is None, keep as unresolved for sensitivity checks.
+    # Rule 8: Fallback default.
     if default_class is None:
-        return 'UNRESOLVED'
-    return default_class
+        return {
+            'class': 'UNRESOLVED',
+            'rule_id': 'R8_DEFAULT_UNRESOLVED',
+            'rule_desc': 'no explicit rule fired',
+            'evidence': '',
+            'is_fallback': True,
+        }
+    return {
+        'class': default_class,
+        'rule_id': f'R8_DEFAULT_{default_class}',
+        'rule_desc': 'no explicit rule fired',
+        'evidence': '',
+        'is_fallback': True,
+    }
+
+
+def classify_technique_compatibility(technique, rel_fwd, by_id, default_class='VMR'):
+    """Backwards-compatible class-only wrapper."""
+    return classify_technique_compatibility_trace(
+        technique, rel_fwd, by_id, default_class=default_class
+    )['class']
 
 
 def analyze_compatibility(techniques, rel_fwd, by_id, default_class='VMR'):
@@ -912,15 +1757,34 @@ def analyze_compatibility(techniques, rel_fwd, by_id, default_class='VMR'):
     RQ2: Classify all techniques into CF/VMR/ID.
     """
     classification = defaultdict(list)
+    rule_counter = Counter()
+    fallback_count = 0
 
     for tech in techniques:
-        cls = classify_technique_compatibility(tech, rel_fwd, by_id, default_class=default_class)
+        trace = classify_technique_compatibility_trace(
+            tech, rel_fwd, by_id, default_class=default_class
+        )
+        cls = trace['class']
+        rule_counter[trace['rule_id']] += 1
+        if trace['is_fallback']:
+            fallback_count += 1
+
+        attack_external_id = get_attack_external_id(tech)
+        attack_url = get_attack_reference_url(tech)
+        tactics = sorted(get_technique_tactics(tech, by_id))
         classification[cls].append({
             'id': tech['id'],
             'name': tech.get('name', ''),
+            'external_id': attack_external_id,
+            'attack_url': attack_url,
+            'tactics': tactics,
             'platforms': tech.get('x_mitre_platforms', []),
             'permissions': tech.get('x_mitre_permissions_required', []),
             'class': cls,
+            'rule_id': trace['rule_id'],
+            'rule_desc': trace['rule_desc'],
+            'rule_evidence': trace['evidence'],
+            'is_fallback': trace['is_fallback'],
         })
 
     total = len(techniques)
@@ -929,6 +1793,7 @@ def analyze_compatibility(techniques, rel_fwd, by_id, default_class='VMR'):
     id_count = len(classification.get('ID', []))
     unresolved_count = len(classification.get('UNRESOLVED', []))
     resolved_count = cf_count + vmr_count + id_count
+    explicit_count = total - fallback_count
 
     return {
         'cf_count': cf_count,
@@ -941,9 +1806,135 @@ def analyze_compatibility(techniques, rel_fwd, by_id, default_class='VMR'):
         'unresolved_pct': pct(unresolved_count, total),
         'resolved_count': resolved_count,
         'resolved_pct': pct(resolved_count, total),
+        'explicit_count': explicit_count,
+        'explicit_pct': pct(explicit_count, total),
+        'fallback_count': fallback_count,
+        'fallback_pct': pct(fallback_count, total),
+        'rule_counts': dict(sorted(rule_counter.items())),
         'total': total,
         'details': classification,
     }
+
+
+def build_compatibility_rule_breakdown(compat_results):
+    """
+    Build per-class/per-rule breakdown table for auditability.
+    """
+    rows = []
+    for cls_name in ['CF', 'VMR', 'ID', 'UNRESOLVED']:
+        class_rows = compat_results['details'].get(cls_name, [])
+        by_rule = Counter(r['rule_id'] for r in class_rows)
+        total_cls = len(class_rows)
+        for rule_id, count in sorted(by_rule.items()):
+            pct_cls = pct(count, total_cls)
+            pct_all = pct(count, compat_results['total'])
+            sample = next((r for r in class_rows if r['rule_id'] == rule_id), None)
+            rows.append({
+                'class': cls_name,
+                'rule_id': rule_id,
+                'rule_desc': sample['rule_desc'] if sample else '',
+                'count': count,
+                'pct_within_class': pct_cls,
+                'pct_all_techniques': pct_all,
+            })
+    return rows
+
+
+def build_compatibility_by_tactic(compat_results):
+    """
+    Build tactic-level CF/VMR/ID distribution for exploratory figure evolution.
+    Techniques can contribute to multiple tactics.
+    """
+    per_tactic = defaultdict(Counter)
+    for cls_name in ['CF', 'VMR', 'ID']:
+        for tech in compat_results['details'].get(cls_name, []):
+            tactics = tech.get('tactics', []) or ['(none)']
+            for tactic in tactics:
+                per_tactic[tactic][cls_name] += 1
+
+    rows = []
+    for tactic, counts in per_tactic.items():
+        total = sum(counts.values())
+        rows.append({
+            'tactic': tactic,
+            'total': total,
+            'cf_count': counts.get('CF', 0),
+            'cf_pct': pct(counts.get('CF', 0), total),
+            'vmr_count': counts.get('VMR', 0),
+            'vmr_pct': pct(counts.get('VMR', 0), total),
+            'id_count': counts.get('ID', 0),
+            'id_pct': pct(counts.get('ID', 0), total),
+            'non_cf_count': counts.get('VMR', 0) + counts.get('ID', 0),
+            'non_cf_pct': pct(counts.get('VMR', 0) + counts.get('ID', 0), total),
+        })
+    rows.sort(key=lambda r: r['total'], reverse=True)
+    return rows
+
+
+def build_compatibility_validation_sample(compat_results, n_per_class=12, seed=42):
+    """
+    Build a stratified manual-validation sample for CF/VMR/ID outputs.
+    Stratification first spreads picks across rule IDs, then fills by random.
+    """
+    rng = random.Random(seed)
+    rows = []
+
+    for cls_name in ['CF', 'VMR', 'ID']:
+        class_rows = list(compat_results['details'].get(cls_name, []))
+        if not class_rows:
+            continue
+
+        by_rule = defaultdict(list)
+        for row in class_rows:
+            by_rule[row['rule_id']].append(row)
+        for rule_rows in by_rule.values():
+            rng.shuffle(rule_rows)
+
+        selected = []
+        used_ids = set()
+
+        # Pass 1: one row per rule ID (coverage across rules).
+        for rule_id in sorted(by_rule.keys()):
+            if len(selected) >= n_per_class:
+                break
+            candidate = next(
+                (r for r in by_rule[rule_id] if r['id'] not in used_ids),
+                None,
+            )
+            if candidate:
+                selected.append(candidate)
+                used_ids.add(candidate['id'])
+
+        # Pass 2: fill remaining quota randomly from leftovers.
+        leftovers = [r for r in class_rows if r['id'] not in used_ids]
+        rng.shuffle(leftovers)
+        for row in leftovers[:max(0, n_per_class - len(selected))]:
+            selected.append(row)
+            used_ids.add(row['id'])
+
+        for row in selected:
+            rows.append({
+                'sample_class': cls_name,
+                'technique_name': row['name'],
+                'technique_stix_id': row['id'],
+                'technique_external_id': row.get('external_id', ''),
+                'attack_url': row.get('attack_url', ''),
+                'tactics': ';'.join(row.get('tactics', []) or []),
+                'platforms': ';'.join(row.get('platforms', []) or []),
+                'permissions': ';'.join(row.get('permissions', []) or []),
+                'predicted_class': row['class'],
+                'rule_id': row.get('rule_id', ''),
+                'rule_desc': row.get('rule_desc', ''),
+                'rule_evidence': row.get('rule_evidence', ''),
+                'is_fallback': row.get('is_fallback', False),
+                # Columns intentionally blank for human adjudication.
+                'manual_expected_class': '',
+                'manual_verdict_match': '',
+                'manual_notes': '',
+                'reviewer': '',
+            })
+
+    return rows
 
 
 def analyze_compatibility_default_sensitivity(techniques, rel_fwd, by_id):
@@ -1202,6 +2193,68 @@ def analyze_profile_specificity(
     return results
 
 
+def analyze_technique_profile_specificity(intrusion_sets, techniques, rel_fwd, rel_rev, delta=JACCARD_DELTA):
+    """
+    Exploratory: nearest-neighbor specificity using behavior-only profiles
+    (intrusion-set to linked attack-pattern techniques).
+    """
+    technique_ids = {t['id'] for t in techniques}
+    profiles = {}
+    for iset in intrusion_sets:
+        is_id = iset['id']
+        prof = set()
+        for rtype, tgt, _ in rel_fwd.get(is_id, []):
+            if rtype == 'uses' and tgt in technique_ids:
+                prof.add(tgt)
+        for rtype, src, _ in rel_rev.get(is_id, []):
+            if rtype == 'uses' and src in technique_ids:
+                prof.add(src)
+        profiles[is_id] = prof
+
+    is_ids = list(profiles.keys())
+    n = len(is_ids)
+    confused_count, confused_pct, nearest_distances = compute_confusion_from_profiles(
+        profiles, delta
+    )
+
+    per_is_rows = []
+    for i in range(n):
+        prof_i = profiles[is_ids[i]]
+        min_dist = float('inf')
+        nearest_neighbor = ""
+        for j in range(n):
+            if i == j:
+                continue
+            prof_j = profiles[is_ids[j]]
+            dist = jaccard_distance(prof_i, prof_j)
+            if dist < min_dist:
+                min_dist = dist
+                nearest_neighbor = is_ids[j]
+        if min_dist == float('inf'):
+            min_dist = 1.0
+        per_is_rows.append({
+            'intrusion_set_id': is_ids[i],
+            'feature_count': len(prof_i),
+            'nearest_neighbor_id': nearest_neighbor,
+            'nearest_distance': round(min_dist, 4),
+            'confused': min_dist <= delta,
+        })
+
+    unique_count = n - confused_count
+    threshold_results = analyze_min_evidence_threshold(per_is_rows, delta)
+    return {
+        'unique_count': unique_count,
+        'unique_pct': pct(unique_count, n),
+        'confused_count': confused_count,
+        'confused_pct': confused_pct,
+        'total_is': n,
+        'nearest_distances': nearest_distances,
+        'per_is_rows': per_is_rows,
+        'feature_universe_size': len(technique_ids),
+        'threshold': threshold_results,
+    }
+
+
 def analyze_sparsity_null_model(
     intrusion_sets, software_objects, rel_fwd, by_id, delta=JACCARD_DELTA, n_iter=1000, seed=42
 ):
@@ -1253,6 +2306,13 @@ def analyze_sparsity_null_model(
     p95_idx = max(0, int(round(0.95 * n)) - 1)
     mean_val = round(sum(samples_sorted) / n, 1) if n else 0.0
 
+    # Formal one-tailed permutation p-value: fraction of null iterations
+    # with confusion >= observed.  A high p-value means the observed confusion
+    # is indistinguishable from the cardinality-preserving null.
+    p_value = round(
+        sum(1 for c in samples if c >= observed_confusion_pct) / n_iter, 3
+    ) if n_iter > 0 else 1.0
+
     return {
         'iterations': n_iter,
         'observed_confused_count': observed_confused_count,
@@ -1262,6 +2322,7 @@ def analyze_sparsity_null_model(
         'null_confusion_p50_pct': round(samples_sorted[p50_idx], 1) if n else 0.0,
         'null_confusion_p95_pct': round(samples_sorted[p95_idx], 1) if n else 0.0,
         'delta_observed_minus_null_mean_pp': round(observed_confusion_pct - mean_val, 1),
+        'p_value': p_value,
         'distribution_rows': rows,
     }
 
@@ -1274,8 +2335,11 @@ def analyze_min_evidence_threshold(per_is_rows, threshold_delta):
         return {
             'curve': [],
             'k1_confusion_pct': 0.0,
+            'k2_confusion_pct': 0.0,
             'k3_confusion_pct': 0.0,
             'k5_confusion_pct': 0.0,
+            'k1_sample': 0,
+            'k2_sample': 0,
             'k3_sample': 0,
             'k5_sample': 0,
         }
@@ -1298,8 +2362,11 @@ def analyze_min_evidence_threshold(per_is_rows, threshold_delta):
     return {
         'curve': curve,
         'k1_confusion_pct': by_k.get(1, {}).get('confusion_pct', 0.0),
+        'k2_confusion_pct': by_k.get(2, {}).get('confusion_pct', 0.0),
         'k3_confusion_pct': by_k.get(3, {}).get('confusion_pct', 0.0),
         'k5_confusion_pct': by_k.get(5, {}).get('confusion_pct', 0.0),
+        'k1_sample': by_k.get(1, {}).get('sample_size', 0),
+        'k2_sample': by_k.get(2, {}).get('sample_size', 0),
         'k3_sample': by_k.get(3, {}).get('sample_size', 0),
         'k5_sample': by_k.get(5, {}).get('sample_size', 0),
     }
@@ -1377,6 +2444,270 @@ def bootstrap_confusion_ci(per_is_rows, delta, n_boot=5000, seed=42):
             {'stat': 'p95', 'confusion_pct': round(confusion_samples[int(0.95 * n_boot)], 4), 'unique_pct': round(unique_samples[int(0.95 * n_boot)], 4)},
             {'stat': 'p99', 'confusion_pct': round(confusion_samples[int(0.99 * n_boot)], 4), 'unique_pct': round(unique_samples[int(0.99 * n_boot)], 4)},
         ],
+    }
+
+
+# ─────────────────────────────────────────────────────────────────
+# 7. Exploratory correlation summaries (campaign-level)
+# ─────────────────────────────────────────────────────────────────
+
+def _mean(values):
+    if not values:
+        return 0.0
+    return sum(values) / len(values)
+
+
+def _median(values):
+    if not values:
+        return 0.0
+    vals = sorted(values)
+    n = len(vals)
+    mid = n // 2
+    if n % 2 == 1:
+        return float(vals[mid])
+    return (vals[mid - 1] + vals[mid]) / 2.0
+
+
+def _pearson_corr(xs, ys):
+    if not xs or not ys or len(xs) != len(ys):
+        return 0.0
+    mx = _mean(xs)
+    my = _mean(ys)
+    num = sum((x - mx) * (y - my) for x, y in zip(xs, ys))
+    den_x = math.sqrt(sum((x - mx) ** 2 for x in xs))
+    den_y = math.sqrt(sum((y - my) ** 2 for y in ys))
+    if den_x == 0 or den_y == 0:
+        return 0.0
+    return num / (den_x * den_y)
+
+
+def _rank_with_ties(values):
+    """
+    Average-tie ranking (1-indexed ranks).
+    """
+    indexed = sorted(enumerate(values), key=lambda it: it[1])
+    ranks = [0.0] * len(values)
+    i = 0
+    while i < len(indexed):
+        j = i
+        while j + 1 < len(indexed) and indexed[j + 1][1] == indexed[i][1]:
+            j += 1
+        avg_rank = (i + j + 2) / 2.0
+        for k in range(i, j + 1):
+            ranks[indexed[k][0]] = avg_rank
+        i = j + 1
+    return ranks
+
+
+def _spearman_corr(xs, ys):
+    if not xs or not ys or len(xs) != len(ys):
+        return 0.0
+    rx = _rank_with_ties(xs)
+    ry = _rank_with_ties(ys)
+    return _pearson_corr(rx, ry)
+
+
+def analyze_campaign_serendipity(
+    software_results,
+    cve_results,
+    initial_access_results,
+    profile_completeness,
+):
+    """
+    Build reproducible campaign-level exploratory summaries to support
+    narrative checks without overclaiming causality.
+    """
+    sw_by_campaign = {
+        row['campaign_id']: int(row.get('software_count', 0))
+        for row in software_results.get('campaign_details', [])
+    }
+    cve_by_campaign = {
+        row['campaign_id']: int(row.get('cve_count', 0))
+        for row in cve_results.get('campaign_cve_details', [])
+    }
+    ia_count_by_campaign = {
+        row['campaign_id']: int(row.get('initial_access_technique_count', 0))
+        for row in initial_access_results.get('campaign_rows', [])
+    }
+    ia_flag_by_campaign = {
+        row['campaign_id']: int(bool(row.get('has_initial_access', False)))
+        for row in initial_access_results.get('campaign_rows', [])
+    }
+    t2_by_campaign = {
+        row['campaign_id']: int(bool(row.get('tier_t2_anchored', False)))
+        for row in profile_completeness.get('rows', [])
+    }
+
+    campaign_ids = sorted(sw_by_campaign.keys())
+    sw_counts = [sw_by_campaign.get(cid, 0) for cid in campaign_ids]
+    cve_counts = [cve_by_campaign.get(cid, 0) for cid in campaign_ids]
+    ia_counts = [ia_count_by_campaign.get(cid, 0) for cid in campaign_ids]
+    ia_flags = [ia_flag_by_campaign.get(cid, 0) for cid in campaign_ids]
+    cve_flags = [1 if cve_by_campaign.get(cid, 0) > 0 else 0 for cid in campaign_ids]
+
+    cve_pos_sw = [sw_by_campaign.get(cid, 0) for cid in campaign_ids if cve_by_campaign.get(cid, 0) > 0]
+    cve_neg_sw = [sw_by_campaign.get(cid, 0) for cid in campaign_ids if cve_by_campaign.get(cid, 0) == 0]
+
+    t2_and_cve = sum(
+        1 for cid in campaign_ids
+        if t2_by_campaign.get(cid, 0) == 1 and cve_by_campaign.get(cid, 0) > 0
+    )
+    t2_without_cve = sum(
+        1 for cid in campaign_ids
+        if t2_by_campaign.get(cid, 0) == 1 and cve_by_campaign.get(cid, 0) == 0
+    )
+    cve_without_t2 = sum(
+        1 for cid in campaign_ids
+        if t2_by_campaign.get(cid, 0) == 0 and cve_by_campaign.get(cid, 0) > 0
+    )
+
+    corr_rows = [
+        {
+            'metric': 'campaign_count',
+            'value': len(campaign_ids),
+            'note': 'Usable Enterprise campaigns after exclusions.',
+        },
+        {
+            'metric': 'campaigns_with_cve_count',
+            'value': sum(cve_flags),
+            'note': 'Campaigns with at least one actionable CVE.',
+        },
+        {
+            'metric': 'pearson_sw_count_vs_cve_count',
+            'value': round(_pearson_corr(sw_counts, cve_counts), 4),
+            'note': 'Linear association between linked software count and campaign CVE count.',
+        },
+        {
+            'metric': 'spearman_sw_count_vs_cve_count',
+            'value': round(_spearman_corr(sw_counts, cve_counts), 4),
+            'note': 'Rank association between linked software count and campaign CVE count.',
+        },
+        {
+            'metric': 'pearson_initial_access_count_vs_cve_count',
+            'value': round(_pearson_corr(ia_counts, cve_counts), 4),
+            'note': 'Linear association between IA-technique count and campaign CVE count.',
+        },
+        {
+            'metric': 'spearman_initial_access_count_vs_cve_count',
+            'value': round(_spearman_corr(ia_counts, cve_counts), 4),
+            'note': 'Rank association between IA-technique count and campaign CVE count.',
+        },
+        {
+            'metric': 'point_biserial_has_initial_access_vs_has_cve',
+            'value': round(_pearson_corr(ia_flags, cve_flags), 4),
+            'note': 'Binary association proxy: has-initial-access vs has-CVE.',
+        },
+        {
+            'metric': 'mean_software_count_cve_positive_campaigns',
+            'value': round(_mean(cve_pos_sw), 3),
+            'note': 'Average linked software count among CVE-positive campaigns.',
+        },
+        {
+            'metric': 'mean_software_count_cve_negative_campaigns',
+            'value': round(_mean(cve_neg_sw), 3),
+            'note': 'Average linked software count among CVE-negative campaigns.',
+        },
+        {
+            'metric': 'median_software_count_cve_positive_campaigns',
+            'value': round(_median(cve_pos_sw), 3),
+            'note': 'Median linked software count among CVE-positive campaigns.',
+        },
+        {
+            'metric': 'median_software_count_cve_negative_campaigns',
+            'value': round(_median(cve_neg_sw), 3),
+            'note': 'Median linked software count among CVE-negative campaigns.',
+        },
+        {
+            'metric': 'tier_t2_and_cve_count',
+            'value': t2_and_cve,
+            'note': 'Campaigns that are T2 anchored and also have campaign CVE evidence.',
+        },
+        {
+            'metric': 'tier_t2_without_cve_count',
+            'value': t2_without_cve,
+            'note': 'T2 campaigns anchored only by software precision (version/CPE) without campaign CVE.',
+        },
+        {
+            'metric': 'cve_without_tier_t2_count',
+            'value': cve_without_t2,
+            'note': 'Campaigns with CVE evidence that still fail T2 anchor criteria.',
+        },
+    ]
+
+    platform_rows = software_results.get('campaign_platform_details', [])
+    with_platform_signal = [r for r in platform_rows if bool(r.get('platform_signal', False))]
+    with_os_signal = [r for r in with_platform_signal if r.get('os_families')]
+    unknown_platform = [r for r in platform_rows if not bool(r.get('platform_signal', False))]
+
+    os_single = sum(1 for r in with_os_signal if len(r.get('os_families', [])) == 1)
+    os_dual = sum(1 for r in with_os_signal if len(r.get('os_families', [])) == 2)
+    os_triple = sum(1 for r in with_os_signal if len(r.get('os_families', [])) >= 3)
+
+    one_sw_with_os = [r for r in with_os_signal if int(r.get('software_count', 0)) == 1]
+    one_sw_single = sum(1 for r in one_sw_with_os if len(r.get('os_families', [])) == 1)
+    one_sw_triple = sum(1 for r in one_sw_with_os if len(r.get('os_families', [])) >= 3)
+
+    non_os_only = [
+        r for r in with_platform_signal
+        if not r.get('os_families') and r.get('non_os_platforms')
+    ]
+
+    platform_quality_rows = [
+        {
+            'metric': 'campaigns_with_platform_signal_count',
+            'value': len(with_platform_signal),
+            'note': 'Campaigns with at least one software-derived platform tag.',
+        },
+        {
+            'metric': 'campaigns_unknown_platform_count',
+            'value': len(unknown_platform),
+            'note': 'Campaigns with no software-derived platform signal.',
+        },
+        {
+            'metric': 'campaigns_with_os_family_signal_count',
+            'value': len(with_os_signal),
+            'note': 'Campaigns with OS-family (Windows/Linux/macOS) signal.',
+        },
+        {
+            'metric': 'campaigns_with_single_os_family_count',
+            'value': os_single,
+            'note': 'Campaigns with exactly one inferred OS family.',
+        },
+        {
+            'metric': 'campaigns_with_dual_os_family_count',
+            'value': os_dual,
+            'note': 'Campaigns with two inferred OS families.',
+        },
+        {
+            'metric': 'campaigns_with_triple_os_family_count',
+            'value': os_triple,
+            'note': 'Campaigns with Linux+Windows+macOS inferred families.',
+        },
+        {
+            'metric': 'one_software_campaigns_with_os_signal_count',
+            'value': len(one_sw_with_os),
+            'note': 'Campaigns whose platform inference is driven by exactly one linked software item.',
+        },
+        {
+            'metric': 'one_software_campaigns_single_os_count',
+            'value': one_sw_single,
+            'note': 'One-software campaigns with single-OS inference.',
+        },
+        {
+            'metric': 'one_software_campaigns_triple_os_count',
+            'value': one_sw_triple,
+            'note': 'One-software campaigns with Linux+Windows+macOS inference.',
+        },
+        {
+            'metric': 'campaigns_with_non_os_only_platform_signal_count',
+            'value': len(non_os_only),
+            'note': 'Campaigns where platform evidence is only non-OS tags (e.g., Network Devices).',
+        },
+    ]
+
+    return {
+        'correlation_rows': corr_rows,
+        'platform_quality_rows': platform_quality_rows,
     }
 
 
@@ -1513,6 +2844,20 @@ def main():
     print(f"  Software with CPE: {software_results['software_with_cpe']}/{software_results['total_software']} "
           f"({software_results['software_with_cpe_pct']}%)")
 
+    # ── Software Version Enrichment from Descriptions ──
+    print("\n[3b/7] Analyzing software version enrichment from descriptions...")
+    version_enrichment = analyze_software_version_enrichment(software_objects)
+    print(f"  Baseline version signal: {version_enrichment['baseline_has_version']}/{version_enrichment['total_software']} "
+          f"({version_enrichment['baseline_has_version_pct']}%)")
+    print(f"  Description-enriched gains: +{version_enrichment['desc_enriched_count']} software objects "
+          f"({version_enrichment['desc_enriched_pct']}%)")
+    print(f"  Enriched total: {version_enrichment['enriched_total']}/{version_enrichment['total_software']} "
+          f"({version_enrichment['enriched_total_pct']}%), gain +{version_enrichment['gain_pp']} pp")
+    print(f"  Remaining without version (post-enrichment): {version_enrichment['enriched_no_version']}/{version_enrichment['total_software']} "
+          f"({version_enrichment['enriched_no_version_pct']}%)")
+    if version_enrichment['enriched_examples']:
+        print(f"  Examples: {', '.join(e['name'] + ' (' + e['matched_version'] + ')' for e in version_enrichment['enriched_examples'][:5])}")
+
     # ── Vulnerability References ──
     print("\n[4/7] Analyzing vulnerability references (RQ1/RQ2)...")
     cve_results = analyze_vulnerability_references(
@@ -1530,10 +2875,54 @@ def main():
     print(f"  CVEs from software: {cve_results['cves_from_software']}")
     print(f"  CVEs from campaigns: {cve_results['cves_from_campaigns']}")
     print(f"  CVEs from intrusion sets: {cve_results['cves_from_is']}")
+    print(
+        "  Campaign CVE coverage (structured-only -> enriched): "
+        f"{cve_results['campaigns_with_cve_structured']}/{software_results['total_usable_campaigns']} "
+        f"({cve_results['campaigns_with_cve_structured_pct']}%) -> "
+        f"{cve_results['campaigns_with_cve']}/{software_results['total_usable_campaigns']} "
+        f"({cve_results['campaigns_with_cve_pct']}%), "
+        f"gain +{cve_results['campaigns_with_cve_enrichment_gain']} "
+        f"(+{cve_results['campaigns_with_cve_enrichment_gain_pp']} pp)"
+    )
+    print(
+        "  Intrusion-set CVE coverage (structured-only -> enriched): "
+        f"{cve_results['is_with_cve_structured']}/{software_results['total_intrusion_sets']} "
+        f"({cve_results['is_with_cve_structured_pct']}%) -> "
+        f"{cve_results['is_with_cve']}/{software_results['total_intrusion_sets']} "
+        f"({cve_results['is_with_cve_pct']}%), "
+        f"gain +{cve_results['is_with_cve_enrichment_gain']} "
+        f"(+{cve_results['is_with_cve_enrichment_gain_pp']} pp)"
+    )
     print(f"  Campaigns with CVE: {cve_results['campaigns_with_cve']}/{software_results['total_usable_campaigns']} "
           f"({cve_results['campaigns_with_cve_pct']}%)")
     print(f"  IS with CVE: {cve_results['is_with_cve']}/{software_results['total_intrusion_sets']} "
           f"({cve_results['is_with_cve_pct']}%)")
+
+    # ── CVE NVD-format validation ──
+    print("\n[4b/7] Validating CVE IDs against NVD format...")
+    cve_validation = validate_cve_ids(set(cve_results['all_cves']))
+    print(f"  Valid: {cve_validation['valid_count']}/{cve_validation['total']}")
+    if cve_validation['flagged']:
+        print(f"  Flagged: {cve_validation['flagged_count']}")
+        for f_cve in cve_validation['flagged']:
+            print(f"    {f_cve['cve_id']}: {f_cve['reason']} — {f_cve['detail']}")
+    else:
+        print("  All CVE IDs pass NVD format validation.")
+    # Export validation audit CSV
+    with open(AUDIT_DIR / 'cve_validation.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=['cve_id', 'status', 'reason', 'detail'])
+        writer.writeheader()
+        for v in cve_validation['valid']:
+            writer.writerow({
+                'cve_id': v['cve_id'], 'status': 'valid',
+                'reason': '', 'detail': f"Year={v['year']}, Digits={v['seq_digits']}"
+            })
+        for fl in cve_validation['flagged']:
+            writer.writerow({
+                'cve_id': fl['cve_id'], 'status': 'flagged',
+                'reason': fl['reason'], 'detail': fl['detail']
+            })
+    print(f"  ✓ CVE validation audit saved to {AUDIT_DIR / 'cve_validation.csv'}")
 
     # ── Campaign-level profile completeness ──
     profile_completeness = analyze_campaign_profile_completeness(
@@ -1546,6 +2935,49 @@ def main():
           f"({profile_completeness['tier_t2_pct']}%)")
     print(f"    T3 (exploit-pinned: T1 + campaign CVE): {profile_completeness['tier_t3_count']}/{profile_completeness['total_campaigns']} "
           f"({profile_completeness['tier_t3_pct']}%)")
+
+    # ── Campaign Factual Structure (inNervoso consolidation) ──
+    print("\n[4c/7] Analyzing campaign factual structure...")
+    # Build tactic objects index for get_technique_tactics()
+    tactic_objects = [o for o in all_objects if o.get('type') == 'x-mitre-tactic']
+    campaign_factual = analyze_campaign_factual_structure(
+        campaigns, techniques, rel_fwd, rel_rev, by_id, tactic_objects,
+        excluded_campaign_ids
+    )
+    print(f"  Mean techniques/campaign: {campaign_factual['campaign_mean_technique_count']}")
+    print(f"  Mean tactic coverage/campaign: {campaign_factual['campaign_mean_tactic_coverage']}")
+    print(f"  Campaigns with ≥5 tactics (complete kill-chain): "
+          f"{campaign_factual['campaigns_complete_killchain']}/{campaign_factual['total_campaigns']} "
+          f"({campaign_factual['campaign_complete_killchain_pct']}%)")
+    print(f"  Campaigns with both IA and exfiltration: "
+          f"{campaign_factual['campaigns_with_ia_and_exfil']}/{campaign_factual['total_campaigns']} "
+          f"({campaign_factual['campaign_with_ia_and_exfil_pct']}%)")
+
+    # ── Environment Inference + IEIR ──
+    print("\n[4d/7] Inferring campaign environments (IEIR)...")
+    software_objects_list = by_type.get('tool', []) + by_type.get('malware', [])
+    env_inference = infer_campaign_environment(
+        campaign_factual['rows'], software_objects_list, by_id, rel_fwd, rel_rev
+    )
+    print(f"  Campaigns with campaign-specific signal: {env_inference['campaign_specific_count']}/{env_inference['total_campaigns']} "
+          f"({env_inference['campaign_specific_pct']}%)")
+    print(f"  IEIR (implicit-only): {env_inference['ieir_count']}/{env_inference['total_campaigns']} "
+          f"({env_inference['ieir_pct']}%)")
+    print(f"  Confidence: high={env_inference['environment_high_confidence_pct']}%, "
+          f"medium={env_inference['environment_medium_pct']}%, "
+          f"low={env_inference['environment_low_pct']}%, "
+          f"none={env_inference['environment_none_pct']}%")
+    print(f"  Signal sources: {env_inference['signal_type_breakdown']}")
+
+    # ── Evidence Convergence ──
+    print("\n[4e/7] Analyzing evidence convergence...")
+    evidence_convergence = analyze_evidence_convergence(
+        campaign_factual['rows'], env_inference['rows']
+    )
+    print(f"  Convergent campaigns: {evidence_convergence['convergence_count']}/{evidence_convergence['total_campaigns']} "
+          f"({evidence_convergence['convergence_rate_pct']}%)")
+    print(f"  Divergent campaigns: {evidence_convergence['divergence_count']}")
+    print(f"  Mean signal count/campaign: {evidence_convergence['evidence_mean_signal_count']}")
 
     # ── Initial Access analysis ──
     print("\n[5/7] Analyzing Initial Access signals...")
@@ -1569,6 +3001,21 @@ def main():
     print(f"  VMR: {compat_results['vmr_count']} ({compat_results['vmr_pct']}%)")
     print(f"  ID: {compat_results['id_count']} ({compat_results['id_pct']}%)")
     print(f"  Total: {compat_results['cf_count'] + compat_results['vmr_count'] + compat_results['id_count']}")
+    print(
+        f"  Explicit-rule assignments: {compat_results['explicit_count']}/{compat_results['total']} "
+        f"({compat_results['explicit_pct']}%), fallback assignments: "
+        f"{compat_results['fallback_count']}/{compat_results['total']} ({compat_results['fallback_pct']}%)"
+    )
+    compatibility_rule_breakdown = build_compatibility_rule_breakdown(compat_results)
+    compatibility_by_tactic = build_compatibility_by_tactic(compat_results)
+    compatibility_validation_sample = build_compatibility_validation_sample(
+        compat_results, n_per_class=12, seed=42
+    )
+    print(
+        "  Compatibility validation sample prepared: "
+        f"{len(compatibility_validation_sample)} techniques "
+        "(stratified by class and rule ID)."
+    )
     compatibility_sensitivity = analyze_compatibility_default_sensitivity(
         techniques, rel_fwd, by_id
     )
@@ -1649,6 +3096,7 @@ def main():
     )
     print("  Confusion by minimum software count:")
     print(f"    k>=1: {threshold_results['k1_confusion_pct']}%")
+    print(f"    k>=2: {threshold_results['k2_confusion_pct']}% (n={threshold_results['k2_sample']})")
     print(f"    k>=3: {threshold_results['k3_confusion_pct']}% (n={threshold_results['k3_sample']})")
     print(f"    k>=5: {threshold_results['k5_confusion_pct']}% (n={threshold_results['k5_sample']})")
     print("  Delta sensitivity (software-only):")
@@ -1664,7 +3112,60 @@ def main():
         f"mean confusion {null_model_results['null_confusion_mean_pct']}% "
         f"[p05={null_model_results['null_confusion_p05_pct']}%, "
         f"p95={null_model_results['null_confusion_p95_pct']}%], "
-        f"observed={null_model_results['observed_confusion_pct']}%"
+        f"observed={null_model_results['observed_confusion_pct']}%, "
+        f"p-value={null_model_results['p_value']}"
+    )
+    behavior_specificity = analyze_technique_profile_specificity(
+        intrusion_sets, techniques, rel_fwd, rel_rev, delta=JACCARD_DELTA
+    )
+    print(
+        "  Exploratory behavior-profile confusion (technique-only): "
+        f"{behavior_specificity['confused_count']}/{behavior_specificity['total_is']} "
+        f"({behavior_specificity['confused_pct']}%) at delta={JACCARD_DELTA}"
+    )
+    print(
+        "  Exploratory behavior-profile thresholds: "
+        f"k>=1 {behavior_specificity['threshold']['k1_confusion_pct']}%, "
+        f"k>=2 {behavior_specificity['threshold']['k2_confusion_pct']}%, "
+        f"k>=3 {behavior_specificity['threshold']['k3_confusion_pct']}%"
+    )
+    serendipity_results = analyze_campaign_serendipity(
+        software_results, cve_results, initial_access_results, profile_completeness
+    )
+    corr_lookup = {
+        row['metric']: row['value']
+        for row in serendipity_results['correlation_rows']
+    }
+    platform_lookup = {
+        row['metric']: row['value']
+        for row in serendipity_results['platform_quality_rows']
+    }
+    print("  Exploratory campaign-level associations:")
+    print(
+        "    corr(sw_count, cve_count): "
+        f"pearson={corr_lookup.get('pearson_sw_count_vs_cve_count', 0)}, "
+        f"spearman={corr_lookup.get('spearman_sw_count_vs_cve_count', 0)}"
+    )
+    print(
+        "    corr(initial_access_count, cve_count): "
+        f"pearson={corr_lookup.get('pearson_initial_access_count_vs_cve_count', 0)}, "
+        f"spearman={corr_lookup.get('spearman_initial_access_count_vs_cve_count', 0)}"
+    )
+    print(
+        "    corr(has_initial_access, has_cve): "
+        f"{corr_lookup.get('point_biserial_has_initial_access_vs_has_cve', 0)}"
+    )
+    print("  Platform-inference quality (software-only campaign signal):")
+    print(
+        f"    with_os_signal={platform_lookup.get('campaigns_with_os_family_signal_count', 0)}, "
+        f"single={platform_lookup.get('campaigns_with_single_os_family_count', 0)}, "
+        f"dual={platform_lookup.get('campaigns_with_dual_os_family_count', 0)}, "
+        f"triple={platform_lookup.get('campaigns_with_triple_os_family_count', 0)}"
+    )
+    print(
+        "    one-software campaigns: "
+        f"single_os={platform_lookup.get('one_software_campaigns_single_os_count', 0)}, "
+        f"triple_os={platform_lookup.get('one_software_campaigns_triple_os_count', 0)}"
     )
 
     # ── Cross-domain coverage ──
@@ -1775,6 +3276,14 @@ def main():
             software_results['total_software'],
         )[1],
         'software_with_cpe_percentage': software_results['software_with_cpe_pct'],
+        'software_no_version_no_cpe_percentage': software_results['software_no_version_no_cpe_pct'],
+        # Version enrichment from descriptions
+        'software_version_enrichment_gain_count': version_enrichment['desc_enriched_count'],
+        'software_version_enrichment_gain_pct': version_enrichment['desc_enriched_pct'],
+        'software_version_enriched_total': version_enrichment['enriched_total'],
+        'software_version_enriched_total_pct': version_enrichment['enriched_total_pct'],
+        'software_version_enrichment_gain_pp': version_enrichment['gain_pp'],
+        'software_version_enriched_no_version_pct': version_enrichment['enriched_no_version_pct'],
 
         # RQ1/RQ2 CVE
         'cve_unique_count': cve_results['cve_unique_count'],
@@ -1784,6 +3293,10 @@ def main():
         'cve_actionable_count': cve_results['actionable_cve_count'],
         'cve_technique_only_count': cve_results['technique_only_cve_count'],
         'campaign_linked_cve_count': len(cve_results['cves_from_campaigns']),
+        'ent_campaigns_with_cve_structured_count': cve_results['campaigns_with_cve_structured'],
+        'ent_campaigns_with_cve_structured_pct': cve_results['campaigns_with_cve_structured_pct'],
+        'ent_campaigns_with_cve_enrichment_gain_count': cve_results['campaigns_with_cve_enrichment_gain'],
+        'ent_campaigns_with_cve_enrichment_gain_pp': cve_results['campaigns_with_cve_enrichment_gain_pp'],
         'ent_campaigns_with_cve_count': cve_results['campaigns_with_cve'],
         'ent_campaigns_with_cve_pct': cve_results['campaigns_with_cve_pct'],
         'ent_campaigns_with_cve_ci_low': proportion_ci_wilson(
@@ -1794,6 +3307,10 @@ def main():
             cve_results['campaigns_with_cve'],
             software_results['total_usable_campaigns'],
         )[1],
+        'ent_intrusion_sets_with_cve_structured_count': cve_results['is_with_cve_structured'],
+        'ent_intrusion_sets_with_cve_structured_pct': cve_results['is_with_cve_structured_pct'],
+        'ent_intrusion_sets_with_cve_enrichment_gain_count': cve_results['is_with_cve_enrichment_gain'],
+        'ent_intrusion_sets_with_cve_enrichment_gain_pp': cve_results['is_with_cve_enrichment_gain_pp'],
         'ent_intrusion_sets_with_cve_count': cve_results['is_with_cve'],
         'ent_intrusion_sets_with_cve_pct': cve_results['is_with_cve_pct'],
 
@@ -1823,6 +3340,8 @@ def main():
         'compatibility_vm_required_percentage': compat_results['vmr_pct'],
         'compatibility_infrastructure_dependent_count': compat_results['id_count'],
         'compatibility_infrastructure_dependent_percentage': compat_results['id_pct'],
+        'compatibility_explicit_assignment_percentage': compat_results['explicit_pct'],
+        'compatibility_fallback_assignment_percentage': compat_results['fallback_pct'],
         'compatibility_non_cf_floor_percentage': min(non_cf_values),
         'compatibility_non_cf_ceiling_percentage': max(non_cf_values),
         'compatibility_non_cf_baseline_percentage': round(
@@ -1830,6 +3349,7 @@ def main():
         ),
         'compatibility_rule_coverage_percentage': unresolved_scenario['resolved_pct'],
         'compatibility_non_cf_resolved_percentage': unresolved_scenario['non_cf_resolved_pct'],
+        'compatibility_validation_sample_size': len(compatibility_validation_sample),
 
         # RQ3 Specificity
         'sut_profile_unique_software_percentage': sw_only['unique_pct'],
@@ -1853,8 +3373,11 @@ def main():
             sw_cve['total_is'],
         )[1],
         'threshold_k_one_confusion_pct': threshold_results['k1_confusion_pct'],
+        'threshold_k_two_confusion_pct': threshold_results['k2_confusion_pct'],
         'threshold_k_three_confusion_pct': threshold_results['k3_confusion_pct'],
         'threshold_k_five_confusion_pct': threshold_results['k5_confusion_pct'],
+        'threshold_k_one_sample': threshold_results['k1_sample'],
+        'threshold_k_two_sample': threshold_results['k2_sample'],
         'threshold_k_three_sample': threshold_results['k3_sample'],
         'threshold_k_five_sample': threshold_results['k5_sample'],
         'delta_zero_zero_five_confusion_pct': next(
@@ -1881,7 +3404,81 @@ def main():
         'null_model_confusion_plow_pct': null_model_results['null_confusion_p05_pct'],
         'null_model_confusion_phigh_pct': null_model_results['null_confusion_p95_pct'],
         'null_model_observed_minus_mean_pp': null_model_results['delta_observed_minus_null_mean_pp'],
+        'null_model_p_value': null_model_results['p_value'],
+
+        # Campaign Factual Structure (inNervoso consolidation)
+        'campaign_mean_technique_count': campaign_factual['campaign_mean_technique_count'],
+        'campaign_median_technique_count': campaign_factual['campaign_median_technique_count'],
+        'campaign_mean_tactic_coverage': campaign_factual['campaign_mean_tactic_coverage'],
+        'campaign_complete_killchain_count': campaign_factual['campaigns_complete_killchain'],
+        'campaign_complete_killchain_pct': campaign_factual['campaign_complete_killchain_pct'],
+        'campaign_with_ia_and_exfil_count': campaign_factual['campaigns_with_ia_and_exfil'],
+        'campaign_with_ia_and_exfil_pct': campaign_factual['campaign_with_ia_and_exfil_pct'],
+
+        # Environment Inference + IEIR
+        'ieir_count': env_inference['ieir_count'],
+        'ieir_pct': env_inference['ieir_pct'],
+        'environment_campaign_specific_count': env_inference['campaign_specific_count'],
+        'environment_campaign_specific_pct': env_inference['campaign_specific_pct'],
+        'environment_high_confidence_pct': env_inference['environment_high_confidence_pct'],
+        'environment_medium_pct': env_inference['environment_medium_pct'],
+        'environment_low_pct': env_inference['environment_low_pct'],
+        'environment_none_pct': env_inference['environment_none_pct'],
+
+        # Evidence Convergence
+        'evidence_convergence_count': evidence_convergence['convergence_count'],
+        'evidence_convergence_rate_pct': evidence_convergence['convergence_rate_pct'],
+        'evidence_divergence_count': evidence_convergence['divergence_count'],
+        'evidence_mean_signal_count': evidence_convergence['evidence_mean_signal_count'],
     }
+
+    # ══════════════════════════════════════════════════════════════
+    # Macro completeness and manuscript coverage checks
+    # ══════════════════════════════════════════════════════════════
+    unresolved_values = {
+        k: v for k, v in todo_values.items()
+        if isinstance(v, str) and v.strip().upper() in {'', 'N/A', 'TODO', 'TBD'}
+    }
+    if unresolved_values:
+        sample = ", ".join(f"{k}={v}" for k, v in list(unresolved_values.items())[:8])
+        raise RuntimeError(
+            "Unresolved metric values found in todo_values; "
+            f"pipeline output is not fully operational: {sample}"
+        )
+
+    # SCRIPT_DIR = <repo>/measurement/sut/scripts, so project root is parents[2].
+    paper_main_tex = SCRIPT_DIR.parents[2] / "ACM CCS - Paper 2" / "main.tex"
+    write_keys = list(todo_values.keys())
+    macro_coverage = {
+        'generated_macro_count': len(todo_values),
+        'manuscript_macro_count': 0,
+        'unused_generated_macro_count': 0,
+        'unused_generated_macros': [],
+    }
+    if paper_main_tex.exists():
+        main_text = paper_main_tex.read_text(encoding='utf-8')
+        used_macros = set(re.findall(r'\\([A-Za-z][A-Za-z0-9]+)', main_text))
+        generated_name_to_key = {k.replace('_', ''): k for k in todo_values.keys()}
+        order = {k: idx for idx, k in enumerate(todo_values.keys())}
+        write_keys = sorted(
+            {generated_name_to_key[name] for name in used_macros if name in generated_name_to_key},
+            key=lambda k: order[k],
+        )
+        unused = [k for k in todo_values.keys() if k not in set(write_keys)]
+        macro_coverage = {
+            'generated_macro_count': len(todo_values),
+            'manuscript_macro_count': len(write_keys),
+            'unused_generated_macro_count': len(unused),
+            'unused_generated_macros': unused,
+        }
+        with open(RESULTS_DIR / 'macro_coverage.json', 'w', encoding='utf-8') as f:
+            json.dump(macro_coverage, f, indent=2)
+        print(
+            "  Macro coverage: "
+            f"{len(write_keys)} used in manuscript, {len(unused)} generated-only metrics in JSON/audit."
+        )
+    else:
+        print(f"[WARN] main.tex not found at {paper_main_tex}; exporting all generated macros.")
 
     # ── Save TODO values as JSON ──
     with open(RESULTS_DIR / 'todo_values.json', 'w') as f:
@@ -1893,7 +3490,8 @@ def main():
         f.write("% Auto-generated extracted values\n")
         f.write(f"% Generated: {datetime.now().strftime('%Y-%m-%d')}\n")
         f.write(f"% Bundle: ATT&CK Enterprise v18.1\n\n")
-        for key, val in todo_values.items():
+        for key in write_keys:
+            val = todo_values[key]
             latex_key = key.replace('_', '')
             f.write(f"\\newcommand{{\\{latex_key}}}{{{val}}}\n")
     print(f"✓ LaTeX commands saved to {RESULTS_DIR / 'todo_values_latex.tex'}")
@@ -1905,27 +3503,50 @@ def main():
                 'platform': cross_domain.get('enterprise', {}).get('platform_pct', 0),
                 'software_link': cross_domain.get('enterprise', {}).get('software_link_pct', 0),
                 'cve_link': cross_domain.get('enterprise', {}).get('cve_link_pct', 0),
+                'attack_pattern_n': cross_domain.get('enterprise', {}).get('total_techniques', 0),
             },
             'mobile': {
                 'platform': cross_domain.get('mobile', {}).get('platform_pct', 0),
                 'software_link': cross_domain.get('mobile', {}).get('software_link_pct', 0),
                 'cve_link': cross_domain.get('mobile', {}).get('cve_link_pct', 0),
+                'attack_pattern_n': cross_domain.get('mobile', {}).get('total_techniques', 0),
             },
             'ics': {
                 'platform': cross_domain.get('ics', {}).get('platform_pct', 0),
                 'software_link': cross_domain.get('ics', {}).get('software_link_pct', 0),
                 'cve_link': cross_domain.get('ics', {}).get('cve_link_pct', 0),
+                'attack_pattern_n': cross_domain.get('ics', {}).get('total_techniques', 0),
             },
             'capec': {
                 'platform': cross_domain.get('capec', {}).get('platform_pct', 0),
                 'software_link': cross_domain.get('capec', {}).get('software_link_pct', 0),
                 'cve_link': cross_domain.get('capec', {}).get('cve_link_pct', 0),
+                'attack_pattern_n': cross_domain.get('capec', {}).get('total_techniques', 0),
             },
             'fight': {
                 'platform': cross_domain.get('fight', {}).get('platform_pct', 0),
                 'software_link': cross_domain.get('fight', {}).get('software_link_pct', 0),
                 'cve_link': cross_domain.get('fight', {}).get('cve_link_pct', 0),
+                'attack_pattern_n': cross_domain.get('fight', {}).get('total_techniques', 0),
             },
+        },
+        'coverage_density': {
+            key: {
+                'attack_pattern_n': val.get('total_techniques', 0),
+                'avg_software_links_per_attack_pattern': val.get(
+                    'avg_software_links_per_attack_pattern', 0.0
+                ),
+                'median_software_links_per_attack_pattern': val.get(
+                    'median_software_links_per_attack_pattern', 0.0
+                ),
+                'p90_software_links_per_attack_pattern': val.get(
+                    'p90_software_links_per_attack_pattern', 0.0
+                ),
+                'avg_cve_mentions_per_attack_pattern': val.get(
+                    'avg_cve_mentions_per_attack_pattern', 0.0
+                ),
+            }
+            for key, val in cross_domain.items()
         },
         'software_specificity': {
             'total_software': software_results['total_software'],
@@ -1936,10 +3557,26 @@ def main():
             'version_no_cpe_pct': 0,
             'with_cpe_pct': 0,
         },
+        'campaign_tier_collapse': {
+            'total_campaigns': profile_completeness['total_campaigns'],
+            't1_count': profile_completeness['tier_t1_count'],
+            't1_pct': profile_completeness['tier_t1_pct'],
+            't2_count': profile_completeness['tier_t2_count'],
+            't2_pct': profile_completeness['tier_t2_pct'],
+            't3_count': profile_completeness['tier_t3_count'],
+            't3_pct': profile_completeness['tier_t3_pct'],
+        },
         'cve_location': {
             'structured_count': cve_results['cve_structured_count'],
             'freetext_only_count': cve_results['cve_freetext_only_count'],
             'total': cve_results['cve_unique_count'],
+        },
+        'cve_operational_funnel': {
+            'detected_unique_cves': cve_results['cve_unique_count'],
+            'actionable_cves': cve_results['actionable_cve_count'],
+            'campaign_linked_cves': len(cve_results['cves_from_campaigns']),
+            'campaigns_with_cve': cve_results['campaigns_with_cve'],
+            'total_campaigns': software_results['total_usable_campaigns'],
         },
         'jaccard_cdf': {
             'software_only_distances': specificity_results['software_only']['nearest_distances'],
@@ -1954,7 +3591,16 @@ def main():
             'cf': compat_results['cf_count'],
             'vmr': compat_results['vmr_count'],
             'id': compat_results['id_count'],
+            'total': compat_results['total'],
+            'cf_pct': compat_results['cf_pct'],
+            'vmr_pct': compat_results['vmr_pct'],
+            'id_pct': compat_results['id_pct'],
+            'non_cf_floor_pct': min(non_cf_values) if non_cf_values else 0.0,
+            'non_cf_ceiling_pct': max(non_cf_values) if non_cf_values else 0.0,
+            'non_cf_resolved_pct': unresolved_scenario['non_cf_resolved_pct'],
+            'rule_coverage_pct': unresolved_scenario['resolved_pct'],
         },
+        'compatibility_by_tactic': compatibility_by_tactic,
         'ablation_summary': {
             'software_only': {
                 'unique_pct': sw_only['unique_pct'],
@@ -1981,37 +3627,50 @@ def main():
                 'confused_pct': sw_compat['confused_pct'],
             },
         },
+        'threshold_confusion': {
+            'k_values': [1, 2, 3],
+            'confusion_pct': [
+                threshold_results['k1_confusion_pct'],
+                threshold_results['k2_confusion_pct'],
+                threshold_results['k3_confusion_pct'],
+            ],
+            'sample_sizes': [
+                threshold_results['k1_sample'],
+                threshold_results['k2_sample'],
+                threshold_results['k3_sample'],
+            ],
+            'baseline_all_is_confusion_pct': sw_only['confused_pct'],
+            'baseline_all_is_sample_size': sw_only['total_is'],
+        },
+        'behavior_profile_specificity': {
+            'unique_pct': behavior_specificity['unique_pct'],
+            'confused_pct': behavior_specificity['confused_pct'],
+            'total_is': behavior_specificity['total_is'],
+            'feature_universe_size': behavior_specificity['feature_universe_size'],
+        },
+        'technique_threshold_confusion': {
+            'k_values': [1, 2, 3],
+            'confusion_pct': [
+                behavior_specificity['threshold']['k1_confusion_pct'],
+                behavior_specificity['threshold']['k2_confusion_pct'],
+                behavior_specificity['threshold']['k3_confusion_pct'],
+            ],
+            'sample_sizes': [
+                behavior_specificity['threshold']['k1_sample'],
+                behavior_specificity['threshold']['k2_sample'],
+                behavior_specificity['threshold']['k3_sample'],
+            ],
+            'baseline_all_is_confusion_pct': behavior_specificity['confused_pct'],
+            'baseline_all_is_sample_size': behavior_specificity['total_is'],
+        },
     }
 
-    # Fix software specificity percentages
+    # Ensure software-specificity segments are sourced from the same counters
+    # used for manuscript macros (single source of truth).
     total_sw = figure_data['software_specificity']['total_software']
-    # Compute segments properly: need to know overlap between version and CPE
-    # For simplicity, treat as: with_cpe (strongest), version_only (has version but no CPE), neither
-    sw_with_both = 0
-    ver_pat = re.compile(r'(?:v?\d+\.\d+|\bversion\s+\d+|\b\d+\.\d+\.\d+)', re.IGNORECASE)
-    for sw in software_objects:
-        has_v = False
-        has_c = False
-        name = sw.get('name', '')
-        aliases = sw.get('aliases', []) or []
-        ext_refs = sw.get('external_references', []) or []
-        if ver_pat.search(name):
-            has_v = True
-        for a in aliases:
-            if ver_pat.search(a):
-                has_v = True
-        for ref in ext_refs:
-            ref_str = json.dumps(ref)
-            if ver_pat.search(ref_str):
-                has_v = True
-            if 'cpe:' in ref_str.lower():
-                has_c = True
-        if has_v and has_c:
-            sw_with_both += 1
-
-    version_only = software_results['software_with_version'] - sw_with_both
+    version_only = software_results['software_version_no_cpe']
     cpe_any = software_results['software_with_cpe']
-    neither = total_sw - version_only - cpe_any
+    neither = software_results['software_no_version_no_cpe']
 
     figure_data['software_specificity']['no_version_no_cpe'] = neither
     figure_data['software_specificity']['version_no_cpe'] = version_only
@@ -2019,6 +3678,55 @@ def main():
     figure_data['software_specificity']['no_version_no_cpe_pct'] = pct(neither, total_sw)
     figure_data['software_specificity']['version_no_cpe_pct'] = pct(version_only, total_sw)
     figure_data['software_specificity']['with_cpe_pct'] = pct(cpe_any, total_sw)
+
+    # Add description-enrichment data for Figure 2 before/after comparison
+    figure_data['software_specificity']['desc_enriched_count'] = version_enrichment['desc_enriched_count']
+    figure_data['software_specificity']['desc_enriched_pct'] = version_enrichment['desc_enriched_pct']
+    figure_data['software_specificity']['enriched_total'] = version_enrichment['enriched_total']
+    figure_data['software_specificity']['enriched_total_pct'] = version_enrichment['enriched_total_pct']
+    figure_data['software_specificity']['enriched_no_version_pct'] = version_enrichment['enriched_no_version_pct']
+    figure_data['software_specificity']['gain_pp'] = version_enrichment['gain_pp']
+
+    # ── Campaign factual structure + environment inference figure data ──
+    # Tactic coverage heatmap data
+    figure_data['campaign_tactic_coverage'] = {
+        'campaigns': [],
+        'tactic_order': TACTIC_ORDER,
+    }
+    for row in campaign_factual['rows']:
+        tactics_present = set(row.get('tactic_sequence', '').split(';'))
+        figure_data['campaign_tactic_coverage']['campaigns'].append({
+            'name': row['campaign_name'],
+            'tactics': {t: (1 if t in tactics_present else 0) for t in TACTIC_ORDER},
+            'technique_count': row['technique_count'],
+            'tactic_count': row['tactic_count'],
+        })
+
+    # IEIR breakdown data
+    figure_data['ieir_breakdown'] = {
+        'total': env_inference['total_campaigns'],
+        'campaign_specific': env_inference['campaign_specific_count'],
+        'generic_only': env_inference['ieir_count'],
+        'no_signal': env_inference['environment_none_count'],
+        'campaign_specific_pct': env_inference['campaign_specific_pct'],
+        'ieir_pct': env_inference['ieir_pct'],
+        'none_pct': env_inference['environment_none_pct'],
+        'confidence_breakdown': {
+            'high': env_inference['environment_high_confidence_pct'],
+            'medium': env_inference['environment_medium_pct'],
+            'low': env_inference['environment_low_pct'],
+            'none': env_inference['environment_none_pct'],
+        },
+    }
+
+    # Evidence convergence data
+    figure_data['evidence_convergence'] = {
+        'total': evidence_convergence['total_campaigns'],
+        'convergent': evidence_convergence['convergence_count'],
+        'divergent': evidence_convergence['divergence_count'],
+        'convergence_rate_pct': evidence_convergence['convergence_rate_pct'],
+        'mean_signal_count': evidence_convergence['evidence_mean_signal_count'],
+    }
 
     with open(RESULTS_DIR / 'figures_data.json', 'w') as f:
         # Convert numpy types to native Python for JSON serialization
@@ -2032,6 +3740,18 @@ def main():
         writer.writeheader()
         for row in software_results['campaign_details']:
             writer.writerow({k: row[k] for k in ['campaign_name', 'campaign_id', 'software_count']})
+
+    # Software version enrichment from descriptions (audit trail)
+    if version_enrichment['enriched_examples']:
+        with open(AUDIT_DIR / 'software_version_enrichment.csv', 'w', newline='') as f:
+            writer = csv.DictWriter(
+                f,
+                fieldnames=['name', 'id', 'matched_version', 'description_snippet']
+            )
+            writer.writeheader()
+            for row in version_enrichment['enriched_examples']:
+                writer.writerow(row)
+        print(f"✓ Version enrichment audit saved to {AUDIT_DIR / 'software_version_enrichment.csv'}")
 
     # Campaign platform inference details (software-only)
     with open(AUDIT_DIR / 'campaign_platforms_software_only.csv', 'w', newline='') as f:
@@ -2078,15 +3798,42 @@ def main():
 
     # Campaign CVE details
     with open(AUDIT_DIR / 'campaign_cves.csv', 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['campaign_name', 'campaign_id', 'cve_count', 'cves'])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'campaign_name',
+                'campaign_id',
+                'cve_count_structured',
+                'cve_count',
+                'cve_enrichment_gain_count',
+                'cves_structured',
+                'cves',
+            ],
+        )
         writer.writeheader()
         for row in cve_results['campaign_cve_details']:
             writer.writerow({
                 'campaign_name': row['campaign_name'],
                 'campaign_id': row.get('campaign_id', ''),
+                'cve_count_structured': row.get('cve_count_structured', 0),
                 'cve_count': row['cve_count'],
-                'cves': ';'.join(row['cves']),
+                'cve_enrichment_gain_count': row.get('cve_enrichment_gain_count', 0),
+                'cves_structured': ';'.join(row.get('cves_structured', [])),
+                'cves': ';'.join(row.get('cves', [])),
             })
+
+    # Campaign-linked CVE year distribution (exploratory)
+    campaign_cve_year_counter = Counter()
+    for row in cve_results['campaign_cve_details']:
+        for cve in row.get('cves', []):
+            m = re.match(r'CVE-(\d{4})-\d{4,7}', cve, re.IGNORECASE)
+            if m:
+                campaign_cve_year_counter[m.group(1)] += 1
+    with open(AUDIT_DIR / 'campaign_cve_year_distribution.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(f, fieldnames=['cve_year', 'count'])
+        writer.writeheader()
+        for year, count in sorted(campaign_cve_year_counter.items()):
+            writer.writerow({'cve_year': year, 'count': count})
 
     # Campaign-level SUT profile completeness tiers
     with open(AUDIT_DIR / 'campaign_profile_completeness.csv', 'w', newline='') as f:
@@ -2104,13 +3851,26 @@ def main():
 
     # IS CVE details
     with open(AUDIT_DIR / 'is_cves.csv', 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['is_name', 'cve_count', 'cves'])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'is_name',
+                'cve_count_structured',
+                'cve_count',
+                'cve_enrichment_gain_count',
+                'cves_structured',
+                'cves',
+            ],
+        )
         writer.writeheader()
         for row in cve_results['is_cve_details']:
             writer.writerow({
                 'is_name': row['is_name'],
+                'cve_count_structured': row.get('cve_count_structured', 0),
                 'cve_count': row['cve_count'],
-                'cves': ';'.join(row['cves']),
+                'cve_enrichment_gain_count': row.get('cve_enrichment_gain_count', 0),
+                'cves_structured': ';'.join(row.get('cves_structured', [])),
+                'cves': ';'.join(row.get('cves', [])),
             })
 
     # Initial Access campaign details
@@ -2143,17 +3903,60 @@ def main():
 
     # Technique compatibility classification
     with open(AUDIT_DIR / 'technique_compatibility.csv', 'w', newline='') as f:
-        writer = csv.DictWriter(f, fieldnames=['name', 'id', 'class', 'platforms', 'permissions'])
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'name', 'id', 'external_id', 'attack_url', 'class', 'tactics',
+                'platforms', 'permissions', 'rule_id', 'rule_desc',
+                'rule_evidence', 'is_fallback'
+            ]
+        )
         writer.writeheader()
         for cls_name, cls_list in compat_results['details'].items():
             for tech in cls_list:
                 writer.writerow({
                     'name': tech['name'],
                     'id': tech['id'],
+                    'external_id': tech.get('external_id', ''),
+                    'attack_url': tech.get('attack_url', ''),
                     'class': tech['class'],
+                    'tactics': ';'.join(tech.get('tactics', []) or []),
                     'platforms': ';'.join(tech['platforms'] or []),
                     'permissions': ';'.join(tech['permissions'] or []),
+                    'rule_id': tech.get('rule_id', ''),
+                    'rule_desc': tech.get('rule_desc', ''),
+                    'rule_evidence': tech.get('rule_evidence', ''),
+                    'is_fallback': tech.get('is_fallback', False),
                 })
+
+    # Rule-level breakdown for compatibility assignments
+    with open(AUDIT_DIR / 'compatibility_rule_breakdown.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'class', 'rule_id', 'rule_desc', 'count',
+                'pct_within_class', 'pct_all_techniques'
+            ]
+        )
+        writer.writeheader()
+        for row in compatibility_rule_breakdown:
+            writer.writerow(row)
+
+    # Stratified sample for manual validation of compatibility labels
+    with open(AUDIT_DIR / 'compatibility_validation_sample.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'sample_class', 'technique_name', 'technique_stix_id',
+                'technique_external_id', 'attack_url', 'tactics', 'platforms',
+                'permissions', 'predicted_class', 'rule_id', 'rule_desc',
+                'rule_evidence', 'is_fallback', 'manual_expected_class',
+                'manual_verdict_match', 'manual_notes', 'reviewer'
+            ]
+        )
+        writer.writeheader()
+        for row in compatibility_validation_sample:
+            writer.writerow(row)
 
     # Compatibility sensitivity under alternative defaults
     with open(AUDIT_DIR / 'compatibility_default_sensitivity.csv', 'w', newline='') as f:
@@ -2168,6 +3971,20 @@ def main():
         )
         writer.writeheader()
         for row in compatibility_sensitivity:
+            writer.writerow(row)
+
+    # Compatibility distribution by tactic (exploratory)
+    with open(AUDIT_DIR / 'compatibility_by_tactic.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'tactic', 'total', 'cf_count', 'cf_pct',
+                'vmr_count', 'vmr_pct', 'id_count', 'id_pct',
+                'non_cf_count', 'non_cf_pct',
+            ]
+        )
+        writer.writeheader()
+        for row in compatibility_by_tactic:
             writer.writerow(row)
 
     # IS software details
@@ -2185,6 +4002,16 @@ def main():
         )
         writer.writeheader()
         for row in specificity_results['software_only']['per_is_rows']:
+            writer.writerow(row)
+
+    # Per-IS nearest-neighbor specificity rows (technique-only behavior profiles, exploratory)
+    with open(AUDIT_DIR / 'profile_specificity_technique_only.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['intrusion_set_id', 'feature_count', 'nearest_neighbor_id', 'nearest_distance', 'confused']
+        )
+        writer.writeheader()
+        for row in behavior_specificity['per_is_rows']:
             writer.writerow(row)
 
     # Profile specificity ablation summary at delta=0.10
@@ -2222,6 +4049,21 @@ def main():
         writer.writeheader()
         for row in threshold_results['curve']:
             writer.writerow(row)
+
+    # Confusion curve by minimum technique evidence threshold (exploratory)
+    with open(AUDIT_DIR / 'evidence_threshold_curve_technique_profile.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['min_technique_count', 'sample_size', 'confused_count', 'confusion_pct']
+        )
+        writer.writeheader()
+        for row in behavior_specificity['threshold']['curve']:
+            writer.writerow({
+                'min_technique_count': row['min_software_count'],
+                'sample_size': row['sample_size'],
+                'confused_count': row['confused_count'],
+                'confusion_pct': row['confusion_pct'],
+            })
 
     # Confusion sensitivity across multiple Jaccard deltas
     with open(AUDIT_DIR / 'delta_sensitivity.csv', 'w', newline='') as f:
@@ -2269,6 +4111,101 @@ def main():
             writer.writerow({'cve_id': cve, 'source': 'structured'})
         for cve in sorted(cve_results['freetext_only_cves']):
             writer.writerow({'cve_id': cve, 'source': 'freetext_only'})
+
+    # Technique-level CVE mention density by ATT&CK tactic (exploratory).
+    tactic_technique_count = Counter()
+    tactic_with_cve_mention_count = Counter()
+    tactic_total_cve_mentions = Counter()
+    for tech in techniques:
+        cves_structured, cves_freetext = extract_cves_from_object(tech)
+        cve_mentions = cves_structured | cves_freetext
+        tactics = get_technique_tactics(tech, by_id)
+        for tactic in tactics:
+            tactic_technique_count[tactic] += 1
+            if cve_mentions:
+                tactic_with_cve_mention_count[tactic] += 1
+                tactic_total_cve_mentions[tactic] += len(cve_mentions)
+
+    with open(AUDIT_DIR / 'cve_mentions_by_tactic.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'tactic',
+                'technique_count',
+                'techniques_with_any_cve_mention',
+                'techniques_with_any_cve_pct',
+                'total_cve_mentions',
+            ],
+        )
+        writer.writeheader()
+        for tactic, total in sorted(tactic_technique_count.items(), key=lambda x: -x[1]):
+            with_cve = tactic_with_cve_mention_count.get(tactic, 0)
+            writer.writerow({
+                'tactic': tactic,
+                'technique_count': total,
+                'techniques_with_any_cve_mention': with_cve,
+                'techniques_with_any_cve_pct': pct(with_cve, total),
+                'total_cve_mentions': tactic_total_cve_mentions.get(tactic, 0),
+            })
+
+    # Cross-domain coverage plus evidence density (exploratory).
+    with open(AUDIT_DIR / 'cross_domain_coverage_density.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=[
+                'domain',
+                'attack_pattern_n',
+                'platform_pct',
+                'software_link_pct',
+                'cve_link_pct',
+                'avg_software_links_per_attack_pattern',
+                'median_software_links_per_attack_pattern',
+                'p90_software_links_per_attack_pattern',
+                'avg_cve_mentions_per_attack_pattern',
+            ],
+        )
+        writer.writeheader()
+        for domain in ['enterprise', 'mobile', 'ics', 'capec', 'fight']:
+            row = cross_domain.get(domain, {})
+            writer.writerow({
+                'domain': domain,
+                'attack_pattern_n': row.get('total_techniques', 0),
+                'platform_pct': row.get('platform_pct', 0),
+                'software_link_pct': row.get('software_link_pct', 0),
+                'cve_link_pct': row.get('cve_link_pct', 0),
+                'avg_software_links_per_attack_pattern': row.get(
+                    'avg_software_links_per_attack_pattern', 0.0
+                ),
+                'median_software_links_per_attack_pattern': row.get(
+                    'median_software_links_per_attack_pattern', 0.0
+                ),
+                'p90_software_links_per_attack_pattern': row.get(
+                    'p90_software_links_per_attack_pattern', 0.0
+                ),
+                'avg_cve_mentions_per_attack_pattern': row.get(
+                    'avg_cve_mentions_per_attack_pattern', 0.0
+                ),
+            })
+
+    # Campaign-level exploratory correlation summaries.
+    with open(AUDIT_DIR / 'campaign_correlation_summary.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['metric', 'value', 'note'],
+        )
+        writer.writeheader()
+        for row in serendipity_results['correlation_rows']:
+            writer.writerow(row)
+
+    # Campaign-level platform inference quality checks (software-derived signal only).
+    with open(AUDIT_DIR / 'platform_inference_quality_summary.csv', 'w', newline='') as f:
+        writer = csv.DictWriter(
+            f,
+            fieldnames=['metric', 'value', 'note'],
+        )
+        writer.writeheader()
+        for row in serendipity_results['platform_quality_rows']:
+            writer.writerow(row)
 
     print(f"✓ Audit CSVs saved to {AUDIT_DIR}")
 

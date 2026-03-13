@@ -1,0 +1,332 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Operation Honeybee
+# Campaign ID: campaign--4553292d-12c6-4a93-934d-12160370d4e0
+# Generated: 2026-03-06T14:59:31.429265
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__4553292d_12c6_4a93_934d_12160370d4e0:
+
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows 10 Pro 21H2", "Windows Server 2019 Standard"]
+    services:
+      wuauserv: running
+      WinDefend: running
+      TermService: running
+      EventLog: running
+      LanmanServer: running
+      LanmanWorkstation: running
+      RpcSs: running
+      # Required for Service/Registry/Process/Command Shell techniques
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smb_enabled: true
+      rdp_enabled: true
+      # Outbound HTTPS and DNS required for C2 and exfiltration
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_account: present
+      standard_user_account: present
+      # Required for UAC bypass and privilege escalation
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wscript.exe
+        - cscript.exe
+      .NET_Framework: 4.8
+      # Visual Basic, Native API, and Windows Command Shell support
+    installed_software:
+      - 7-Zip 21.07
+      - WinRAR 6.0
+      - OpenSSL 1.1.1l
+      - Python 3.9.7
+      - Microsoft Office 2019
+      - Sysinternals Suite
+      - PuTTY 0.76
+      - WinSCP 5.19
+      - FileZilla 3.55
+      - OpenSSH Client
+      - Windows Defender (enabled, but exclusions can be set)
+      # Archive, encode, transfer, and exfiltration tool support
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - Windows Service
+      - Registry Run Keys
+      - Scheduled Tasks
+      - Startup Folder
+    security_controls:
+      UAC: enabled
+      WindowsDefender: enabled
+      AppLocker: disabled  # Must be disabled for unsigned/malicious binaries
+      CredentialGuard: disabled
+      Firewall: enabled
+      AMSI: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public
+          - C:\Windows\System32
+          - C:\ProgramData
+          - C:\Temp
+        processes:
+          - explorer.exe
+          - svchost.exe
+          - services.exe
+          - lsass.exe
+          - winlogon.exe
+          - cmd.exe
+          - powershell.exe
+          - wscript.exe
+          - rundll32.exe
+          - regsvr32.exe
+        registry_keys:
+          - HKLM\SYSTEM\CurrentControlSet\Services
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Control\SecurityProviders
+        files:
+          - C:\Users\Public\Documents\malicious.doc
+          - C:\Temp\payload.exe
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+          - SMB
+          - FTP
+          - SFTP
+          - HTTP
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7.9"]
+    services:
+      sshd: running
+      cron: running
+      rsyslog: running
+      systemd: running
+      # SSH required for remote access and exfiltration
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      smb_enabled: true
+      ftp_enabled: true
+      # Outbound protocols for C2 and exfiltration
+    identity:
+      root_account: present
+      standard_user_account: present
+      sudoers: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+        - python3
+      perl: present
+      gcc: present
+      # Scripting and compiling for tool execution
+    installed_software:
+      - zip 3.0
+      - unzip 6.0
+      - tar 1.30
+      - openssl 1.1.1
+      - python3 3.8
+      - netcat-openbsd 1.206
+      - lftp 4.8
+      - curl 7.68
+      - wget 1.20
+      - rsync 3.1
+      - sshpass 1.06
+      # Archive, encode, transfer, and exfiltration tool support
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - systemd service
+      - rc.local
+      - /etc/init.d/
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      auditd: enabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /home
+          - /etc
+          - /usr/local/bin
+        processes:
+          - sshd
+          - bash
+          - python3
+          - crond
+          - systemd
+        files:
+          - /tmp/payload
+          - /var/tmp/archive.zip
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+          - FTP
+          - SFTP
+          - SMB
+          - HTTP
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS 12 Monterey"]
+    services:
+      ssh: running
+      launchd: running
+      syslogd: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      smb_enabled: true
+      ftp_enabled: true
+    identity:
+      admin_account: present
+      standard_user_account: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - sh
+        - python3
+      applescript: present
+    installed_software:
+      - zip 3.0
+      - unzip 6.0
+      - tar 1.30
+      - openssl 1.1.1
+      - python3 3.9
+      - curl 7.79
+      - wget 1.21
+      - FileZilla 3.55
+      - Homebrew
+      # Archive, encode, transfer, and exfiltration tool support
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launch agent
+      - launch daemon
+      - cron
+      - login hook
+    security_controls:
+      gatekeeper: disabled  # Must be disabled for unsigned/malicious binaries
+      sip: disabled         # System Integrity Protection off for full access
+      firewall: enabled
+      xprotect: enabled
+    artifacts:
+      host:
+        directories:
+          - /Users/Shared
+          - /tmp
+          - /var/tmp
+          - /Applications
+        processes:
+          - bash
+          - zsh
+          - python3
+          - launchd
+          - Finder
+        files:
+          - /Users/Shared/payload
+          - /tmp/archive.zip
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+          - FTP
+          - SFTP
+          - SMB
+          - HTTP
+
+  # --- ESXi Variant ---
+  esxi:
+    os: ["VMware ESXi 7.0"]
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+      crond: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      smb_enabled: true
+      ftp_enabled: true
+    identity:
+      root_account: present
+      standard_user_account: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - sh
+        - bash
+      python3: present
+    installed_software:
+      - tar 1.30
+      - openssl 1.1.1
+      - python3 3.8
+      - curl 7.68
+      - wget 1.20
+      # Archive, encode, transfer, and exfiltration tool support
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+      - cron
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/core
+          - /etc/vmware
+        processes:
+          - hostd
+          - vpxa
+          - crond
+          - sshd
+        files:
+          - /tmp/payload
+          - /var/core/archive.tar
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+          - FTP
+          - SFTP
+          - SMB
+          - HTTP
+
+  # --- Containers Variant ---
+  containers:
+    os: ["Ubuntu 20.04 LTS (container base image)"]
+    services:
+      sshd: running
+      cron: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      smb_enabled: true
+      ftp_enabled: true
+    identity:
+      root_account: present
+      standard_user

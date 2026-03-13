@@ -1,0 +1,349 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: ArcaneDoor
+# Campaign ID: campaign--a543ef15-91ea-4aa9-9c10-267d56e1ee82
+# Generated: 2026-03-06T14:57:35.512525
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__a543ef15_91ea_4aa9_9c10_267d56e1ee82:
+
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows Server 2019 Datacenter", "Windows 10 Enterprise 22H2"]
+
+    services:
+      winrm: enabled
+      wmi: enabled
+      rdp: enabled
+      ssh: enabled
+      smb: enabled
+      http: enabled
+      https: enabled
+      dns: enabled
+      dhcp: enabled
+      eventlog: enabled
+      powershell: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      ipv4_enabled: true
+      ipv6_enabled: true
+      firewall: enabled # Allow inbound RDP, WinRM, HTTP/S, SMB, DNS
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      kerberos: enabled
+      ntlm: enabled
+      smartcard_support: enabled
+
+    execution_environment:
+      shells:
+        - powershell
+        - cmd
+        - wsl
+      script_execution_policy: unrestricted # Required for Boot/Logon scripts, C2, etc.
+      allow_process_injection: true
+
+    installed_software:
+      - Chrome 124.0
+      - Firefox 126.0
+      - Microsoft Office 365
+      - OpenSSH 9.5
+      - Sysinternals Suite
+      - Wireshark 4.2
+      - 7-Zip 23.01
+      - Python 3.11
+      - .NET Framework 4.8
+      - Visual C++ Redistributable 2015-2022
+      - Cisco AnyConnect Secure Mobility Client 5.0
+      - VMware Tools 12.2
+
+    privilege: "Administrator"
+
+    domain_role: "Member workstation" # For domain-joined scenarios
+
+    persistence_surfaces:
+      - "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+      - "Scheduled Tasks"
+      - "Startup Folder"
+      - "Service Creation"
+      - "WMI Event Subscription"
+
+    security_controls:
+      defender: enabled
+      applocker: disabled # Must be disabled to allow arbitrary script execution
+      uac: enabled
+      tamper_protection: disabled # For tool modification/disabling
+      audit_logging: enabled
+
+    artifacts:
+      host:
+        directories:
+          - "C:\\Windows\\System32"
+          - "C:\\Users\\Public"
+          - "C:\\ProgramData"
+          - "C:\\Temp"
+        processes:
+          - "explorer.exe"
+          - "svchost.exe"
+          - "powershell.exe"
+          - "cmd.exe"
+          - "lsass.exe"
+          - "services.exe"
+        registry_keys:
+          - "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+          - "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+          - "HKLM\\SYSTEM\\CurrentControlSet\\Services"
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+          - http
+          - https
+          - smb
+          - dns
+          - ldap
+          - kerberos
+          - rdp
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 22.04 LTS", "CentOS 7.9"]
+
+    services:
+      ssh: enabled
+      httpd: enabled
+      nginx: enabled
+      cron: enabled
+      rsyslog: enabled
+      systemd: enabled
+      snmpd: enabled
+      samba: enabled
+      dnsmasq: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      ipv4_enabled: true
+      ipv6_enabled: true
+      firewall: enabled # Allow inbound SSH, HTTP/S, SMB, DNS
+
+    identity:
+      domain_controller_reachable: false # Unless joined to AD
+      credential_cache: present
+      sssd: enabled # For AD integration if required
+      pam: enabled
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      allow_suid_binaries: true
+      allow_ld_preload: true # For process injection/rootkit
+
+    installed_software:
+      - openssh-server 8.9p1
+      - sudo 1.9.9
+      - netcat 1.10
+      - tcpdump 4.99
+      - nmap 7.94
+      - python3 3.10
+      - gcc 11.3
+      - curl 7.81
+      - wget 1.21
+      - samba 4.15
+      - wireshark 4.2
+      - systemtap 4.8
+      - auditd 3.0
+
+    privilege: "root"
+
+    domain_role: "Standalone server"
+
+    persistence_surfaces:
+      - "/etc/rc.local"
+      - "/etc/cron.d/"
+      - "/etc/init.d/"
+      - "~/.bashrc"
+      - "~/.profile"
+      - "systemd service"
+      - "LD_PRELOAD"
+
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      auditd: enabled
+      firewalld: enabled
+
+    artifacts:
+      host:
+        directories:
+          - "/etc"
+          - "/var/log"
+          - "/tmp"
+          - "/home"
+        processes:
+          - "sshd"
+          - "bash"
+          - "cron"
+          - "systemd"
+          - "nginx"
+          - "httpd"
+        files:
+          - "/etc/passwd"
+          - "/etc/shadow"
+          - "/etc/rc.local"
+          - "/etc/cron.d/"
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+          - http
+          - https
+          - smb
+          - dns
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS Ventura 13.6"]
+
+    services:
+      ssh: enabled
+      httpd: enabled
+      cron: enabled
+      launchd: enabled
+      systemlogd: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled # Allow inbound SSH, HTTP/S
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      opendirectoryd: enabled
+
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+        - sh
+      allow_process_injection: true
+
+    installed_software:
+      - python3 3.10
+      - openssh 8.6
+      - wireshark 4.2
+      - nmap 7.94
+      - tcpdump 4.99
+      - Homebrew
+      - Google Chrome 124.0
+      - Microsoft Office 365
+
+    privilege: "admin"
+
+    domain_role: "Standalone workstation"
+
+    persistence_surfaces:
+      - "~/Library/LaunchAgents"
+      - "/Library/LaunchDaemons"
+      - "~/.zshrc"
+      - "~/.bash_profile"
+      - "cron jobs"
+      - "system extensions"
+
+    security_controls:
+      gatekeeper: disabled # Required for unsigned code execution
+      sip: disabled # For rootkit and process injection
+      filevault: enabled
+      firewall: enabled
+
+    artifacts:
+      host:
+        directories:
+          - "/Users/Shared"
+          - "/tmp"
+          - "/Library/LaunchDaemons"
+          - "/var/log"
+        processes:
+          - "launchd"
+          - "bash"
+          - "zsh"
+          - "cron"
+          - "systemextensionsd"
+        files:
+          - "/etc/hosts"
+          - "/etc/crontab"
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+          - http
+          - https
+          - dns
+
+  # --- Network Devices Variant (Cisco IOS XE example) ---
+  network_devices:
+    os: ["Cisco IOS XE 17.9.3", "Cisco ASA 9.18"]
+
+    services:
+      ssh: enabled
+      telnet: enabled
+      http: enabled
+      https: enabled
+      snmp: enabled
+      netconf: enabled
+      syslog: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      ipv4_enabled: true
+      ipv6_enabled: true
+      routing: enabled
+
+    identity:
+      aaa: enabled
+      local_user_db: present
+      tacacs: enabled
+      radius: enabled
+
+    execution_environment:
+      shells:
+        - cli
+        - tclsh
+      script_execution: enabled # For custom scripts/backdoors
+
+    installed_software:
+      - custom_backdoor_LineRunner
+      - custom_backdoor_LineDancer
+      - Embedded Event Manager (EEM)
+      - SNMP agent
+      - Tcl interpreter
+
+    privilege: "privileged exec (15)"
+
+    domain_role: "Router/Switch/Firewall"
+
+    persistence_surfaces:
+      - "startup-config"
+      - "EEM applets"
+      - "Tcl scripts"
+      - "Custom firmware modules"
+
+    security_controls:
+      aaa_new_model: enabled
+      snmp_community: public # For emulation, set to weak value
+      logging: enabled
+      control_plane_protection: disabled # For MiTM and rootkit techniques

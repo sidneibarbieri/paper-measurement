@@ -1,0 +1,387 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: C0021
+# Campaign ID: campaign--712e38c3-a656-426a-9b3b-a6bfb63294c6
+# Generated: 2026-03-06T15:03:17.129547
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__712e38c3_a656_426a_9b3b_a6bfb63294c6:
+
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows 10 Enterprise 21H2", "Windows Server 2019"]
+
+    services:
+      w32time: running
+      winrm: running
+      dns: running
+      smb: running
+      http: running
+      powershell: running
+      # Required for Office Suite phishing and PowerShell execution
+
+    network:
+      outbound_https: allowed  # Required for C2, tool transfer, phishing links
+      dns_resolution: enabled
+      domain_joined: true
+      inbound_smb: allowed  # For lateral movement/tool transfer
+      inbound_http: allowed
+      # Ensure no outbound protocol restrictions for non-application layer protocols
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present  # For credential access and persistence
+      user_accounts:
+        - name: "sutuser"
+          password: "ComplexPassword123!"
+          privilege: "local_admin"
+      # Domain user for spearphishing and domain join
+
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      office_suite: installed  # Required for Office macro/phishing payloads
+      rundll32: available      # Required for T1218.011
+
+    installed_software:
+      - Microsoft Office 365 ProPlus (Version 2208)
+      - PowerShell 5.1
+      - 7-Zip 19.00
+      - Chrome 114.0
+      - Firefox 102.0
+      - .NET Framework 4.8
+      - Windows Defender (enabled, but exclusions for test directories)
+      # Office and browsers needed for spearphishing techniques
+
+    privilege: local_admin  # Needed for tool execution, DLL loading
+
+    domain_role: workstation
+
+    persistence_surfaces:
+      - Startup folder
+      - Scheduled Tasks
+      - Registry Run keys
+
+    security_controls:
+      windows_defender: enabled
+      applocker: disabled  # Must be disabled to allow arbitrary DLL/EXE execution
+      uac: enabled
+      firewall: enabled
+      macro_settings: enabled_with_warning  # Allow macro execution with warning
+
+    artifacts:
+      host:
+        directories:
+          - "C:\\Users\\sutuser\\AppData\\Local\\Temp"
+          - "C:\\Windows\\System32"
+          - "C:\\Program Files"
+        processes:
+          - rundll32.exe
+          - powershell.exe
+          - winword.exe
+          - explorer.exe
+        registry_keys:
+          - "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+          - "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - smb
+          - tcp
+          - udp
+          - icmp
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7.9"]
+
+    services:
+      sshd: running
+      cron: running
+      httpd: running
+      systemd-resolved: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false  # Unless part of AD integration test
+      inbound_ssh: allowed
+      inbound_http: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      user_accounts:
+        - name: "sutuser"
+          password: "ComplexPassword123!"
+          privilege: "sudo"
+
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+      python3: available
+      perl: available
+
+    installed_software:
+      - LibreOffice 7.0
+      - curl 7.68.0
+      - wget 1.20.3
+      - openssl 1.1.1
+      - python3.8
+      - chromium-browser 114.0
+      - firefox 102.0
+      - unzip 6.0
+
+    privilege: sudo
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - ~/.bashrc
+      - ~/.profile
+      - /etc/rc.local
+      - cron jobs
+
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      firewall: enabled
+
+    artifacts:
+      host:
+        directories:
+          - "/tmp"
+          - "/home/sutuser"
+          - "/usr/local/bin"
+        processes:
+          - bash
+          - python3
+          - perl
+          - soffice.bin
+        files:
+          - "/etc/rc.local"
+          - "/var/log/auth.log"
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - tcp
+          - udp
+          - icmp
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS Monterey 12.6"]
+
+    services:
+      ssh: running
+      launchd: running
+      httpd: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_ssh: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      user_accounts:
+        - name: "sutuser"
+          password: "ComplexPassword123!"
+          privilege: "admin"
+
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/zsh
+      python3: available
+
+    installed_software:
+      - Microsoft Office 365 for Mac (Version 16.64)
+      - curl 7.79.1
+      - openssl 1.1.1
+      - python3.9
+      - Google Chrome 114.0
+      - Firefox 102.0
+
+    privilege: admin
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - ~/Library/LaunchAgents
+      - /Library/LaunchDaemons
+      - ~/.bash_profile
+
+    security_controls:
+      gatekeeper: disabled  # To allow unsigned code execution
+      xprotect: enabled
+      firewall: enabled
+      macro_settings: enabled_with_warning
+
+    artifacts:
+      host:
+        directories:
+          - "/tmp"
+          - "/Users/sutuser"
+          - "/Applications"
+        processes:
+          - bash
+          - python3
+          - soffice
+          - Word
+        files:
+          - "/Library/LaunchDaemons"
+          - "/var/log/system.log"
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - tcp
+          - udp
+          - icmp
+
+  # --- ESXi Variant ---
+  esxi:
+    os: ["VMware ESXi 7.0U2"]
+
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+      user_accounts:
+        - name: "root"
+          password: "ComplexPassword123!"
+
+    execution_environment:
+      shells:
+        - /bin/sh
+      python3: available
+
+    installed_software:
+      - openssl 1.0.2
+      - python3.7
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - /etc/rc.local.d/local.sh
+
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+
+    artifacts:
+      host:
+        directories:
+          - "/tmp"
+          - "/etc"
+        processes:
+          - sh
+          - python3
+        files:
+          - "/etc/rc.local.d/local.sh"
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - tcp
+          - udp
+
+  # --- Network Devices Variant ---
+  network_devices:
+    os: ["Cisco IOS XE 17.3"]
+
+    services:
+      ssh: running
+      http: running
+      https: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+      user_accounts:
+        - name: "admin"
+          password: "ComplexPassword123!"
+
+    execution_environment:
+      shells:
+        - cli
+
+    installed_software:
+      - openssl 1.1.1
+
+    privilege: enable
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - startup-config
+      - running-config
+
+    security_controls:
+      aaa: enabled
+      firewall: enabled
+
+    artifacts:
+      host:
+        directories:
+          - "flash:/"
+        processes:
+          - sshd
+          - httpd
+        files:
+          - "startup-config"
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - tcp
+          - udp
+
+  # --- Office Suite Variant (for SaaS/Office365) ---
+  office_suite:
+    os: ["Windows 10 Enterprise 21H2", "macOS Monterey 12.6"]
+
+    services:
+      office365: running
+      outlook: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      user_accounts:
+        - name: "

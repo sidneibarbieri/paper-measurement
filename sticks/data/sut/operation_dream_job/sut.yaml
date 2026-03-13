@@ -1,0 +1,326 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Operation Dream Job
+# Campaign ID: campaign--0257b35b-93ef-4a70-80dd-ad5258e6045b
+# Generated: 2026-03-06T15:01:52.655935
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__0257b35b_93ef_4a70_80dd_ad5258e6045b:
+  # --- Windows SUT ---
+  windows:
+    os: [Windows 10 Enterprise 21H2, Windows Server 2019]
+    services:
+      Task Scheduler: running
+      WMI: running
+      IIS: running           # Required for IIS Components technique
+      WinRM: running         # For remote management and PowerShell remoting
+      Windows Defender: enabled
+      SMB: running
+      RPC: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      inbound_smb: allowed
+      inbound_rdp: allowed
+      outbound_smtp: allowed   # For spearphishing and BEC
+      outbound_http: allowed
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_account: present
+      domain_users: present
+      domain_admin_account: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wmic.exe
+        - rundll32.exe
+        - regsvr32.exe
+        - cscript.exe
+        - wscript.exe
+      office_macros_enabled: true   # For Visual Basic and template injection
+      dotnet_installed: true
+    installed_software:
+      - Microsoft Office 2019 ProPlus
+      - 7-Zip 19.00
+      - WinRAR 6.0
+      - Python 3.9
+      - Java 8
+      - Chrome 114
+      - Firefox 102
+      - Visual Studio Tools for Office
+      - OpenSSL 1.1.1
+      - .NET Framework 4.8
+      - IIS 10.0
+      - Windows Defender ATP
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - Scheduled Tasks
+      - Registry Run Keys
+      - Startup Folder
+      - Service Creation
+      - WMI Event Subscription
+    security_controls:
+      UAC: enabled
+      Windows Defender: enabled
+      ASR: disabled         # Allow execution of unsigned binaries/scripts
+      AppLocker: disabled   # Allow untrusted code execution
+      AMSI: enabled
+      Firewall: enabled
+      MacroSecurity: low    # Allow macro execution
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\
+          - C:\Windows\System32\
+          - C:\ProgramData\
+          - C:\inetpub\wwwroot\
+        processes:
+          - explorer.exe
+          - svchost.exe
+          - taskhostw.exe
+          - rundll32.exe
+          - regsvr32.exe
+          - powershell.exe
+          - wscript.exe
+          - cscript.exe
+          - wmiprvse.exe
+          - iisexpress.exe
+          - winword.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Services
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SMB
+          - RDP
+          - SMTP
+          - LDAP
+          - WebDAV
+
+  # --- Linux SUT ---
+  linux:
+    os: [Ubuntu 20.04 LTS, CentOS 8]
+    services:
+      sshd: running
+      cron: running
+      rsyslog: running
+      apache2: running
+      postfix: running
+      samba: running
+      systemd: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      outbound_smtp: allowed
+      outbound_http: allowed
+      inbound_ssh: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_users: present
+      sudoers: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+        - /bin/zsh
+        - /usr/bin/python3
+      office_suite_installed: true   # e.g., LibreOffice 7.0
+    installed_software:
+      - bash 5.0
+      - python3.8
+      - gcc 9.3
+      - tar 1.30
+      - zip 3.0
+      - unzip 6.0
+      - openssl 1.1.1
+      - curl 7.68
+      - wget 1.20
+      - LibreOffice 7.0
+      - Apache 2.4
+      - Samba 4.11
+      - Postfix 3.4
+      - rsyslog 8.2001
+      - systemd 245
+    privilege: sudo
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - systemd service
+      - rc.local
+      - user profile scripts
+    security_controls:
+      SELinux: permissive
+      AppArmor: disabled
+      auditd: enabled
+      Firewall: enabled
+      MacroSecurity: low    # For office suite macros
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /var/tmp/
+          - /home/
+          - /etc/
+          - /var/www/html/
+        processes:
+          - bash
+          - python3
+          - sshd
+          - apache2
+          - cron
+          - systemd
+          - postfix
+          - smbd
+          - soffice.bin
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - /etc/cron.d/
+          - /etc/systemd/system/
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SSH
+          - SMTP
+          - SMB
+
+  # --- macOS SUT ---
+  macos:
+    os: [macOS Monterey 12.6]
+    services:
+      launchd: running
+      ssh: running
+      postfix: running
+      apache: running
+      smbd: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      outbound_smtp: allowed
+      outbound_http: allowed
+      inbound_ssh: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_users: present
+      admin_user: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/zsh
+        - /usr/bin/python3
+      office_suite_installed: true   # Microsoft Office 2019 for Mac
+    installed_software:
+      - bash 5.1
+      - python3.9
+      - zip 3.0
+      - unzip 6.0
+      - tar 1.34
+      - openssl 1.1.1
+      - curl 7.79
+      - wget 1.21
+      - Microsoft Office 2019
+      - Apache 2.4
+      - smbd 4.13
+      - postfix 3.5
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launchd
+      - cron
+      - login items
+      - user profile scripts
+    security_controls:
+      Gatekeeper: disabled   # Allow unsigned code execution
+      XProtect: enabled
+      SIP: enabled
+      Firewall: enabled
+      MacroSecurity: low    # For Office macros
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /Users/Shared/
+          - /Users/
+          - /etc/
+          - /Library/LaunchAgents/
+          - /Library/LaunchDaemons/
+        processes:
+          - bash
+          - zsh
+          - python3
+          - launchd
+          - sshd
+          - httpd
+          - postfix
+          - smbd
+          - Microsoft Word
+        files:
+          - /etc/passwd
+          - /etc/hosts
+          - /etc/crontab
+          - /Library/LaunchAgents/
+          - /Library/LaunchDaemons/
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SSH
+          - SMTP
+          - SMB
+
+  # --- ESXi SUT ---
+  esxi:
+    os: [VMware ESXi 7.0 U3]
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+      vmware-vpxa: running
+      web: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      outbound_http: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_users: present
+      root_account: present
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/bash
+      python_installed: true
+    installed_software:
+      - python3.7
+      - openssl 1.1.1
+      - busybox
+      - curl 7.67
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+      - cron
+    security_controls:
+      LockdownMode: disabled
+      Firewall: enabled
+      SSH:

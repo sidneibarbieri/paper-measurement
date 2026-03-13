@@ -1,0 +1,303 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: C0015
+# Campaign ID: campaign--78068e68-4124-4243-b6f4-76e4e5be8a06
+# Generated: 2026-03-06T15:02:29.949642
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__78068e68_4124_4243_b6f4_76e4e5be8a06:
+
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows Server 2019", "Windows 10 Enterprise (1909)"] # Supports all Windows techniques, including RDP, WMI, DLL injection
+
+    services:
+      wmi: enabled
+      rdp: enabled
+      smb: enabled
+      winrm: enabled
+      powershell: enabled
+      mshta: enabled
+      regsvc: enabled
+      remote_desktop: enabled
+      file_sharing: enabled
+      # Cobalt Strike and Conti require these for lateral movement and execution
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      inbound_smb: allowed
+      outbound_smb: allowed
+      inbound_rdp: allowed
+      outbound_rdp: allowed
+      cloud_storage_access: allowed
+      # Required for exfiltration, lateral movement, and discovery
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_accounts: present
+      domain_user_accounts: present
+      domain_groups: present
+      # Required for domain group/role discovery and lateral movement
+
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wscript.exe
+        - cscript.exe
+        - rundll32.exe
+        - regsvr32.exe
+        - mshta.exe
+        - bash.exe # Windows Subsystem for Linux (WSL) enabled
+      code_signing: enabled
+      visual_basic: enabled
+      javascript: enabled
+      # Required for all execution techniques
+
+    installed_software:
+      - Cobalt Strike 4.1
+      - Conti ransomware (latest sample)
+      - BazarLoader (latest sample)
+      - Microsoft Office 2016 # For spearphishing attachment execution
+      - Python 3.8
+      - Node.js 14.x
+      - 7-Zip 19.00
+      - WinRAR 5.91
+      - Chrome 90
+      - Firefox 88
+      - OpenSSH for Windows
+      - VMware Tools # For ESXi interaction
+      # All tools required for execution, lateral transfer, and exfiltration
+
+    privilege: "Domain Admin" # Required for lateral movement, discovery, and impact
+
+    domain_role: "Member Server" # Can be changed to "Workstation" or "Domain Controller" for variant testing
+
+    persistence_surfaces:
+      - Scheduled Task
+      - Registry Run Key
+      - Service Creation
+      - Startup Folder
+      - WMI Event Subscription
+      - DLL Side-loading
+      # Required for persistence and masquerading
+
+    security_controls:
+      defender: disabled # To allow malware execution
+      firewall: enabled # Allow required ports (SMB, RDP, WinRM)
+      app_control: disabled
+      logging: enabled # For artifact collection
+      # Controls must be tuned to allow adversary techniques
+
+    artifacts:
+      host:
+        directories:
+          - "C:\\Users\\Public"
+          - "C:\\Windows\\System32"
+          - "C:\\ProgramData"
+          - "C:\\Temp"
+          - "C:\\Documents and Settings"
+        processes:
+          - "rundll32.exe"
+          - "regsvr32.exe"
+          - "mshta.exe"
+          - "powershell.exe"
+          - "cmd.exe"
+          - "explorer.exe"
+          - "svchost.exe"
+          - "conti.exe"
+          - "bazar.exe"
+          - "cobaltstrike.exe"
+        registry_keys:
+          - "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+          - "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+          - "HKLM\\System\\CurrentControlSet\\Services"
+          - "HKLM\\Software\\Microsoft\\Windows NT\\CurrentVersion\\Winlogon"
+          # Registry keys for persistence and masquerading
+        files:
+          - "C:\\Users\\Public\\malicious.dll"
+          - "C:\\ProgramData\\payload.js"
+          - "C:\\Temp\\staged_data.zip"
+          - "C:\\Users\\Public\\signed_payload.exe"
+      network:
+        protocols:
+          - SMB
+          - RDP
+          - HTTPS
+          - DNS
+          - LDAP
+          - TCP
+          - UDP
+          - ICMP
+          - NFS
+          # Required for discovery, lateral movement, exfiltration
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7.9"] # Supports all Linux techniques
+
+    services:
+      sshd: enabled
+      samba: enabled
+      cron: enabled
+      python3: enabled
+      nodejs: enabled
+      rsyslog: enabled
+      nfs: enabled
+      cloud_storage_client: enabled # e.g., rclone
+      # Required for lateral transfer, exfiltration, and persistence
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false # Unless using SSSD/realmd for AD integration
+      inbound_smb: allowed
+      outbound_smb: allowed
+      inbound_ssh: allowed
+      outbound_ssh: allowed
+      cloud_storage_access: allowed
+
+    identity:
+      domain_controller_reachable: false # Unless AD integration is configured
+      credential_cache: present
+      local_admin_accounts: present
+      local_groups: present
+      # Required for group discovery and privilege escalation
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - python3
+        - node
+        - perl
+        - ruby
+      javascript: enabled
+      visual_basic: enabled # via mono or wine
+      # Required for script execution
+
+    installed_software:
+      - BazarLoader (Linux variant/sample)
+      - Conti ransomware (Linux variant/sample)
+      - Cobalt Strike (beacon, if supported)
+      - Python 3.8
+      - Node.js 14.x
+      - rclone 1.53
+      - OpenSSH 8.2
+      - Samba 4.11
+      - NFS-utils 2.3
+      - Mono 6.x # For VB execution
+      - Office-compatible viewer (e.g., LibreOffice)
+      # Tools for execution, lateral transfer, exfiltration
+
+    privilege: "root" # Required for impact and discovery
+
+    domain_role: "Standalone Server" # Can be joined to AD for variant testing
+
+    persistence_surfaces:
+      - Cron Job
+      - Systemd Service
+      - SSH Authorized Keys
+      - /etc/rc.local
+      - Bash Profile
+      # Persistence mechanisms for Linux
+
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      firewall: enabled # Allow required ports (SSH, SMB, NFS)
+      logging: enabled
+
+    artifacts:
+      host:
+        directories:
+          - "/home"
+          - "/tmp"
+          - "/var/log"
+          - "/etc"
+          - "/usr/local/bin"
+        processes:
+          - "bash"
+          - "python3"
+          - "node"
+          - "conti"
+          - "bazar"
+          - "sshd"
+          - "smbd"
+          - "nfsd"
+        files:
+          - "/tmp/malicious.sh"
+          - "/home/user/payload.js"
+          - "/tmp/staged_data.tar.gz"
+          - "/usr/local/bin/signed_payload"
+      network:
+        protocols:
+          - SSH
+          - SMB
+          - NFS
+          - HTTPS
+          - DNS
+          - TCP
+          - UDP
+          - ICMP
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS Catalina 10.15.7", "macOS Big Sur 11.6"]
+
+    services:
+      sshd: enabled
+      smb: enabled
+      python3: enabled
+      nodejs: enabled
+      launchd: enabled
+      cloud_storage_client: enabled # e.g., rclone
+      # Required for lateral transfer, exfiltration, and persistence
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false # Unless using Apple Open Directory/AD integration
+      inbound_smb: allowed
+      outbound_smb: allowed
+      inbound_ssh: allowed
+      outbound_ssh: allowed
+      cloud_storage_access: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_admin_accounts: present
+      local_groups: present
+
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - python3
+        - node
+        - osascript
+      javascript: enabled
+      visual_basic: enabled # via mono
+      code_signing: enabled
+      # Required for script and signed binary execution
+
+    installed_software:
+      - BazarLoader (macOS variant/sample)
+      - Conti ransomware (macOS variant/sample)
+      - Cobalt Strike (beacon, if supported)
+      - Python 3.8
+      - Node.js 14.x
+      - rclone 1.53
+      - Mono 6.x
+      - LibreOffice
+      # Tools for execution, lateral transfer, exfiltration
+
+    privilege: "admin" # Required for impact and discovery
+

@@ -1,0 +1,290 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Operation Ghost
+# Campaign ID: campaign--7854c1a0-f06c-4876-98a4-4bbd34751b05
+# Generated: 2026-03-06T15:05:33.329491
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__7854c1a0_f06c_4876_98a4_4bbd34751b05:
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows Server 2019", "Windows 10 Enterprise 21H2"]
+    services:
+      wmi: running
+      winrm: running
+      dns: running
+      netlogon: running
+      workstation: running
+      # Required for domain join and WMI Event Subscription
+      eventlog: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smb: allowed
+      ldap: allowed
+      # Required for bidirectional C2 and domain account usage
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      kerberos_ticket_cache: present
+      # Required for domain account operations
+    execution_environment:
+      shells:
+        - powershell
+        - cmd
+      wmi_event_subscription: enabled # Required for T1084
+    installed_software:
+      - Microsoft Edge
+      - Google Chrome
+      - Python 3.9
+      - OpenSSH
+      - 7-Zip
+      - .NET Framework 4.8
+      - WinRAR
+      # Browsers for social media, Python for C2/steganography, archivers for data handling
+    privilege: "Domain User"
+    domain_role: "Member Server"
+    persistence_surfaces:
+      - WMI Event Subscription
+      - Scheduled Task
+      - Registry Run Key
+    security_controls:
+      defender: enabled
+      applocker: disabled # Must be disabled to allow arbitrary code execution
+      uac: enabled
+      firewall: enabled
+      # Defender enabled but Applocker disabled to allow malware execution
+    artifacts:
+      host:
+        directories:
+          - "C:\\Users\\Public"
+          - "C:\\Windows\\System32\\wbem"
+          - "C:\\ProgramData"
+        processes:
+          - "powershell.exe"
+          - "cmd.exe"
+          - "wmiprvse.exe"
+          - "svchost.exe"
+        registry_keys:
+          - "HKLM\\SOFTWARE\\Microsoft\\Windows\\CurrentVersion\\Run"
+          - "HKLM\\SYSTEM\\CurrentControlSet\\Services"
+      network:
+        protocols:
+          - https
+          - dns
+          - smb
+          - ldap
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7.9"]
+    services:
+      sshd: running
+      cron: running
+      dns: running
+      sssd: running # For domain join
+      # Required for C2, persistence, and domain accounts
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      # Required for domain account and C2
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      sssd_cache: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      python: present
+    installed_software:
+      - openssh-server
+      - python3
+      - curl
+      - wget
+      - steghide
+      - imagemagick
+      - chromium-browser
+      # steghide/imagemagick for steganography, browser for social media
+    privilege: "Domain User"
+    domain_role: "Domain Member"
+    persistence_surfaces:
+      - cron job
+      - systemd service
+      - ~/.bashrc
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - "/tmp"
+          - "/var/tmp"
+          - "/home"
+          - "/etc/sssd"
+        processes:
+          - "sshd"
+          - "bash"
+          - "python3"
+          - "cron"
+        files:
+          - "/etc/passwd"
+          - "/etc/shadow"
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS 12 Monterey"]
+    services:
+      ssh: running
+      cron: running
+      dns: running
+      opendirectoryd: running # For domain join
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - sh
+      python: present
+    installed_software:
+      - python3
+      - curl
+      - wget
+      - steghide
+      - imagemagick
+      - Google Chrome
+      # steghide/imagemagick for steganography, browser for social media
+    privilege: "Domain User"
+    domain_role: "Domain Member"
+    persistence_surfaces:
+      - LaunchAgent
+      - cron job
+      - ~/.bash_profile
+    security_controls:
+      gatekeeper: disabled # Must be disabled for unsigned code execution
+      sip: enabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - "/Users/Shared"
+          - "/tmp"
+          - "/var/tmp"
+        processes:
+          - "bash"
+          - "python3"
+          - "cron"
+        files:
+          - "/etc/passwd"
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- ESXi Variant ---
+  esxi:
+    os: ["VMware ESXi 7.0 Update 3"]
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+      dns: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+    execution_environment:
+      shells:
+        - sh
+      python: present
+    installed_software:
+      - python3
+      - curl
+      - wget
+      # Python for C2, curl/wget for data transfer
+    privilege: "Domain User"
+    domain_role: "Domain Member"
+    persistence_surfaces:
+      - rc.local
+      - cron job
+    security_controls:
+      lockdown_mode: disabled # Must be disabled for SSH and persistence
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - "/tmp"
+          - "/var/core"
+        processes:
+          - "hostd"
+          - "vpxa"
+          - "sh"
+        files:
+          - "/etc/passwd"
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- PRE (Pre-compromise/External Infrastructure) Variant ---
+  pre:
+    os: []
+    services:
+      domain_registration: enabled
+      social_media: enabled
+      # For infrastructure setup, no host OS required
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+    identity:
+      domain_registrar_account: present
+      social_media_account: present
+    execution_environment:
+      shells:
+        - bash
+        - powershell
+      # For infrastructure automation
+    installed_software:
+      - python3
+      - whois
+      - curl
+      - tor
+      # Tor for anonymized registration, whois for domain ops
+    privilege: "Infrastructure Operator"
+    domain_role: "N/A"
+    persistence_surfaces:
+      - domain registration
+      - social media account
+    security_controls:
+      registrar_2fa: disabled
+      social_media_2fa: disabled
+      # 2FA disabled to allow adversary control
+    artifacts:
+      host:
+        directories: []
+        processes: []
+      network:
+        protocols:
+          - https
+          - dns
+```

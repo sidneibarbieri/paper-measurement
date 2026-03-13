@@ -1,0 +1,388 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Operation MidnightEclipse
+# Campaign ID: campaign--455b011a-2510-49ab-a96f-2f84d6a80189
+# Generated: 2026-03-06T15:07:09.530537
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__455b011a_2510_49ab_a96f_2f84d6a80189:
+
+  # --- WINDOWS VARIANT ---
+  windows:
+    os: [Windows Server 2022 Standard, Windows 11 Pro 22H2]
+    
+    services:
+      WinRM: enabled
+      SMB: enabled
+      WMI: enabled
+      RemoteRegistry: enabled
+      Schedule: enabled
+      # Ensure all services are running for remote management and lateral movement
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smb_ports_open: true
+      rdp_enabled: true
+      # Required for SMB/WinRM/NTDS/Domain Accounts
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      kerberos_ticket_cache: present
+      ntds_access: true
+      # Required for Valid Accounts, Domain Accounts, NTDS
+
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      scheduled_tasks: enabled
+      # For local/remote execution, persistence
+
+    installed_software:
+      - Microsoft Office 365 ProPlus
+      - Chrome 124.0
+      - 7-Zip 23.01
+      - Sysinternals Suite
+      - Python 3.11
+      - OpenSSH for Windows
+      # Tools for data staging, transfer, and scripting
+
+    privilege: local_admin
+    domain_role: member_workstation
+
+    persistence_surfaces:
+      - Scheduled Tasks
+      - Registry Run Keys
+      - Services
+      # For persistence via scheduled tasks and registry
+
+    security_controls:
+      DefenderAV: enabled
+      EDR: disabled   # For full technique coverage, EDR must be disabled or in audit mode
+      UAC: enabled
+      Firewall: enabled
+      # EDR disabled to allow unrestricted technique execution
+
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public
+          - C:\Windows\System32
+          - C:\Windows\NTDS
+        processes:
+          - svchost.exe
+          - winlogon.exe
+          - powershell.exe
+          - explorer.exe
+          - lsass.exe
+        registry_keys:
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Services
+      network:
+        protocols:
+          - SMB
+          - RDP
+          - DNS
+          - HTTP
+          - HTTPS
+          - LDAP
+          - Kerberos
+
+  # --- LINUX VARIANT ---
+  linux:
+    os: [Ubuntu Server 22.04 LTS, CentOS Stream 9]
+    
+    services:
+      sshd: enabled
+      cron: enabled
+      samba: enabled
+      rsyslog: enabled
+      # For remote access, persistence, and file sharing
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      samba_ports_open: true
+      # Samba for SMB-like access, cron for persistence
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      # Local accounts for Valid Accounts technique
+
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+      cron: enabled
+      # For Unix Shell, Cron, and scripting
+
+    installed_software:
+      - OpenSSH 8.9p1
+      - Python 3.10
+      - netcat-openbsd 1.218
+      - curl 7.81.0
+      - wget 1.21.2
+      - samba 4.15.5
+      # For tool transfer, data staging, and remote access
+
+    privilege: root
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - systemd service
+      # For persistence via cron and services
+
+    security_controls:
+      AppArmor: disabled
+      SELinux: disabled
+      Firewall: enabled
+      # Disable MAC for full technique coverage
+
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /etc/cron.d
+          - /etc/samba
+        processes:
+          - sshd
+          - bash
+          - cron
+          - smbd
+      network:
+        protocols:
+          - SSH
+          - SMB
+          - DNS
+          - HTTP
+          - HTTPS
+
+  # --- MACOS VARIANT ---
+  macos:
+    os: [macOS Ventura 13.4]
+    
+    services:
+      sshd: enabled
+      cron: enabled
+      smb: enabled
+      # For remote access and persistence
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - /bin/zsh
+        - /bin/bash
+      cron: enabled
+
+    installed_software:
+      - Python 3.11
+      - Homebrew
+      - netcat 0.7.1
+      - curl 7.87.0
+      - wget 1.21.3
+
+    privilege: admin
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - LaunchAgents
+      # For persistence via cron and LaunchAgents
+
+    security_controls:
+      Gatekeeper: disabled
+      SIP: disabled
+      Firewall: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /etc/cron.d
+          - ~/Library/LaunchAgents
+        processes:
+          - sshd
+          - bash
+          - cron
+      network:
+        protocols:
+          - SSH
+          - SMB
+          - DNS
+          - HTTP
+          - HTTPS
+
+  # --- ESXi VARIANT ---
+  esxi:
+    os: [VMware ESXi 7.0.3, Build 22348816]  # Unpatched for CVE-2024-3400
+
+    services:
+      sshd: enabled
+      hostd: enabled
+      cron: enabled
+      # SSH and cron for persistence and remote shell
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      management_network_access: true
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/bash
+      cron: enabled
+
+    installed_software:
+      - VMware Tools
+      - Python 3.7
+      # Python for scripting, VMware Tools for management
+
+    privilege: root
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - rc.local
+
+    security_controls:
+      LockdownMode: disabled
+      Firewall: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /etc/cron.d
+          - /etc/vmware
+        processes:
+          - sshd
+          - hostd
+          - cron
+      network:
+        protocols:
+          - SSH
+          - DNS
+          - HTTP
+          - HTTPS
+
+  # --- NETWORK DEVICES VARIANT ---
+  network_devices:
+    os: [Cisco IOS XE 17.9, Palo Alto PAN-OS 10.2.4 (unpatched for CVE-2024-3400)]
+    
+    services:
+      ssh: enabled
+      https: enabled
+      snmp: enabled
+      globalprotect: enabled  # Required for CVE-2024-3400 exploit
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      management_interface_access: true
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - cli
+        - bash  # On PAN-OS and some devices
+
+    installed_software:
+      - PAN-OS 10.2.4
+      - Cisco IOS XE 17.9
+
+    privilege: admin
+    domain_role: standalone
+
+    persistence_surfaces:
+      - startup-config
+      - scheduled jobs
+
+    security_controls:
+      ThreatPrevention: disabled  # On PAN-OS
+      Firewall: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /var/log
+          - /tmp
+        processes:
+          - sshd
+          - globalprotectd
+      network:
+        protocols:
+          - SSH
+          - HTTPS
+          - SNMP
+          - DNS
+
+  # --- CONTAINERS VARIANT ---
+  containers:
+    os: [Ubuntu 22.04 LTS (container base), Alpine 3.18]
+    
+    services:
+      sshd: enabled
+      cron: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      container_network_mode: bridge
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/bash
+
+    installed_software:
+      - Python 3.11
+      - netcat-openbsd 1.218
+      - curl 7.81.0
+      - wget 1.21.2
+
+    privilege: root
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - entrypoint script
+
+    security_controls:
+      AppArmor: disabled
+      SELinux: disabled
+
+    artifacts:
+      host:
+       

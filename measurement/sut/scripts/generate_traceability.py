@@ -49,7 +49,7 @@ def main():
         rows, "RQ1-P3", "Figure 1 coverage by corpus",
         f"E={v(todo,'enterprise_platform_pct')} M={v(todo,'mobile_platform_pct')} I={v(todo,'ics_platform_percentage')} C={v(todo,'capec_platform_percentage')} F={v(todo,'fight_platform_percentage')}",
         "enterprise_platform_pct, mobile_platform_pct, ics_platform_percentage, capec_platform_percentage, fight_platform_percentage",
-        "`results/figures_data.json`, `ACM CCS - Paper 2/figs/coverage_template.tex`",
+        "`results/figures_data.json`, `figures/coverage_template.tex`",
     )
     add_row(
         rows, "RQ1-S1", "Analysis: Software Reference Rate",
@@ -103,7 +103,7 @@ def main():
         rows, "RQ3-J1", "Analysis: Profile specificity",
         f"unique(sw)={v(todo,'sut_profile_unique_software_percentage')}% unique(sw+cve)={v(todo,'sut_profile_unique_software_cve_percentage')}% confused={v(todo,'sut_profile_confusion_software_cve_percentage')}%",
         "sut_profile_unique_software_percentage, sut_profile_unique_software_cve_percentage, sut_profile_confusion_software_cve_percentage",
-        "`results/todo_values.json`, `results/figures_data.json`, `ACM CCS - Paper 2/figs/jaccard_cdf_template.tex`",
+        "`results/todo_values.json`, `results/figures_data.json`, `figures/jaccard_cdf_template.tex`",
     )
     add_row(
         rows, "RQ3-J2", "Discussion: minimum-evidence threshold",

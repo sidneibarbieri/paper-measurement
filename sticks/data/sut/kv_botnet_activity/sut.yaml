@@ -1,0 +1,365 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: KV Botnet Activity
+# Campaign ID: campaign--0c259854-4044-4f6c-ac49-118d484b3e3b
+# Generated: 2026-03-06T15:13:05.149899
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__0c259854_4044_4f6c_ac49_118d484b3e3b:
+
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows 10 Pro 21H2", "Windows Server 2019"]
+    services:
+      wmi: running
+      winrm: running
+      smb: running
+      rdp: running
+      eventlog: running
+      defender: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      ipv6_enabled: true
+      non_standard_ports: allowed  # For Non-Standard Port technique
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_account: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      task_scheduler: enabled  # For Event Triggered Execution
+    installed_software:
+      - Microsoft Office 2019
+      - OpenSSH for Windows
+      - 7-Zip 19.00
+      - Sysinternals Suite
+      - WinSCP 5.17
+      - Wireshark 3.4
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - registry_run_keys
+      - scheduled_tasks
+      - services
+    security_controls:
+      defender_realtime_protection: enabled
+      uac: enabled
+      firewall: enabled
+      applocker: disabled  # Disabled to allow Masquerading
+    artifacts:
+      host:
+        directories:
+          - C:\Windows\System32
+          - C:\Users\Public
+          - C:\ProgramData
+        processes:
+          - explorer.exe
+          - svchost.exe
+          - winlogon.exe
+          - lsass.exe
+        registry_keys:
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+          - dns
+          - http
+          - https
+          - smb
+          - rdp
+          - custom  # For Non-Standard Port and Non-Application Layer Protocol
+          - encrypted  # For Encrypted Channel
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7.9"]
+    services:
+      sshd: running
+      cron: running
+      syslog: running
+      rsyslog: running
+      systemd: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      ipv6_enabled: true
+      non_standard_ports: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      systemd: enabled
+      cron: enabled
+      docker: enabled  # For Containers/Bind Mounts
+    installed_software:
+      - net-tools
+      - curl
+      - wget
+      - python3
+      - openssh-server
+      - sudo
+      - docker-ce 20.10
+      - iproute2
+      - socat
+      - nmap
+      - tcpdump
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - systemd_service
+      - rc.local
+      - /etc/init.d/
+    security_controls:
+      selinux: permissive  # To allow Masquerading and File Permissions Modification
+      apparmor: disabled
+      firewall: enabled
+      auditd: enabled
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+          - /home
+          - /root
+        processes:
+          - sshd
+          - systemd
+          - bash
+          - cron
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - /var/log/auth.log
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+          - dns
+          - http
+          - https
+          - custom
+          - encrypted
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS 12 Monterey"]
+    services:
+      ssh: running
+      launchd: running
+      syslog: running
+      spotlight: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      non_standard_ports: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      admin_user: present
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - sh
+      launchd: enabled
+    installed_software:
+      - Microsoft Office 2019
+      - Homebrew
+      - Python3
+      - Wireshark
+      - iTerm2
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launchd_plist
+      - cron
+    security_controls:
+      gatekeeper: disabled  # To allow Masquerading
+      sip: disabled  # For File Permissions Modification
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /Users/Shared
+          - /private/tmp
+          - /System/Library/LaunchDaemons
+        processes:
+          - launchd
+          - bash
+          - sshd
+        files:
+          - /etc/passwd
+          - /var/log/system.log
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+          - dns
+          - http
+          - https
+          - custom
+          - encrypted
+
+  # --- ESXi Variant ---
+  esxi:
+    os: ["VMware ESXi 6.7 U3"]
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+      syslog: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      non_standard_ports: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+      root_account: present
+    execution_environment:
+      shells:
+        - sh
+      esxcli: enabled
+    installed_software:
+      - open-vm-tools
+      - python3
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local.d
+      - cron
+    security_controls:
+      lockdown_mode: disabled  # To allow shell access
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+        processes:
+          - hostd
+          - vpxa
+          - sh
+        files:
+          - /etc/passwd
+          - /var/log/hostd.log
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+          - dns
+          - http
+          - https
+          - custom
+          - encrypted
+
+  # --- Network Devices Variant ---
+  network_devices:
+    os: ["Cisco IOS 15.2", "NETGEAR ProSafe 2.6", "DrayTek Vigor 3.8"]
+    services:
+      telnet: running  # For legacy/EOL device emulation
+      ssh: running
+      snmp: running
+      http: running
+      https: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      non_standard_ports: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+      enable_secret: present
+    execution_environment:
+      shells:
+        - cli
+      config_mode: enabled
+    installed_software:
+      - tftp-server
+      - snmpd
+    privilege: enable
+    domain_role: standalone
+    persistence_surfaces:
+      - startup_config
+      - scheduled_commands
+    security_controls:
+      acl: permissive  # To allow all network traffic
+      firewall: disabled
+      logging: enabled
+    artifacts:
+      host:
+        directories:
+          - flash:
+          - nvram:
+        processes:
+          - snmpd
+          - sshd
+          - httpd
+        files:
+          - startup-config
+          - running-config
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+          - dns
+          - http
+          - https
+          - snmp
+          - custom
+          - encrypted
+
+  # --- Containers Variant ---
+  containers:
+    os: ["Ubuntu 20.04 LTS (container host)", "Docker Engine 20.10"]
+    services:
+      docker: running
+      containerd: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      non_standard_ports: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+      root_in_container: present
+    execution_environment:
+      shells:
+        - sh
+        - bash
+      docker_exec: enabled
+      bind_mounts: enabled  # For Bind Mounts technique
+    installed_software:
+      - python3
+      - curl
+      - wget
+      - net-tools
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - docker_entrypoint
+      - bind_mount
+    security_controls:
+      seccomp: disabled  # To allow Masquerading and Disable/Modify Tools
+      app

@@ -1,0 +1,18 @@
+### todo
+mapear fases com saídas para contexto
+criar prompts para usando o contexto gerenciar os próximos passos
+
+
+# background
+curl -X GET -H "KEY: yMsEA9_9_jEPNjy0Dp7vRAP5Gqe6RIRBBn25EPmyixw" http://0.0.0.0:8888/api/v2/sources
+http://0.0.0.0:8888/api/v2/operations
+http://0.0.0.0:8888/api/v2/agents
+http://0.0.0.0:8888/api/v2/abilities
+http://0.0.0.0:8888/api/v2/adversaries
+http://0.0.0.0:8888/api/v2/sources
+http://0.0.0.0:8888/api/v2/health
+
+
+
+python lib/adversary.py list | cut -d ":" -f 2 | cut -d ")" -f 1 > ../adversaries.db
+

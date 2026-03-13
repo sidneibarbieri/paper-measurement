@@ -1,0 +1,338 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Water Curupira Pikabot Distribution
+# Campaign ID: campaign--57541e3b-657e-463a-a4ab-ca08d7ea9965
+# Generated: 2026-03-06T15:06:23.398167
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__57541e3b_657e_463a_a4ab_ca08d7ea9965:
+
+  # --- Windows Variant ---
+  windows_10_22H2:
+    os: [Windows 10 Enterprise, Version 22H2]
+    services:
+      wmi: enabled
+      powershell: enabled
+      smb: enabled
+      winrm: enabled
+      outlook: enabled # Required for spearphishing attachment testing
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smtp_access: allowed # Required for email delivery simulation
+      inbound_smb: allowed # For ingress tool transfer
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      rundll32: enabled # Required for T1218
+      javascript_engine: enabled # Windows Script Host (WSH)
+    installed_software:
+      - Microsoft Outlook 2021
+      - Windows Script Host (WSH)
+      - .NET Framework 4.8
+      - Pikabot sample (latest)
+      - QakBot sample (for overlap testing)
+      - 7-Zip 22.01 # For deobfuscation/decoding
+      - Chrome 114 # For malicious link testing
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - registry_run_key
+      - scheduled_task
+      - startup_folder
+    security_controls:
+      defender: disabled # Must be disabled for full technique execution
+      applocker: disabled
+      firewall: enabled
+      email_filtering: disabled # For spearphishing simulation
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\Downloads
+          - C:\Windows\Temp
+        processes:
+          - rundll32.exe
+          - powershell.exe
+          - wscript.exe
+          - explorer.exe
+          - outlook.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - SMB
+          - HTTPS
+          - DNS
+          - SMTP
+
+  # --- Linux Variant ---
+  ubuntu_22_04:
+    os: [Ubuntu Linux 22.04 LTS]
+    services:
+      sshd: enabled
+      postfix: enabled # For email simulation
+      cron: enabled
+      samba: enabled # For ingress tool transfer
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      smtp_access: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      javascript_engine: enabled # Node.js installed for JS execution
+    installed_software:
+      - Node.js 18.x
+      - Pikabot sample (Linux port/emulation)
+      - QakBot sample (Linux port/emulation)
+      - 7-Zip 22.01
+      - Thunderbird 102 # For spearphishing attachment testing
+      - wget
+      - curl
+      - chromium-browser 114
+    privilege: sudo
+    domain_role: standalone
+    persistence_surfaces:
+      - cron_job
+      - systemd_service
+      - ~/.bashrc
+    security_controls:
+      apparmor: disabled
+      firewall: enabled
+      email_filtering: disabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /home/user/Downloads
+        processes:
+          - bash
+          - node
+          - thunderbird
+          - wget
+          - curl
+        files:
+          - /etc/cron.d/pikabot
+          - /home/user/.bashrc
+      network:
+        protocols:
+          - HTTPS
+          - DNS
+          - SMTP
+          - SMB
+
+  # --- macOS Variant ---
+  macos_ventura_13_4:
+    os: [macOS Ventura 13.4]
+    services:
+      sshd: enabled
+      mail: enabled # Apple Mail for spearphishing
+      cron: enabled
+      smb: enabled # For ingress tool transfer
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      smtp_access: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      admin_user: present
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+      javascript_engine: enabled # Node.js installed
+    installed_software:
+      - Node.js 18.x
+      - Pikabot sample (macOS port/emulation)
+      - QakBot sample (macOS port/emulation)
+      - 7-Zip 22.01
+      - Apple Mail
+      - Chrome 114
+      - wget
+      - curl
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launch_agent
+      - cron_job
+      - ~/.bash_profile
+    security_controls:
+      gatekeeper: disabled # Required for malicious file execution
+      firewall: enabled
+      email_filtering: disabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /Users/user/Downloads
+        processes:
+          - bash
+          - node
+          - Mail
+          - wget
+          - curl
+        files:
+          - /Library/LaunchAgents/com.pikabot.plist
+          - /Users/user/.bash_profile
+      network:
+        protocols:
+          - HTTPS
+          - DNS
+          - SMTP
+          - SMB
+
+  # --- ESXi Variant ---
+  vmware_esxi_7_0:
+    os: [VMware ESXi 7.0 Update 3]
+    services:
+      sshd: enabled
+      esxcli: enabled
+      cron: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      root_user: present
+    execution_environment:
+      shells:
+        - sh
+        - bash
+    installed_software:
+      - Pikabot sample (ESXi port/emulation)
+      - QakBot sample (ESXi port/emulation)
+      - 7-Zip 22.01
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron_job
+      - rc.local
+    security_controls:
+      firewall: enabled
+      lockdown_mode: disabled # Required for tool transfer
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+        processes:
+          - sh
+          - bash
+        files:
+          - /etc/rc.local
+          - /etc/cron.d/pikabot
+      network:
+        protocols:
+          - HTTPS
+          - DNS
+
+  # --- Containers Variant ---
+  container_ubuntu_22_04:
+    os: [Ubuntu Linux 22.04 LTS Container]
+    services:
+      sshd: enabled
+      cron: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      javascript_engine: enabled # Node.js installed
+    installed_software:
+      - Node.js 18.x
+      - Pikabot sample (container port/emulation)
+      - QakBot sample (container port/emulation)
+      - 7-Zip 22.01
+      - wget
+      - curl
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron_job
+      - ~/.bashrc
+    security_controls:
+      apparmor: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /home/user/Downloads
+        processes:
+          - bash
+          - node
+          - wget
+          - curl
+        files:
+          - /etc/cron.d/pikabot
+          - /home/user/.bashrc
+      network:
+        protocols:
+          - HTTPS
+          - DNS
+
+  # --- IaaS Variant ---
+  iaas_windows_server_2022:
+    os: [Windows Server 2022 Datacenter]
+    services:
+      wmi: enabled
+      powershell: enabled
+      smb: enabled
+      winrm: enabled
+      outlook: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smtp_access: allowed
+      inbound_smb: allowed
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      javascript_engine: enabled
+      rundll32: enabled
+    installed_software:
+      - Microsoft Outlook 2021
+      - Windows Script Host (WSH)
+      - .NET Framework 4.8
+      - Pikabot sample (latest)
+      - QakBot sample (for overlap testing)
+      - 7-Zip 22.01
+      - Chrome 114
+    privilege: local_admin
+    domain_role: server
+    persistence_surfaces:
+      - registry_run_key
+      - scheduled_task
+      -

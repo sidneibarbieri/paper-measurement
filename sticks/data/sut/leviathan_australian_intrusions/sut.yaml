@@ -1,0 +1,327 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Leviathan Australian Intrusions
+# Campaign ID: campaign--b66bc597-399c-4e4d-828a-1ed4a7f1fb15
+# Generated: 2026-03-06T15:06:12.115819
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__b66bc597_399c_4e4d_828a_1ed4a7f1fb15:
+
+  # --- Windows Variant ---
+  windows_10_enterprise:
+    os: [Windows 10 Enterprise, Version 21H2]
+    services:
+      smb: enabled
+      winrm: enabled
+      firewall: enabled # Can be disabled/modified for T1079
+      kerberos: enabled
+      group_policy: enabled
+      rdp: enabled
+      dns_client: enabled
+      # Office Suite for credential access
+      office_suite: installed
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      network_shares: present
+      admin_shares: present
+      remote_management: enabled
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present # Required for credential harvesting
+      local_accounts: present
+      domain_accounts: present
+      mfa: enabled # Can be intercepted for T1111
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wsl.exe
+      remote_shells:
+        - winrm
+      scheduled_tasks: enabled
+    installed_software:
+      - Microsoft Office 2019
+      - SQL Server 2019
+      - IIS 10.0
+      - Chrome 114
+      - Firefox 115
+      - Putty 0.78
+      - WinSCP 5.21
+      - Sysinternals Suite
+      - 7-Zip 22.01
+      - OpenSSH for Windows
+      - Python 3.10
+    privilege: [Administrator]
+    domain_role: [Member Workstation]
+    persistence_surfaces:
+      - scheduled_task
+      - registry_run_key
+      - service
+      - admin_shares
+    security_controls:
+      antivirus: enabled # Can be bypassed/disabled for testing
+      firewall: enabled # Can be modified/disabled for T1079
+      mfa: enabled # Can be intercepted for T1111
+      app_control: disabled # Allows web shell and exploit techniques
+      logging: enabled
+      credential_guard: disabled # Allows credential access techniques
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\Documents
+          - C:\Windows\System32
+          - C:\ProgramData
+          - C:\inetpub\wwwroot
+        processes:
+          - explorer.exe
+          - svchost.exe
+          - powershell.exe
+          - cmd.exe
+          - lsass.exe
+          - sqlservr.exe
+          - w3wp.exe
+          - winlogon.exe
+        registry_keys:
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Services
+          - HKLM\SYSTEM\CurrentControlSet\Control\Lsa
+      network:
+        protocols:
+          - SMB
+          - Kerberos
+          - DNS
+          - HTTPS
+          - RDP
+          - HTTP
+          - LDAP
+          - CIFS
+
+  # --- Linux Variant ---
+  ubuntu_22_04_lts:
+    os: [Ubuntu 22.04 LTS]
+    services:
+      sshd: enabled
+      apache2: enabled
+      mysql: enabled
+      samba: enabled
+      firewall: enabled # Can be disabled/modified for T1079
+      cron: enabled
+      docker: enabled
+      # Office Suite for credential access
+      libreoffice: installed
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      network_shares: present
+      remote_management: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_accounts: present
+      domain_accounts: present
+      mfa: enabled # Can be intercepted for T1111
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      remote_shells:
+        - ssh
+      cron_jobs: enabled
+    installed_software:
+      - LibreOffice 7.3
+      - MySQL 8.0
+      - Apache 2.4
+      - Docker 24.0
+      - Python 3.10
+      - Samba 4.15
+      - OpenSSH 8.9
+      - Firefox 115
+      - Chrome 114
+      - Vim 8.2
+      - Netcat
+      - tcpdump
+    privilege: [root]
+    domain_role: [Standalone Server]
+    persistence_surfaces:
+      - cron_job
+      - systemd_service
+      - ssh_authorized_keys
+      - web_shell
+      - samba_share
+    security_controls:
+      selinux: disabled # Allows privilege escalation and web shell
+      firewall: enabled # Can be modified/disabled for T1079
+      apparmor: disabled
+      mfa: enabled # Can be intercepted for T1111
+      logging: enabled
+    artifacts:
+      host:
+        directories:
+          - /home
+          - /var/www/html
+          - /etc
+          - /tmp
+          - /var/log
+        processes:
+          - sshd
+          - apache2
+          - mysqld
+          - bash
+          - cron
+          - samba
+          - docker
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - /etc/ssh/sshd_config
+          - /var/log/auth.log
+      network:
+        protocols:
+          - SSH
+          - SMB
+          - DNS
+          - HTTPS
+          - HTTP
+
+  # --- macOS Variant ---
+  macos_monterey_12_6:
+    os: [macOS Monterey 12.6]
+    services:
+      sshd: enabled
+      apache: enabled
+      firewall: enabled # Can be disabled/modified for T1079
+      samba: enabled
+      office_suite: installed
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      network_shares: present
+      remote_management: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_accounts: present
+      domain_accounts: present
+      mfa: enabled # Can be intercepted for T1111
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+      remote_shells:
+        - ssh
+      launch_agents: enabled
+    installed_software:
+      - Microsoft Office 2021
+      - Apache 2.4
+      - Samba 4.15
+      - OpenSSH 8.9
+      - Python 3.10
+      - Chrome 114
+      - Firefox 115
+      - Docker 24.0
+    privilege: [admin]
+    domain_role: [Standalone Workstation]
+    persistence_surfaces:
+      - launch_agent
+      - cron_job
+      - ssh_authorized_keys
+      - web_shell
+      - samba_share
+    security_controls:
+      firewall: enabled # Can be modified/disabled for T1079
+      mfa: enabled # Can be intercepted for T1111
+      logging: enabled
+      gatekeeper: disabled # Allows web shell and exploit techniques
+    artifacts:
+      host:
+        directories:
+          - /Users
+          - /Library/LaunchAgents
+          - /var/www/html
+          - /etc
+          - /tmp
+        processes:
+          - sshd
+          - httpd
+          - bash
+          - zsh
+          - samba
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - /etc/ssh/sshd_config
+          - /var/log/system.log
+      network:
+        protocols:
+          - SSH
+          - SMB
+          - DNS
+          - HTTPS
+          - HTTP
+
+  # --- ESXi Variant ---
+  vmware_esxi_7_0:
+    os: [VMware ESXi 7.0]
+    services:
+      sshd: enabled
+      firewall: enabled # Can be disabled/modified for T1079
+      web_interface: enabled
+      vm_management: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      remote_management: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_accounts: present
+      domain_accounts: present
+    execution_environment:
+      shells:
+        - bash
+      remote_shells:
+        - ssh
+    installed_software:
+      - VMware Tools 11.3
+      - Python 3.10
+    privilege: [root]
+    domain_role: [Standalone Host]
+    persistence_surfaces:
+      - ssh_authorized_keys
+      - web_shell
+      - scheduled_task
+    security_controls:
+      firewall: enabled # Can be modified/disabled for T1079
+      logging: enabled
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+        processes:
+          - sshd
+          - hostd
+          - vmware-vpxa
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - /etc/ssh/sshd_config
+          - /var/log/vmware.log
+      network:
+        protocols:
+          - SSH
+          - HTTPS
+          - DNS
+
+  # --- Container Variant ---
+  container_ubuntu_22_

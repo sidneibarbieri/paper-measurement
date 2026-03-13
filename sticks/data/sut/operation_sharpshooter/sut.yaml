@@ -1,0 +1,347 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Operation Sharpshooter
+# Campaign ID: campaign--37764c78-2a99-46d1-a7ea-6454b9bf93a0
+# Generated: 2026-03-06T15:09:55.780004
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__37764c78_2a99_46d1_a7ea_6454b9bf93a0:
+
+  # =========================
+  # Windows Variant
+  # =========================
+  windows:
+    os: [Windows 10 Enterprise 21H2, Windows Server 2019]
+    services:
+      wmi: running
+      winrm: running
+      smb: running
+      rdp: running
+      http: running
+      https: running
+      dns: running
+      # DDE requires Office installed and running
+      office: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      local_admin_shares: enabled
+      firewall: enabled # but allow outbound/inbound for test IPs
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_account: present
+      # For registry persistence, user must have write access to HKCU/HKLM run keys
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wscript.exe
+        - cscript.exe
+      office_macros_enabled: true # For Visual Basic and DDE
+      dotnet_installed: true
+    installed_software:
+      - Microsoft Office 2016 (16.0.4266.1001) # DDE & VBA
+      - Visual C++ Redistributable 2015-2019
+      - Python 3.9
+      - 7-Zip 19.00
+      - .NET Framework 4.8
+      - Web browser (Chrome/Edge/IE)
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - registry_run_keys
+      - startup_folder
+      - scheduled_task
+    security_controls:
+      defender: enabled # but allow exclusions for test artifacts
+      applocker: disabled
+      uac: enabled
+      macro_security: low # For VBA and DDE
+    artifacts:
+      host:
+        directories:
+          - C:\Windows\System32
+          - C:\Users\Public
+          - C:\ProgramData
+          - C:\Users\<testuser>\AppData\Roaming\Microsoft\Windows\Start Menu\Programs\Startup
+        processes:
+          - explorer.exe
+          - powershell.exe
+          - cmd.exe
+          - WINWORD.EXE
+          - wscript.exe
+          - rundll32.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - smb
+          - rdp
+          - tcp
+          - udp
+
+  # =========================
+  # Linux Variant
+  # =========================
+  linux:
+    os: [Ubuntu 20.04 LTS, CentOS 7.9]
+    services:
+      ssh: running
+      httpd: running
+      cron: running
+      systemd: running
+      dns: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      firewall: enabled # allow test IPs
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+        - /usr/bin/python3
+      gcc_installed: true
+      perl_installed: true
+    installed_software:
+      - gcc 9.3.0
+      - python3 3.8
+      - curl 7.68.0
+      - openssh-server 8.2p1
+      - apache2 2.4.41
+      - netcat-openbsd 1.206
+      - cron 3.0pl1
+    privilege: sudo
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - systemd_service
+      - ~/.bashrc
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      auditd: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /etc/systemd/system
+          - /home/<testuser>/.config
+        processes:
+          - bash
+          - sshd
+          - httpd
+          - python3
+          - nc
+        files:
+          - /etc/crontab
+          - /etc/passwd
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - ssh
+          - tcp
+          - udp
+
+  # =========================
+  # macOS Variant
+  # =========================
+  macos:
+    os: [macOS Monterey 12.6]
+    services:
+      ssh: running
+      httpd: running
+      launchd: running
+      dns: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      firewall: enabled # allow test IPs
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      admin_user: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/zsh
+        - /usr/bin/python3
+      applescript_enabled: true
+      office_macros_enabled: true # For VBA
+    installed_software:
+      - Microsoft Office 2019 (16.53)
+      - python3 3.9
+      - gcc 11.2.0
+      - curl 7.79.1
+      - apache2 2.4.51
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launch_agent
+      - launch_daemon
+      - login_hook
+    security_controls:
+      gatekeeper: disabled
+      sip: disabled
+      xprotect: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /Users/Shared
+          - /Library/LaunchAgents
+          - /Library/LaunchDaemons
+        processes:
+          - bash
+          - zsh
+          - python3
+          - Microsoft Word
+          - httpd
+        files:
+          - /etc/hosts
+          - /etc/crontab
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - ssh
+          - tcp
+          - udp
+
+  # =========================
+  # ESXi Variant
+  # =========================
+  esxi:
+    os: [VMware ESXi 7.0 Update 2]
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+      http: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      firewall: enabled # allow test IPs
+    identity:
+      domain_controller_reachable: false
+      root_account: present
+    execution_environment:
+      shells:
+        - /bin/sh
+      esxcli_enabled: true
+    installed_software:
+      - esxcli
+      - python3 3.7
+      - curl 7.68.0
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+      - cron
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /etc/rc.local.d
+        processes:
+          - hostd
+          - vpxa
+          - sh
+        files:
+          - /etc/rc.local.d/local.sh
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - ssh
+          - tcp
+          - udp
+
+  # =========================
+  # Network Devices Variant
+  # =========================
+  network_devices:
+    os: [Cisco IOS XE 17.3, JunOS 20.4R3]
+    services:
+      ssh: running
+      http: running
+      snmp: running
+      tftp: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      local_admin_account: present
+    execution_environment:
+      shells:
+        - cli
+      scripting_enabled: true
+    installed_software:
+      - python (if supported)
+      - custom scripts
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - startup_config
+      - scheduled_script
+    security_controls:
+      aaa: enabled
+      snmp: enabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - flash:/
+          - nvram:/
+        processes:
+          - sshd
+          - httpd
+        files:
+          - startup-config
+          - running-config
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - ssh
+          - snmp
+          - tftp
+          - tcp
+          - udp
+
+  # =========================
+  # PRE (Pre-compromise/External) Variant
+  # =========================
+  pre:
+    os: [N/A]
+    services:
+      web_server: running # For C2 and malware hosting
+      dns: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled

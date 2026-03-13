@@ -1,0 +1,159 @@
+id: 1f9b0a13-6d12-4a3e-97c4-3e7b2a11b6c9
+name: Soft Cell (2019)
+description: >
+  The Soft Cell campaign is a long-term cyber espionage operation targeting telecom providers globally.
+  The adversary exploited public-facing applications (PHP) to gain access,
+  installed web shells for persistence, performed credential dumping and lateral movement,
+  and exfiltrated Call Detail Records (CDRs) and other sensitive data from telecom infrastructure.
+atomic_ordering:
+  # INITIAL ACCESS
+  - T1190       # Exploit Public-Facing Application
+  # EXECUTION
+  - T1059       # Command and Scripting Interpreter
+  - T1203       # Exploitation for Client Execution
+  # PERSISTENCE
+  - T1505       # Server Components (web shells / IIS modules)
+  - T1136       # Create Account
+  # PRIVILEGE ESCALATION
+  - T1068       # Exploitation for Privilege Escalation
+  # DEFENSE EVASION
+  - T1027       # Obfuscated Files or Information
+  - T1070       # Indicator Removal on Host
+  # CREDENTIAL ACCESS
+  - T1003       # OS Credential Dumping
+  # DISCOVERY
+  - T1083       # File and Directory Discovery
+  - T1018       # Remote System Discovery
+  - T1087       # Account Discovery
+  # LATERAL MOVEMENT
+  - T1021       # Remote Services (RDP, SMB)
+  - T1077       # Windows Admin Shares
+  # COLLECTION
+  - T1005       # Data from Local System
+  - T1114       # Email Collection
+  # EXFILTRATION
+  - T1020       # Automated Exfiltration
+  - T1041       # Exfiltration over C2 Channel
+  # IMPACT (optional)
+  - T1499       # Endpoint DoS
+  - T1561       # Disk Wipe
+phases:
+  - phase: Initial Access
+    description: >
+      Exploit public-facing applications (IIS, WebLogic, ColdFusion) to deploy web shells and gain foothold.
+  - phase: Execution
+    description: >
+      Execute commands and scripts through dropped web shells or command interpreters.
+  - phase: Persistence
+    description: >
+      Install malicious IIS modules or create new accounts to maintain long-term access.
+  - phase: Privilege Escalation
+    description: >
+      Use local exploits to elevate privileges and gain domain-level control.
+  - phase: Defense Evasion
+    description: >
+      Hide activity through obfuscation and remove traces from event logs.
+  - phase: Credential Access
+    description: >
+      Extract credentials from LSASS and SAM databases.
+  - phase: Discovery
+    description: >
+      Enumerate network, accounts, and databases containing subscriber data.
+  - phase: Lateral Movement
+    description: >
+      Move between systems via RDP, SMB, or administrative shares.
+  - phase: Collection
+    description: >
+      Gather Call Detail Records (CDRs), logs, and internal emails.
+  - phase: Exfiltration
+    description: >
+      Automatically exfiltrate collected data through established C2 channels.
+  - phase: Impact
+    description: >
+      Cause service disruptions or data destruction during final cleanup stages.
+goals:
+  - Access to telecom core systems and databases containing subscriber and call metadata.
+  - Maintain persistent access for long-term espionage.
+  - Exfiltrate large volumes of CDR and network data stealthily.
+
+
+
+
+  {
+  "id": "1f9b0a13-6d12-4a3e-97c4-3e7b2a11b6c9",
+  "name": "Soft Cell (2019)",
+  "description": "The Soft Cell campaign is a long-term cyber espionage operation targeting telecom providers globally. The adversary exploited public-facing applications (PHP) to gain access, installed web shells for persistence, performed credential dumping and lateral movement, and exfiltrated Call Detail Records (CDRs) and other sensitive data from telecom infrastructure.",
+  "atomic_ordering": [
+    "T1190",
+    "T1059",
+    "T1203",
+    "T1505",
+    "T1136",
+    "T1068",
+    "T1027",
+    "T1070",
+    "T1003",
+    "T1083",
+    "T1018",
+    "T1087",
+    "T1021",
+    "T1077",
+    "T1005",
+    "T1114",
+    "T1020",
+    "T1041",
+    "T1499",
+    "T1561"
+  ],
+  "phases": [
+    {
+      "phase": "Initial Access",
+      "description": "Exploit public-facing applications (IIS, WebLogic, ColdFusion) to deploy web shells and gain foothold."
+    },
+    {
+      "phase": "Execution",
+      "description": "Execute commands and scripts through dropped web shells or command interpreters."
+    },
+    {
+      "phase": "Persistence",
+      "description": "Install malicious IIS modules or create new accounts to maintain long-term access."
+    },
+    {
+      "phase": "Privilege Escalation",
+      "description": "Use local exploits to elevate privileges and gain domain-level control."
+    },
+    {
+      "phase": "Defense Evasion",
+      "description": "Hide activity through obfuscation and remove traces from event logs."
+    },
+    {
+      "phase": "Credential Access",
+      "description": "Extract credentials from LSASS and SAM databases."
+    },
+    {
+      "phase": "Discovery",
+      "description": "Enumerate network, accounts, and databases containing subscriber data."
+    },
+    {
+      "phase": "Lateral Movement",
+      "description": "Move between systems via RDP, SMB, or administrative shares."
+    },
+    {
+      "phase": "Collection",
+      "description": "Gather Call Detail Records (CDRs), logs, and internal emails."
+    },
+    {
+      "phase": "Exfiltration",
+      "description": "Automatically exfiltrate collected data through established C2 channels."
+    },
+    {
+      "phase": "Impact",
+      "description": "Cause service disruptions or data destruction during final cleanup stages."
+    }
+  ],
+  "goals": [
+    "Access to telecom core systems and databases containing subscriber and call metadata.",
+    "Maintain persistent access for long-term espionage.",
+    "Exfiltrate large volumes of CDR and network data stealthily."
+  ]
+}

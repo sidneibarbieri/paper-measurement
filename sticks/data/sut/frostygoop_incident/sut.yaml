@@ -1,0 +1,294 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: FrostyGoop Incident
+# Campaign ID: campaign--1169ff24-b35f-4d8d-8cf3-643a2834227f
+# Generated: 2026-03-06T15:12:43.930898
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__1169ff24_b35f_4d8d_8cf3_643a2834227f:
+  # --- Windows Variant ---
+  windows:
+    os: ['Windows Server 2019', 'Windows 10 Enterprise (1909)']
+    services:
+      w3svc: running           # IIS for web shell and public-facing app exploitation
+      smb: running             # Required for credential access and lateral movement
+      winrm: running           # Remote management, often targeted
+      modbus_service: running  # Simulated Modbus for ENCO control system manipulation
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      inbound_http: allowed    # Required for web shell and app exploitation
+      inbound_modbus: allowed  # Modbus protocol for ENCO system
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present # For Security Account Manager technique
+      local_admin_accounts: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      scripting_languages:
+        - powershell
+        - python
+    installed_software:
+      - IIS 10.0
+      - Python 3.9
+      - ENCO control software (version as deployed in Ukraine)
+      - Modbus TCP client/server simulator (v1.2)
+      - FrostyGoop (S1165) # Adversary tool
+    privilege: 'Administrator'
+    domain_role: 'Member Server'
+    persistence_surfaces:
+      - Scheduled Task
+      - Registry Run Key
+      - IIS Web Shell
+    security_controls:
+      Windows Defender: disabled   # For successful exploitation and web shell deployment
+      Firewall: configured (allow inbound HTTP, Modbus)
+      Credential Guard: disabled   # For Security Account Manager access
+    artifacts:
+      host:
+        directories:
+          - 'C:\inetpub\wwwroot'
+          - 'C:\Windows\System32'
+          - 'C:\ProgramData\ENCO'
+        processes:
+          - 'w3wp.exe'
+          - 'modbus_service.exe'
+          - 'powershell.exe'
+          - 'cmd.exe'
+        registry_keys:
+          - 'HKLM\SAM'          # Security Account Manager access
+          - 'HKLM\Software\Microsoft\Windows\CurrentVersion\Run'
+      network:
+        protocols:
+          - 'HTTP'
+          - 'HTTPS'
+          - 'Modbus TCP'
+          - 'SMB'
+          - 'DNS'
+
+  # --- Linux Variant ---
+  linux:
+    os: ['Ubuntu 22.04 LTS', 'CentOS 7.9']
+    services:
+      apache2: running           # For web shell and public-facing app exploitation
+      sshd: running              # Remote access
+      modbus_service: running    # Simulated Modbus for ENCO control system manipulation
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_http: allowed      # Required for web shell and app exploitation
+      inbound_modbus: allowed    # Modbus protocol for ENCO system
+    identity:
+      credential_cache: present  # /etc/shadow, /etc/passwd
+      sudoers: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+      scripting_languages:
+        - python3
+        - perl
+        - bash
+    installed_software:
+      - Apache 2.4.54
+      - Python 3.9
+      - ENCO control software (Linux variant)
+      - Modbus TCP client/server simulator (v1.2)
+      - FrostyGoop (S1165)
+    privilege: 'root'
+    domain_role: 'Standalone'
+    persistence_surfaces:
+      - Cron Job
+      - Systemd Service
+      - Apache Web Shell
+    security_controls:
+      SELinux: permissive         # For exploitation and web shell deployment
+      Firewall: configured (allow inbound HTTP, Modbus)
+      AppArmor: disabled
+    artifacts:
+      host:
+        directories:
+          - '/var/www/html'
+          - '/etc'
+          - '/opt/ENCO'
+        processes:
+          - 'apache2'
+          - 'modbus_service'
+          - 'bash'
+          - 'python3'
+        files:
+          - '/etc/shadow'
+          - '/etc/passwd'
+          - '/var/www/html/webshell.php'
+      network:
+        protocols:
+          - 'HTTP'
+          - 'HTTPS'
+          - 'Modbus TCP'
+          - 'SSH'
+          - 'DNS'
+
+  # --- macOS Variant ---
+  macos:
+    os: ['macOS Monterey 12.6']
+    services:
+      apache: running            # For web shell and public-facing app exploitation
+      sshd: running              # Remote access
+      modbus_service: running    # Simulated Modbus for ENCO control system manipulation
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_http: allowed
+      inbound_modbus: allowed
+    identity:
+      credential_cache: present  # /etc/passwd, /etc/master.passwd
+      sudoers: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/zsh
+      scripting_languages:
+        - python3
+        - bash
+    installed_software:
+      - Apache 2.4.54
+      - Python 3.9
+      - ENCO control software (macOS variant)
+      - Modbus TCP client/server simulator (v1.2)
+      - FrostyGoop (S1165)
+    privilege: 'admin'
+    domain_role: 'Standalone'
+    persistence_surfaces:
+      - Launch Agent
+      - Cron Job
+      - Apache Web Shell
+    security_controls:
+      Gatekeeper: disabled       # For exploitation and web shell deployment
+      Firewall: configured (allow inbound HTTP, Modbus)
+    artifacts:
+      host:
+        directories:
+          - '/Library/WebServer/Documents'
+          - '/etc'
+          - '/Applications/ENCO'
+        processes:
+          - 'httpd'
+          - 'modbus_service'
+          - 'bash'
+          - 'python3'
+        files:
+          - '/etc/passwd'
+          - '/etc/master.passwd'
+          - '/Library/WebServer/Documents/webshell.php'
+      network:
+        protocols:
+          - 'HTTP'
+          - 'HTTPS'
+          - 'Modbus TCP'
+          - 'SSH'
+          - 'DNS'
+
+  # --- ESXi Variant ---
+  esxi:
+    os: ['VMware ESXi 7.0']
+    services:
+      http: running              # For public-facing app exploitation
+      modbus_service: running    # Simulated Modbus for ENCO control system manipulation
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_http: allowed
+      inbound_modbus: allowed
+    identity:
+      root_account: present
+    execution_environment:
+      shells:
+        - /bin/sh
+      scripting_languages:
+        - python3
+    installed_software:
+      - ENCO control software (ESXi variant)
+      - Modbus TCP client/server simulator (v1.2)
+      - FrostyGoop (S1165)
+    privilege: 'root'
+    domain_role: 'Standalone'
+    persistence_surfaces:
+      - Startup Script
+    security_controls:
+      ESXi Firewall: configured (allow inbound HTTP, Modbus)
+    artifacts:
+      host:
+        directories:
+          - '/etc'
+          - '/vmfs/volumes'
+        processes:
+          - 'modbus_service'
+          - 'python3'
+      network:
+        protocols:
+          - 'HTTP'
+          - 'HTTPS'
+          - 'Modbus TCP'
+          - 'DNS'
+
+  # --- Containers Variant ---
+  containers:
+    os: ['Ubuntu 22.04 LTS (container base)', 'Alpine 3.17']
+    services:
+      apache2: running           # For web shell and public-facing app exploitation
+      modbus_service: running    # Simulated Modbus for ENCO control system manipulation
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_http: allowed
+      inbound_modbus: allowed
+    identity:
+      credential_cache: present  # /etc/passwd
+    execution_environment:
+      shells:
+        - /bin/sh
+      scripting_languages:
+        - python3
+    installed_software:
+      - Apache 2.4.54
+      - Python 3.9
+      - ENCO control software (container variant)
+      - Modbus TCP client/server simulator (v1.2)
+      - FrostyGoop (S1165)
+    privilege: 'root'
+    domain_role: 'Standalone'
+    persistence_surfaces:
+      - Container Startup Command
+      - Apache Web Shell
+    security_controls:
+      AppArmor: disabled
+      Firewall: configured (allow inbound HTTP, Modbus)
+    artifacts:
+      host:
+        directories:
+          - '/var/www/html'
+          - '/etc'
+          - '/opt/ENCO'
+        processes:
+          - 'apache2'
+          - 'modbus_service'
+          - 'python3'
+        files:
+          - '/etc/passwd'
+          - '/var/www/html/webshell.php'
+      network:
+        protocols:
+          - 'HTTP'
+          - 'HTTPS'
+          - 'Modbus TCP'
+          - 'DNS'
+
+  # --- Network Devices Variant ---
+  network_devices:
+    os: ['Cisco IOS XE 17.3', 'MikroTik RouterOS 

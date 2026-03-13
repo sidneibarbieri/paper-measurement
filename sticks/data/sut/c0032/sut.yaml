@@ -1,0 +1,333 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: C0032
+# Campaign ID: campaign--7ec2826c-0bf0-4b47-acae-fd683431a4ca
+# Generated: 2026-03-06T15:07:22.398627
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__7ec2826c_0bf0_4b47_acae_fd683431a4ca:
+  # Windows SUT specification
+  windows:
+    os: ["Windows Server 2019", "Windows 10 Enterprise 1909"]
+    services:
+      TaskScheduler: running
+      WinRM: running
+      RemoteDesktop: running
+      LSASS: running
+      SMB: running
+      IIS: running # Required for web shell technique
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      rdp_port: 3389 # Default, can be changed for Non-Standard Port
+      ssh_port: 22 # Optional, for cross-platform SSH
+      custom_ports: [8080, 8443] # For Protocol Tunneling/Non-Standard Port
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_accounts: present
+      domain_user_accounts: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      powershell_version: "5.1"
+      .NET_Framework: "4.8"
+      python: "3.8"
+    installed_software:
+      - Microsoft Office 2019
+      - Putty 0.73
+      - OpenSSH for Windows
+      - Sysinternals Suite # For LSASS access
+      - Web server (IIS 10)
+      - WinSCP 5.17
+    privilege: "Local Administrator"
+    domain_role: "Member Server"
+    persistence_surfaces:
+      - Scheduled Task
+      - Registry Run Keys
+      - Services
+      - Image File Execution Options
+      - Startup Folder
+    security_controls:
+      WindowsDefender: disabled # For adversary emulation
+      AppLocker: disabled
+      CredentialGuard: disabled
+      Firewall: enabled
+      Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - "C:\\Windows\\System32"
+          - "C:\\Users\\Public"
+          - "C:\\inetpub\\wwwroot"
+        processes:
+          - "lsass.exe"
+          - "powershell.exe"
+          - "cmd.exe"
+          - "taskhostw.exe"
+        registry_keys:
+          - "HKLM\\SOFTWARE\\Microsoft\\Windows NT\\CurrentVersion\\Image File Execution Options"
+          - "HKCU\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+      network:
+        protocols:
+          - "RDP"
+          - "SMB"
+          - "HTTP"
+          - "HTTPS"
+          - "SSH"
+          - "DNS"
+          - "Custom TCP/UDP"
+
+  # Linux SUT specification
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7.9"]
+    services:
+      sshd: running
+      cron: running
+      apache2: running # For web shell
+      systemd: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      custom_ports: [2222, 8080] # For Non-Standard Port/Protocol Tunneling
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_admin_accounts: present
+      sudoers: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      python: "3.8"
+      perl: "5.30"
+    installed_software:
+      - OpenSSH 8.2p1
+      - Apache 2.4.41
+      - netcat
+      - curl
+      - wget
+      - office suite (LibreOffice 6.4)
+    privilege: "root"
+    domain_role: "Standalone"
+    persistence_surfaces:
+      - Cron Jobs
+      - Systemd Services
+      - SSH Authorized Keys
+      - Web Shells
+    security_controls:
+      SELinux: permissive
+      AppArmor: disabled
+      Firewall: enabled
+      Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - "/etc"
+          - "/var/www/html"
+          - "/tmp"
+        processes:
+          - "sshd"
+          - "cron"
+          - "apache2"
+          - "bash"
+        files:
+          - "/etc/shadow"
+          - "/etc/passwd"
+          - "/var/log/auth.log"
+      network:
+        protocols:
+          - "SSH"
+          - "HTTP"
+          - "HTTPS"
+          - "DNS"
+          - "Custom TCP/UDP"
+
+  # macOS SUT specification
+  macos:
+    os: ["macOS Catalina 10.15.7"]
+    services:
+      sshd: running
+      launchd: running
+      apache2: running # For web shell
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      custom_ports: [2222, 8080]
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_admin_accounts: present
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - sh
+      python: "3.8"
+      perl: "5.18"
+    installed_software:
+      - OpenSSH 7.9
+      - Apache 2.4.41
+      - Microsoft Office 2019 for Mac
+      - netcat
+      - curl
+      - wget
+    privilege: "admin"
+    domain_role: "Standalone"
+    persistence_surfaces:
+      - Launch Agents
+      - Launch Daemons
+      - Cron Jobs
+      - Web Shells
+    security_controls:
+      Gatekeeper: disabled
+      SIP: disabled # System Integrity Protection
+      Firewall: enabled
+      Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - "/etc"
+          - "/Users/Shared"
+          - "/Library/WebServer/Documents"
+        processes:
+          - "sshd"
+          - "launchd"
+          - "apache2"
+          - "bash"
+        files:
+          - "/etc/passwd"
+          - "/etc/shadow"
+          - "/var/log/system.log"
+      network:
+        protocols:
+          - "SSH"
+          - "HTTP"
+          - "HTTPS"
+          - "DNS"
+          - "Custom TCP/UDP"
+
+  # ESXi SUT specification
+  esxi:
+    os: ["VMware ESXi 6.7"]
+    services:
+      sshd: running
+      cron: running
+      ESXiShell: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      custom_ports: [2222, 8080]
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      root_account: present
+    execution_environment:
+      shells:
+        - ESXi Shell
+        - ssh
+      python: "3.8"
+    installed_software:
+      - VMware Tools 11.0
+      - OpenSSH 7.9
+      - netcat
+    privilege: "root"
+    domain_role: "Standalone"
+    persistence_surfaces:
+      - Cron Jobs
+      - SSH Authorized Keys
+      - Startup Scripts
+    security_controls:
+      ESXiFirewall: enabled
+      Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - "/etc"
+          - "/tmp"
+        processes:
+          - "sshd"
+          - "cron"
+          - "ESXiShell"
+        files:
+          - "/etc/passwd"
+          - "/etc/shadow"
+          - "/var/log/auth.log"
+      network:
+        protocols:
+          - "SSH"
+          - "HTTPS"
+          - "DNS"
+          - "Custom TCP/UDP"
+
+  # Containers SUT specification
+  containers:
+    os: ["Ubuntu 20.04 LTS (Docker container)", "Alpine 3.12"]
+    services:
+      sshd: running
+      cron: running
+      web_server: running # For web shell
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      custom_ports: [2222, 8080]
+    identity:
+      credential_cache: present
+      local_admin_accounts: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      python: "3.8"
+    installed_software:
+      - OpenSSH 8.2p1
+      - Apache 2.4.41
+      - netcat
+      - curl
+      - wget
+    privilege: "root"
+    domain_role: "Standalone"
+    persistence_surfaces:
+      - Cron Jobs
+      - SSH Authorized Keys
+      - Web Shells
+    security_controls:
+      AppArmor: disabled
+      Firewall: enabled
+      Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - "/etc"
+          - "/var/www/html"
+          - "/tmp"
+        processes:
+          - "sshd"
+          - "cron"
+          - "apache2"
+          - "bash"
+        files:
+          - "/etc/passwd"
+          - "/etc/shadow"
+          - "/var/log/auth.log"
+      network:
+        protocols:
+          - "SSH"
+          - "HTTP"
+          - "HTTPS"
+          - "DNS"
+          - "Custom TCP/UDP"
+
+  # Network Devices SUT specification
+  network_devices:
+    os: ["Cisco IOS XE 16.9", "JunOS 19.4"]
+    services:
+      sshd: running
+      web_server: running # For web shell
+    network:

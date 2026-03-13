@@ -1,0 +1,357 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Operation Dust Storm
+# Campaign ID: campaign--4603cf2f-06d0-4970-9c5d-5071b08c817f
+# Generated: 2026-03-06T15:01:33.625331
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__4603cf2f_06d0_4970_9c5d_5071b08c817f:
+
+  # --- Windows Variant ---
+  windows:
+    os: [Windows 10 Pro 21H2, Windows Server 2019]
+    services:
+      wuauserv: running
+      dnscache: running
+      mshta: enabled
+      outlook: installed
+      smb: running
+      winrm: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smtp_access: allowed  # Required for email-based techniques
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_account: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wsl.exe
+      office_macros_enabled: true  # Needed for Visual Basic, spearphishing attachment
+      script_execution_policy: unrestricted  # For PowerShell/Visual Basic
+    installed_software:
+      - Microsoft Office 2019
+      - 7-Zip 21.07
+      - Python 3.9
+      - Java 8u271
+      - Google Chrome 114
+      - Mozilla Firefox 102
+      - Visual Studio Code 1.70
+      - WinRAR 6.11
+      - Outlook 2019
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - Run registry key
+      - Startup folder
+      - Scheduled Tasks
+    security_controls:
+      windows_defender: enabled
+      applocker: disabled  # Must be disabled for unimpeded script execution
+      uac: enabled
+      smartscreen: disabled  # For drive-by and malicious link techniques
+      email_filtering: disabled  # For spearphishing
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\
+          - C:\Windows\Temp\
+          - C:\ProgramData\
+        processes:
+          - mshta.exe
+          - powershell.exe
+          - wscript.exe
+          - outlook.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - dns
+          - https
+          - smtp
+          - smb
+
+  # --- Linux Variant ---
+  linux:
+    os: [Ubuntu 20.04 LTS, CentOS 7.9]
+    services:
+      sshd: running
+      postfix: running  # For email
+      cron: running
+      network-manager: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      smtp_access: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      x11: enabled  # For drive-by compromise via browser
+    installed_software:
+      - python3.8
+      - openjdk-8-jre
+      - unzip
+      - p7zip-full
+      - thunderbird 91
+      - google-chrome-stable
+      - libreoffice 7.1
+      - curl
+      - wget
+    privilege: sudo
+    domain_role: standalone
+    persistence_surfaces:
+      - ~/.bashrc
+      - ~/.profile
+      - /etc/rc.local
+      - cron jobs
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      firewalld: enabled
+      email_filtering: disabled
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /var/tmp/
+          - /home/
+        processes:
+          - bash
+          - python3
+          - java
+          - thunderbird
+        files:
+          - /etc/rc.local
+          - ~/.bashrc
+      network:
+        protocols:
+          - dns
+          - https
+          - smtp
+
+  # --- macOS Variant ---
+  macos:
+    os: [macOS Monterey 12.6]
+    services:
+      launchd: running
+      postfix: running
+      cron: running
+      airport: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      smtp_access: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      admin_account: present
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+        - sh
+      applescript: enabled
+    installed_software:
+      - Microsoft Office 2019
+      - Python 3.9
+      - Java 8u271
+      - Google Chrome 114
+      - Mozilla Firefox 102
+      - Thunderbird 102
+      - The Unarchiver 4.3
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - ~/Library/LaunchAgents
+      - /Library/LaunchDaemons
+      - cron jobs
+      - login scripts
+    security_controls:
+      gatekeeper: disabled  # For execution of unsigned apps/scripts
+      xprotect: enabled
+      sip: enabled
+      email_filtering: disabled
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /Users/Shared/
+          - /Users/<username>/Library/LaunchAgents/
+        processes:
+          - zsh
+          - python3
+          - java
+          - thunderbird
+        files:
+          - /etc/rc.common
+          - ~/Library/LaunchAgents/
+      network:
+        protocols:
+          - dns
+          - https
+          - smtp
+
+  # --- ESXi Variant ---
+  esxi:
+    os: [VMware ESXi 7.0U2]
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+      root_account: present
+    execution_environment:
+      shells:
+        - sh
+        - esxcli
+    installed_software:
+      - open-vm-tools 11.3
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local.d
+      - /etc/rc.local.d/local.sh
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /var/core/
+        processes:
+          - hostd
+          - vpxa
+        files:
+          - /etc/rc.local.d/local.sh
+      network:
+        protocols:
+          - dns
+          - https
+
+  # --- Containers Variant ---
+  containers:
+    os: [Ubuntu 20.04 LTS (container base), Alpine 3.15]
+    services:
+      sshd: running
+      cron: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+    execution_environment:
+      shells:
+        - sh
+        - bash
+    installed_software:
+      - python3.8
+      - openjdk-8-jre
+      - curl
+      - wget
+      - unzip
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - ENTRYPOINT
+      - CMD
+      - cron jobs
+    security_controls:
+      apparmor: disabled
+      seccomp: disabled
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /var/tmp/
+        processes:
+          - bash
+          - python3
+          - java
+      network:
+        protocols:
+          - dns
+          - https
+
+  # --- IaaS Variant ---
+  iaas:
+    os: [Ubuntu 20.04 LTS, Windows Server 2019]
+    services:
+      sshd: running
+      winrm: running
+      cloud-init: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - powershell.exe
+    installed_software:
+      - python3.8
+      - openjdk-8-jre
+      - curl
+      - wget
+      - unzip
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - cloud-init scripts
+      - cron jobs
+      - Scheduled Tasks (if Windows)
+    security_controls:
+      firewalld: enabled
+      windows_defender: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /var/tmp/
+          - C:\Windows\Temp\
+        processes:
+          - bash
+          - python3
+          - java
+      network:
+        protocols:
+          - dns
+          - https
+
+  # --- Identity Provider Variant ---
+  identity_provider:
+    os: [Windows Server 2019, Ubuntu 20.04 LTS]
+    services:
+      ad_ds: running  # Active Directory Domain Services
+      ldap: running
+      kerberos: running
+      smtp: running
+    network

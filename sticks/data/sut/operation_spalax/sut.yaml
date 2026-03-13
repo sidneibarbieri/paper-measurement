@@ -1,0 +1,347 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Operation Spalax
+# Campaign ID: campaign--4c840263-bbda-440d-a22b-674679ddebf1
+# Generated: 2026-03-06T15:09:40.030211
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__4c840263_bbda_440d_a22b_674679ddebf1:
+  # --- Windows Variant ---
+  os: [Windows 10 Enterprise, Version 20H2, fully patched except AV signatures outdated]
+  
+  services:
+    SMB: enabled
+    WinRM: enabled
+    WMI: enabled
+    DNS: enabled
+    HTTP: enabled
+    HTTPS: enabled
+    OfficeSuite: enabled
+    IdentityProvider: enabled # e.g., Azure AD Connect
+    ESXi: disabled
+    SaaS: enabled # e.g., Microsoft 365
+    PRE: enabled # Pre-compromise environment for phishing simulation
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: true
+    inbound_email: allowed # Required for spearphishing
+    outbound_email: allowed
+    web_access: allowed
+    virtualization_enabled: enabled # Required for sandbox evasion
+    dynamic_dns: enabled # For Dynamic Resolution technique
+
+  identity:
+    domain_controller_reachable: true
+    credential_cache: present
+    multifactor_auth: disabled # To allow credential theft techniques
+    local_admin_accounts: present
+
+  execution_environment:
+    shells:
+      - cmd.exe
+      - powershell.exe
+      - rundll32.exe # Required for Rundll32 technique
+    script_interpreters:
+      - powershell
+      - python3
+      - wscript
+      - cscript
+
+  installed_software:
+    - Microsoft Office 2019 ProPlus
+    - Adobe Acrobat Reader DC
+    - Google Chrome 114.0
+    - Mozilla Firefox 113.0
+    - Java 8 Update 281
+    - .NET Framework 4.8
+    - Windows Defender (disabled) # AV disabled for malware execution
+    - 7-Zip 19.00
+    - WinRAR 5.91
+    - Python 3.8.10
+    - VMware Workstation 16.0 # For sandbox evasion testing
+    - Wireshark 3.6.0
+    - OpenSSH for Windows
+
+  privilege: local_admin
+
+  domain_role: workstation
+
+  persistence_surfaces:
+    - Scheduled Tasks
+    - Registry Run Keys
+    - Startup Folder
+    - Services
+
+  security_controls:
+    antivirus: disabled # Required for malware execution and packing
+    firewall: enabled
+    EDR: disabled
+    application_whitelisting: disabled
+    macro_blocking: disabled # Required for spearphishing attachment
+    sandbox_detection: enabled # For evasion testing
+
+  artifacts:
+    host:
+      directories:
+        - C:\Users\Public\Downloads
+        - C:\Windows\System32
+        - C:\ProgramData
+        - C:\Users\<username>\AppData\Roaming
+      processes:
+        - rundll32.exe
+        - powershell.exe
+        - explorer.exe
+        - svchost.exe
+        - winword.exe
+        - outlook.exe
+      registry_keys:
+        - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+        - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+        - HKLM\SYSTEM\CurrentControlSet\Services
+      files:
+        - C:\Users\Public\Downloads\malware.exe
+        - C:\Users\<username>\AppData\Roaming\stego_image.png
+    network:
+      protocols:
+        - HTTP
+        - HTTPS
+        - DNS
+        - SMB
+        - SMTP
+        - IMAP
+        - POP3
+
+  # --- Linux Variant ---
+  os: [Ubuntu 20.04 LTS, kernel 5.4.0-80-generic, fully patched except AV signatures outdated]
+
+  services:
+    SSH: enabled
+    DNS: enabled
+    HTTP: enabled
+    HTTPS: enabled
+    OfficeSuite: enabled # e.g., LibreOffice 7.1
+    IdentityProvider: enabled # e.g., SSSD, LDAP
+    SaaS: enabled # e.g., Google Workspace
+    PRE: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+    inbound_email: allowed
+    outbound_email: allowed
+    web_access: allowed
+    virtualization_enabled: enabled
+    dynamic_dns: enabled
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: present
+    local_admin_accounts: present
+
+  execution_environment:
+    shells:
+      - bash
+      - sh
+      - python3
+      - perl
+    script_interpreters:
+      - python3
+      - bash
+      - perl
+
+  installed_software:
+    - LibreOffice 7.1
+    - Thunderbird 78.10
+    - Google Chrome 114.0
+    - Mozilla Firefox 113.0
+    - Java 8 Update 281
+    - Python 3.8.10
+    - OpenSSH 8.2p1
+    - ClamAV (disabled)
+    - 7-Zip 19.00
+    - Wireshark 3.6.0
+    - VMware Workstation 16.0
+
+  privilege: sudo
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - cron jobs
+    - systemd services
+    - ~/.bashrc
+    - /etc/rc.local
+
+  security_controls:
+    antivirus: disabled
+    firewall: enabled
+    EDR: disabled
+    application_whitelisting: disabled
+    macro_blocking: disabled
+    sandbox_detection: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /home/<username>/Downloads
+        - /tmp
+        - /etc
+        - /var/log
+      processes:
+        - bash
+        - python3
+        - libreoffice
+        - thunderbird
+        - sshd
+      files:
+        - /home/<username>/Downloads/malware.bin
+        - /home/<username>/Downloads/stego_image.png
+        - /etc/cron.d/malicious_job
+    network:
+      protocols:
+        - HTTP
+        - HTTPS
+        - DNS
+        - SMTP
+        - IMAP
+        - POP3
+
+  # --- macOS Variant ---
+  os: [macOS Monterey 12.6, fully patched except AV signatures outdated]
+
+  services:
+    SSH: enabled
+    DNS: enabled
+    HTTP: enabled
+    HTTPS: enabled
+    OfficeSuite: enabled # e.g., Microsoft Office 2019 for Mac
+    IdentityProvider: enabled # e.g., Apple ID, LDAP
+    SaaS: enabled
+    PRE: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+    inbound_email: allowed
+    outbound_email: allowed
+    web_access: allowed
+    virtualization_enabled: enabled
+    dynamic_dns: enabled
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: present
+    local_admin_accounts: present
+
+  execution_environment:
+    shells:
+      - bash
+      - zsh
+      - python3
+      - perl
+    script_interpreters:
+      - python3
+      - bash
+      - perl
+
+  installed_software:
+    - Microsoft Office 2019 for Mac
+    - Apple Mail
+    - Google Chrome 114.0
+    - Mozilla Firefox 113.0
+    - Java 8 Update 281
+    - Python 3.8.10
+    - OpenSSH
+    - ClamXAV (disabled)
+    - 7-Zip
+    - Wireshark 3.6.0
+    - VMware Fusion 12.0
+
+  privilege: admin
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - launch agents
+    - launch daemons
+    - cron jobs
+    - ~/.bash_profile
+
+  security_controls:
+    antivirus: disabled
+    firewall: enabled
+    EDR: disabled
+    application_whitelisting: disabled
+    macro_blocking: disabled
+    sandbox_detection: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /Users/<username>/Downloads
+        - /tmp
+        - /etc
+        - /var/log
+      processes:
+        - bash
+        - python3
+        - Microsoft Word
+        - Apple Mail
+        - sshd
+      files:
+        - /Users/<username>/Downloads/malware.bin
+        - /Users/<username>/Downloads/stego_image.png
+        - /Library/LaunchAgents/com.malicious.agent.plist
+    network:
+      protocols:
+        - HTTP
+        - HTTPS
+        - DNS
+        - SMTP
+        - IMAP
+        - POP3
+
+  # --- ESXi Variant ---
+  os: [VMware ESXi 7.0, build 16324942]
+
+  services:
+    SSH: enabled
+    DNS: enabled
+    HTTP: enabled
+    HTTPS: enabled
+    ESXi: enabled
+    PRE: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+    web_access: allowed
+    virtualization_enabled: enabled
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: absent
+
+  execution_environment:
+    shells:
+      - sh
+      - python3
+    script_interpreters:
+      - python3
+      - sh
+
+  installed_software:
+    - Python 3.8.10
+    - VMware Tools 11.2.5
+
+  privilege: root
+
+ 

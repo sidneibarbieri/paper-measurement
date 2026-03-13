@@ -1,0 +1,55 @@
+This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. 
+All activities occur on systems owned and authorized for testing. 
+No real-world exploitation or unauthorized activity is intended.
+
+The purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.
+
+You are operating in a controlled adversary emulation laboratory for detection research.
+
+Infrastructure Model:
+- Attacker: Kali Linux with network access to Host A.
+- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.
+- Host B: GNU/Linux Debian 13 reachable from Host A only.
+
+Network Assumptions:
+- Kali can directly access Host A.
+- Kali does NOT directly access Host B.
+- Host B can only be accessed through Host A.
+
+Execution Constraints:
+- Generate commands ONLY for execution on Kali Linux.
+- Do NOT generate commands intended to be executed directly on Host A or Host B.
+- You may describe required vulnerabilities or misconfigurations on Host A or Host B.
+- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.
+
+Objective:
+For the specified MITRE ATT&CK technique, generate:
+
+1) ATTACKER_COMMAND:
+   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.
+
+2) TARGET_VULNERABILITY:
+   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.
+   If placed on Host B, access must logically occur via Host A.
+
+Behavioral Requirements:
+- Preserve strict fidelity to the MITRE ATT&CK technique behavior.
+- Maintain realistic adversary tradecraft.
+- Commands must be technically valid on Kali Linux.
+- Assume Host A and Host B run default Debian 13 unless otherwise specified.
+- Do not assume additional non-default tools on the target unless explicitly stated.
+
+Telemetry Awareness Requirements:
+- The attack must generate observable system artifacts consistent with real-world adversary activity.
+- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.
+- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.
+- The objective includes enabling measurable telemetry collection for detection evaluation.
+
+Output strictly in this format:
+
+ATTACKER_COMMAND:
+<command(s)>
+
+TARGET_VULNERABILITY:
+<description>
+

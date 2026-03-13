@@ -1,0 +1,315 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: C0011
+# Campaign ID: campaign--b4e5a4a9-f3be-4631-ba8f-da6ebb067fac
+# Generated: 2026-03-06T15:11:50.713936
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__b4e5a4a9_f3be_4631_ba8f_da6ebb067fac:
+
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows 10 Pro 21H2", "Windows Server 2019"]
+    services:
+      w32time: running
+      winrm: running
+      smb: running
+      office_click_to_run: running
+      defender: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      proxy: allowed
+      firewall: enabled # Must allow spearphishing/malicious link traffic
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      adfs_enabled: true
+    execution_environment:
+      shells:
+        - powershell
+        - cmd
+      office_macros_enabled: true # Required for Visual Basic technique
+    installed_software:
+      - Microsoft Office 365 ProPlus (Version 2207)
+      - Visual C++ Redistributable 2015-2022
+      - Chrome 103
+      - Firefox 102
+      - 7-Zip 21.07
+      - Windows Defender (latest signatures)
+    privilege: user
+    domain_role: workstation
+    persistence_surfaces:
+      - startup_folder
+      - registry_run_keys
+      - scheduled_tasks
+    security_controls:
+      defender_realtime: enabled
+      macro_scanning: enabled
+      asr_rules: disabled # To allow macro execution
+      smartscreen: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\
+          - C:\ProgramData\
+          - C:\Users\<username>\AppData\Roaming\
+        processes:
+          - WINWORD.EXE
+          - EXCEL.EXE
+          - powershell.exe
+          - cmd.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7.9"]
+    services:
+      sshd: running
+      cron: running
+      dbus: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      firewall: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      libreoffice_installed: true # For Office Suite compatibility
+      python3_installed: true
+    installed_software:
+      - LibreOffice 7.2
+      - Firefox 102
+      - wget 1.20
+      - curl 7.68
+      - python3.8
+      - unzip 6.0
+    privilege: user
+    domain_role: standalone
+    persistence_surfaces:
+      - ~/.config/autostart/
+      - crontab
+      - ~/.bashrc
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      antivirus: absent
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /home/<username>/.config/autostart/
+          - /home/<username>/Downloads/
+        processes:
+          - soffice.bin
+          - bash
+          - python3
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS 12.4 Monterey"]
+    services:
+      ssh: running
+      launchd: running
+      spotlight: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      firewall: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+      office_macros_enabled: true # For Visual Basic execution
+    installed_software:
+      - Microsoft Office 365 for Mac (Version 16.62)
+      - Firefox 102
+      - python3.9
+      - curl 7.79
+      - unzip 6.0
+    privilege: user
+    domain_role: standalone
+    persistence_surfaces:
+      - ~/Library/LaunchAgents/
+      - crontab
+      - ~/.zshrc
+    security_controls:
+      gatekeeper: disabled # To allow unsigned/malicious files
+      xprotect: enabled
+      sip: enabled
+      antivirus: absent
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /Users/<username>/Library/LaunchAgents/
+          - /Users/<username>/Downloads/
+        processes:
+          - Microsoft Word
+          - zsh
+          - python3
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- Identity Provider Variant (for SaaS/IdP phishing) ---
+  identity_provider:
+    os: ["Windows Server 2019", "Linux (Ubuntu 20.04 LTS)"]
+    services:
+      adfs: running
+      ldap: running
+      radius: running
+      saml: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      firewall: enabled
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      sso_enabled: true
+    execution_environment:
+      shells:
+        - powershell
+        - bash
+      admin_console_access: true
+    installed_software:
+      - Active Directory Federation Services
+      - OpenLDAP (if Linux)
+      - Shibboleth IdP (if Linux)
+    privilege: admin
+    domain_role: domain_controller
+    persistence_surfaces:
+      - scheduled_tasks (Windows)
+      - cron (Linux)
+    security_controls:
+      mfa: disabled # To allow credential phishing
+      logging: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Windows\ADFS\
+          - /etc/shibboleth/
+        processes:
+          - adfs
+          - java
+      network:
+        protocols:
+          - https
+          - ldap
+          - saml
+          - dns
+
+  # --- SaaS Variant (for spearphishing link delivery) ---
+  saas:
+    os: ["N/A (cloud-based)"]
+    services:
+      office365: running
+      gmail: running
+      onedrive: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+    identity:
+      sso_enabled: true
+      credential_cache: present
+    execution_environment:
+      web_browser_access: true
+      office_online_access: true
+    installed_software:
+      - Chrome 103
+      - Firefox 102
+    privilege: user
+    domain_role: n/a
+    persistence_surfaces:
+      - mailbox_rules
+      - cloud_storage
+    security_controls:
+      safe_links: disabled # To allow malicious links
+      safe_attachments: disabled
+      mfa: disabled
+    artifacts:
+      host:
+        directories:
+          - N/A
+        processes:
+          - browser
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- PRE Variant (for adversary infrastructure) ---
+  pre:
+    os: ["Ubuntu 20.04 LTS"]
+    services:
+      apache2: running
+      openssl: running
+      sshd: running
+      named: running # DNS server for domain management
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      firewall: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+    execution_environment:
+      shells:
+        - bash
+      web_server_access: true
+      ssl_certificate_management: true # For Digital Certificates technique
+    installed_software:
+      - Apache 2.4
+      - OpenSSL 1.1.1
+      - BIND 9.16
+      - Certbot 1.18
+      - Python3.8
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - systemd
+      - crontab
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+    artifacts:
+      host:
+        directories:
+          - /var/www/html/
+          - /etc/letsencrypt/live/
+        processes:
+          - apache2
+          - named
+          - python3
+      network:
+        protocols:
+          - https
+          - dns
+```

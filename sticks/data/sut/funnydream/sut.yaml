@@ -1,0 +1,323 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: FunnyDream
+# Campaign ID: campaign--8d2bc130-89fe-466e-a4f9-6bce6129c2b8
+# Generated: 2026-03-06T14:57:11.909855
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__8d2bc130_89fe_466e_a4f9_6bce6129c2b8:
+  # Variant: Windows (Server 2019, domain-joined)
+  windows:
+    os: ['Windows Server 2019', 'Windows 10 Enterprise 1909']
+    services:
+      wmi: running
+      winrm: running
+      smb: running
+      powershell: running
+      smtp: running
+      dns: running
+      # Ensure all services required for discovery and remote access are enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      inbound_smb: allowed
+      inbound_winrm: allowed
+      inbound_rdp: allowed
+      # Required for remote discovery and ingress tool transfer
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_accounts: present
+      # Required for domain and email account discovery
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wmic.exe
+        - cscript.exe
+      # Visual Basic execution enabled via cscript/wscript
+    installed_software:
+      - 7-Zip 19.00 # Archive via Utility
+      - WinRAR 5.80
+      - Microsoft Office 2016 # For Visual Basic macros
+      - Python 3.8
+      - Chinoxy # Example malware/tool
+      - FunnyDream malware # Campaign-specific
+      - Outlook 2016 # For Email Account discovery
+      - Sysinternals Suite # For process/network discovery
+      - Wireshark 3.2
+    privilege: local_admin
+    domain_role: member_server
+    persistence_surfaces:
+      - scheduled_task
+      - registry_run_key
+      - service_installation
+      - startup_folder
+    security_controls:
+      defender: disabled # Must be disabled for malware execution
+      firewall: enabled
+      applocker: disabled
+      # Defender and AppLocker must be disabled for unrestricted execution
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\Downloads
+          - C:\ProgramData\FunnyDream
+          - C:\Windows\Temp
+        processes:
+          - explorer.exe
+          - powershell.exe
+          - wmi.exe
+          - svchost.exe
+          - chinoxy.exe
+          - rundll32.exe
+        registry_keys:
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Services\FunnyDream
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - SMB
+          - HTTP
+          - HTTPS
+          - DNS
+          - ICMP
+
+  # Variant: Linux (Ubuntu 20.04 LTS)
+  linux:
+    os: ['Ubuntu 20.04 LTS', 'CentOS 7.9']
+    services:
+      sshd: running
+      postfix: running
+      cron: running
+      samba: running
+      dnsmasq: running
+      # Required for network discovery and ingress tool transfer
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false # Linux typically not domain-joined, unless using SSSD/AD
+      inbound_ssh: allowed
+      inbound_smb: allowed
+    identity:
+      credential_cache: present
+      local_admin_accounts: present
+      # For email account and domain discovery, mail server must be present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - python3
+        - perl
+        - /usr/bin/vbscript # If available for Visual Basic emulation
+      # Archive utilities must be present
+    installed_software:
+      - zip 3.0
+      - tar 1.32
+      - gzip 1.10
+      - python3.8
+      - Chinoxy # Example malware/tool
+      - FunnyDream malware # Campaign-specific
+      - postfix 3.4
+      - net-tools
+      - nmap 7.80
+      - wireshark 3.2
+      - samba 4.11
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron_job
+      - systemd_service
+      - rc.local
+      - /etc/profile
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /opt/FunnyDream
+          - /home/funnydream
+        processes:
+          - bash
+          - python3
+          - chinoxy
+          - systemd
+          - postfix
+          - nmap
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - /etc/hosts
+          - /etc/network/interfaces
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - HTTP
+          - HTTPS
+          - DNS
+          - ICMP
+          - SMB
+
+  # Variant: macOS (Catalina 10.15)
+  macos:
+    os: ['macOS Catalina 10.15']
+    services:
+      sshd: running
+      postfix: running
+      cron: running
+      # Required for network discovery and ingress tool transfer
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_ssh: allowed
+    identity:
+      credential_cache: present
+      local_admin_accounts: present
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - python3
+        - /usr/bin/vbscript # If available for Visual Basic emulation
+    installed_software:
+      - zip 3.0
+      - tar 1.32
+      - gzip 1.10
+      - python3.8
+      - Chinoxy # Example malware/tool
+      - FunnyDream malware # Campaign-specific
+      - postfix 3.4
+      - nmap 7.80
+      - wireshark 3.2
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launchd_plist
+      - cron_job
+      - login_hook
+    security_controls:
+      gatekeeper: disabled
+      firewall: enabled
+      sip: disabled # System Integrity Protection must be disabled for unrestricted execution
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /Users/Shared/FunnyDream
+        processes:
+          - bash
+          - python3
+          - chinoxy
+          - postfix
+          - nmap
+        files:
+          - /etc/passwd
+          - /etc/hosts
+          - /etc/network/interfaces
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - HTTP
+          - HTTPS
+          - DNS
+          - ICMP
+
+  # Variant: ESXi (VMware ESXi 6.7)
+  esxi:
+    os: ['VMware ESXi 6.7']
+    services:
+      sshd: running
+      hostd: running
+      vpxa: running
+      # Required for system/process/network discovery
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_ssh: allowed
+    identity:
+      root_access: present
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/bash
+    installed_software:
+      - Chinoxy # Example malware/tool
+      - FunnyDream malware # Campaign-specific
+      - esxcli
+      - python3.8
+      - nmap 7.80
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+      - cron_job
+    security_controls:
+      firewall: enabled
+      lockdown_mode: disabled # Must be disabled for adversary emulation
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+        processes:
+          - hostd
+          - vpxa
+          - chinoxy
+          - python3
+        files:
+          - /etc/passwd
+          - /etc/hosts
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - HTTP
+          - HTTPS
+          - DNS
+          - ICMP
+
+  # Variant: IaaS (Generic Ubuntu 20.04 VM in AWS/Azure)
+  iaas:
+    os: ['Ubuntu 20.04 LTS']
+    services:
+      sshd: running
+      postfix: running
+      cron: running
+      samba: running
+      # Required for network discovery and ingress tool transfer
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_ssh: allowed
+      inbound_smb: allowed
+      cloud_metadata_access: enabled # Required for system information discovery in cloud
+    identity:
+      credential_cache: present
+      local_admin_accounts: present
+    execution_environment:
+      shells:
+        - bash
+        - python3
+        - sh
+    installed_software:
+      - zip 3.0
+      - tar 1.32
+      - gzip 1.10
+      - python3.8
+      - Chinoxy # Example malware/tool
+      - FunnyDream malware # Campaign-specific
+      - postfix 3.

@@ -1,0 +1,73 @@
+[
+    {
+        "id": "aaa7c857-37a0-4c4a-85f7-4e9f7f30e31a",
+        "name": "atomic",
+        "params": {},
+        "description": "During each phase of the operation, the atomic planner iterates through each agent and sends the next\navailable ability it thinks that agent can complete. This decision is based on the agent matching the operating\nsystem (execution platform) of the ability and the ability command having no unsatisfied variables.\nThe planner then waits for each agent to complete its command before determining the subsequent abilities.\nThe abilities are processed in the order set by each agent's atomic ordering.\nFor instance, if agent A has atomic ordering (A1, A2, A3) and agent B has atomic ordering (B1, B2, B3), then\nthe planner would send (A1, B1) in the first phase, then (A2, B2), etc.\n",
+        "stopping_conditions": [],
+        "allow_repeatable_abilities": false,
+        "plugin": ""
+    },
+    {
+        "id": "788107d5-dc1e-4204-9269-38df0186d3e7",
+        "name": "batch",
+        "params": {},
+        "description": "During each phase of the operation, the batch planner loops through all agents (which are part of the\noperation's group) and sends each of them a list of all ability commands the planner thinks it can complete. This\ndecision is based on the agent matching the operating system (execution platform) of the ability and the ability \ncommand having no unsatisfied variables. It then waits for each agent to complete their list of commands before\nmoving on to the next phase. In phaseless operations, all applicable commands are executed in a single phase which\nwill then run to completion and finish the operation.\n",
+        "stopping_conditions": [],
+        "allow_repeatable_abilities": true,
+        "plugin": "stockpile"
+    },
+    {
+        "id": "48e1a882-1606-4910-8f2d-2352eb80cba2.yml",
+        "name": "bayes",
+        "params": {
+            "min_prob_link_success": 0.49,
+            "min_link_data": 3,
+            "debug": false,
+            "delay_execution_links": [
+                "300157e5-f4ad-4569-b533-9d1fa0e74d74"
+            ]
+        },
+        "description": "The Bayes planner decides which links and abilities to execute at each step of the operation, by using statistics from past Caldera operational data (previously executed actions/abilities). It utilizes the user-controlled parameters of minimum probability of link success and minimum link data (set in 48e1a882-1606-4910-8f2d-2352eb80cba2.yml) to make decisions adaptable to user criteria and execute only links with the necessary confidence and data significance. Operations are automatically executed in order of links' probability of success (high to low), with links with insufficient data executing last and links with sufficient past data but an insufficient likelihood of success (based on past data) being dropped altogether. The NB planner allows for execution of operations with high confidence in each link and automatic prioritizing of more effective abilities. \n",
+        "stopping_conditions": [],
+        "allow_repeatable_abilities": false,
+        "plugin": "stockpile"
+    },
+    {
+        "id": "f36c34f5-9439-4417-9640-fe83f4b7b12d",
+        "name": "buckets",
+        "params": {},
+        "description": "The buckets planner is a variant of the batch planner that makes use of the new bucket features within Caldera.\nEach of the abilities within caldera are sorted into buckets based on their corresponding tactics in ATT&CK by\ndefault, with the option of non-default mappings remaining possible. This planner simply loops through all\nabilities available to the provided adversary, in the order of tactics provided in the ATT&CK matrix, looping if\nmore things can be done.\n",
+        "stopping_conditions": [],
+        "allow_repeatable_abilities": false,
+        "plugin": "stockpile"
+    },
+    {
+        "id": "5bdec528-07ce-44cc-8997-09fe41aa2007",
+        "name": "guided",
+        "params": {
+            "half_life_penalty": 4,
+            "half_life_gain": 2,
+            "goal_weight": 1,
+            "fact_score_weight": 0,
+            "goal_action_decay": 2
+        },
+        "description": "The guided planner will map between links likely to achieve a given goal\nand execute the links in an order most likely to achieve the set goals\nin the shortest execution run\n",
+        "stopping_conditions": [],
+        "allow_repeatable_abilities": false,
+        "plugin": "stockpile"
+    },
+    {
+        "id": "254c7035-de7d-4d76-a888-2c09ba594eca.yml",
+        "name": "look ahead",
+        "params": {
+            "ability_rewards": {
+                "4e97e699-93d7-4040-b5a3-2e906a58199e": 5
+            }
+        },
+        "description": "The look ahead planner decides what abilities to use based on anticipated\nfuture rewards.  It takes as input a table of ability rewards, a depth\nparameter, and a discount factor.  The depth parameter effectively controls\nthe \"look-ahead\" for the planner as it's scoring each action, and the\ndiscount factor controls how the planner weighs future rewards.\n",
+        "stopping_conditions": [],
+        "allow_repeatable_abilities": false,
+        "plugin": "stockpile"
+    }
+]

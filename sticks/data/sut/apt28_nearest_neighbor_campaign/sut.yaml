@@ -1,0 +1,352 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: APT28 Nearest Neighbor Campaign
+# Campaign ID: campaign--a010610e-22cb-437e-bfde-b78861bdca7a
+# Generated: 2026-03-06T15:04:22.471167
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__a010610e_22cb_437e_bfde_b78861bdca7a:
+  # --- Windows Variant ---
+  os: [Windows Server 2019, Windows 10 Pro 21H2]
+
+  services:
+    smb: enabled
+    winrm: enabled
+    rdp: enabled
+    w32time: enabled
+    firewall: enabled   # Must be modifiable/disable-able by local admin
+    wifi: enabled
+    powershell: enabled
+    # Ensure Volume Shadow Copy Service is enabled for NTDS/SAM access
+    vss: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: true
+    wifi_adapter_present: true
+    wifi_networks_available: true
+    internal_proxy_allowed: true
+    # Required for exfiltration and lateral movement
+
+  identity:
+    domain_controller_reachable: true
+    credential_cache: present
+    local_admin_accounts: present
+    domain_user_accounts: present
+    # At least one user with RDP, SMB, and PowerShell remoting privileges
+
+  execution_environment:
+    shells:
+      - cmd.exe
+      - powershell.exe
+    powershell_version: '>=5.1'
+    # Required for PowerShell and Windows Command Shell techniques
+
+  installed_software:
+    - 7zip 21.07
+    - WinRAR 6.0
+    - Python 3.9.10
+    - OpenSSH Client
+    - Wi-Fi driver (latest)
+    - Web browser (Chrome 108+)
+    - Office 365 (latest)
+    - .NET Framework 4.8
+    # Archive utilities for Archive via Utility
+    # Office for Office Suite exfiltration
+
+  privilege: local_admin
+
+  domain_role: member_workstation
+
+  persistence_surfaces:
+    - Scheduled Task
+    - Service Registry Keys
+    - Startup Folder
+
+  security_controls:
+    antivirus: enabled # Must be able to be disabled by admin
+    edr: enabled # Must be able to be disabled by admin
+    firewall: enabled # Must be able to be disabled/modified
+    applocker: disabled
+    uac: enabled # At default settings
+
+  artifacts:
+    host:
+      directories:
+        - C:\Users
+        - C:\Windows\System32\config
+        - C:\Windows\NTDS
+        - C:\ProgramData
+        - C:\Temp
+      processes:
+        - explorer.exe
+        - powershell.exe
+        - cmd.exe
+        - svchost.exe
+        - lsass.exe
+        - System
+        - winlogon.exe
+        - wifitask.exe
+      registry_keys:
+        - HKLM\SAM
+        - HKLM\SYSTEM\CurrentControlSet\Services\SharedAccess\Parameters\FirewallPolicy
+        - HKLM\SYSTEM\CurrentControlSet\Services\Tcpip\Parameters
+        - HKLM\SYSTEM\CurrentControlSet\Services\Schedule
+        - HKLM\SYSTEM\CurrentControlSet\Services\WinDefend
+        - HKLM\SYSTEM\CurrentControlSet\Services\W32Time
+    network:
+      protocols:
+        - SMB
+        - RDP
+        - DNS
+        - HTTPS
+        - HTTP
+        - TCP
+        - UDP
+        - Wi-Fi
+
+  # --- Linux Variant ---
+  # For techniques requiring Linux (archive, local staging, Wi-Fi, firewall, etc.)
+  os: [Ubuntu 22.04 LTS, CentOS 8]
+
+  services:
+    sshd: enabled
+    firewall: enabled # Must be modifiable/disable-able by sudo/root
+    network-manager: enabled
+    avahi-daemon: enabled # For local network discovery
+    cron: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    wifi_adapter_present: true
+    wifi_networks_available: true
+    internal_proxy_allowed: true
+
+  identity:
+    sudo_users: present
+    passwd_file: present
+    shadow_file: present
+    credential_cache: present
+
+  execution_environment:
+    shells:
+      - bash
+      - sh
+      - zsh
+    python_version: '>=3.8'
+    # For scripting and deobfuscation
+
+  installed_software:
+    - zip 3.0
+    - unzip 6.0
+    - tar 1.34
+    - gzip 1.10
+    - openssl 1.1.1
+    - curl 7.81.0
+    - wget 1.21.2
+    - nmap 7.92
+    - net-tools 2.10
+    - NetworkManager 1.36
+    - python3 3.8+
+    - openvpn 2.5.5
+    - office suite (LibreOffice 7.3)
+    # Archive utilities, network tools, and Wi-Fi support
+
+  privilege: sudo
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - cron
+    - systemd service
+    - ~/.bashrc
+
+  security_controls:
+    selinux: permissive
+    apparmor: disabled
+    firewall: enabled # Must be modifiable/disable-able by sudo/root
+    auditd: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /etc
+        - /var/log
+        - /home
+        - /tmp
+        - /etc/NetworkManager/system-connections
+      processes:
+        - bash
+        - sshd
+        - NetworkManager
+        - wpa_supplicant
+        - systemd
+        - python3
+      files:
+        - /etc/passwd
+        - /etc/shadow
+        - /etc/sudoers
+        - /etc/hosts
+        - /etc/NetworkManager/NetworkManager.conf
+    network:
+      protocols:
+        - SSH
+        - HTTPS
+        - HTTP
+        - DNS
+        - TCP
+        - UDP
+        - Wi-Fi
+
+  # --- macOS Variant ---
+  os: [macOS Monterey 12.6]
+
+  services:
+    airportd: enabled
+    firewall: enabled # Must be modifiable/disable-able by admin
+    sshd: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    wifi_adapter_present: true
+    wifi_networks_available: true
+    internal_proxy_allowed: true
+
+  identity:
+    admin_users: present
+    credential_cache: present
+
+  execution_environment:
+    shells:
+      - zsh
+      - bash
+    python_version: '>=3.8'
+
+  installed_software:
+    - zip (macOS built-in)
+    - tar (macOS built-in)
+    - python3 3.8+
+    - curl
+    - Wi-Fi driver (built-in)
+    - Microsoft Office 365 (latest)
+    # Archive and office utilities
+
+  privilege: admin
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - launchd
+    - cron
+    - ~/.zshrc
+
+  security_controls:
+    gatekeeper: enabled
+    sip: enabled # Must be able to be disabled by admin
+    firewall: enabled # Must be modifiable/disable-able by admin
+    xprotect: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /Users
+        - /private/var/log
+        - /etc
+        - /tmp
+        - /Library/Preferences/SystemConfiguration
+      processes:
+        - bash
+        - zsh
+        - airportd
+        - sshd
+        - python3
+      files:
+        - /etc/passwd
+        - /etc/sudoers
+        - /Library/Preferences/SystemConfiguration/com.apple.airport.preferences.plist
+    network:
+      protocols:
+        - SSH
+        - HTTPS
+        - HTTP
+        - DNS
+        - TCP
+        - UDP
+        - Wi-Fi
+
+  # --- ESXi Variant ---
+  os: [VMware ESXi 7.0 Update 3c]
+
+  services:
+    sshd: enabled
+    firewall: enabled # Must be modifiable/disable-able by root
+    hostd: enabled
+    vpxa: enabled
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    internal_proxy_allowed: true
+
+  identity:
+    root_user: present
+    credential_cache: present
+
+  execution_environment:
+    shells:
+      - sh
+      - esxcli
+
+  installed_software:
+    - python3 3.8+
+    - curl
+    - wget
+
+  privilege: root
+
+  domain_role: standalone
+
+  persistence_surfaces:
+    - rc.local
+    - cron
+
+  security_controls:
+    lockdown_mode: disabled
+    firewall: enabled # Must be modifiable/disable-able by root
+
+  artifacts:
+    host:
+      directories:
+        - /etc
+        - /var/log
+        - /vmfs/volumes
+        - /tmp
+      processes:
+        - hostd
+        - vpxa
+        - sshd
+        - python3
+      files:
+        - /etc/shadow
+        - /etc/rc.local.d/local.sh
+    network:
+      protocols:
+        - SSH
+        - HTTPS
+        - HTTP
+        - DNS
+        - TCP
+        - UDP
+
+  # --- Network Devices Variant ---
+  os: [Cisco IOS XE 17.3, Juniper JunOS 20.4]
+
+  services:
+    ssh: enabled
+    telnet: enabled

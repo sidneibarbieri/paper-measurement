@@ -1,0 +1,348 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Cutting Edge
+# Campaign ID: campaign--4fdd2487-26c1-494e-8702-ec5abe9aa1d9
+# Generated: 2026-03-06T15:10:09.348075
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__4fdd2487_26c1_494e_8702_ec5abe9aa1d9:
+  # ==============================
+  # Windows SUT Variant
+  # ==============================
+  windows:
+    os: [Windows Server 2019, Windows 10 Enterprise 21H2]
+    services:
+      SMB: enabled
+      RDP: enabled
+      WinRM: enabled
+      DNS Client: running
+      EventLog: running
+      LSASS: running
+      WMI: running
+      # Ivanti Connect Secure VPN: installed and running (for exploitation simulation)
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      ipv6: enabled
+      smb_shares: enabled
+      ntlm_auth: enabled
+      # Network segmentation: minimal (to allow lateral movement)
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      ntds_dit_accessible: true
+      domain_accounts: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - python.exe
+      script_execution: unrestricted
+      scheduled_tasks: enabled
+    installed_software:
+      - Ivanti Connect Secure VPN (unpatched, vulnerable version)
+      - Python 3.11.x
+      - 7-Zip 22.01
+      - WinRAR 6.11
+      - Microsoft Office 2019
+      - Web browser (Edge/Chrome)
+      - Sysinternals Suite
+      - OpenSSH Client
+      - .NET Framework 4.8
+    privilege: local_admin
+    domain_role: member_server
+    persistence_surfaces:
+      - Scheduled Task
+      - Service
+      - Registry Run Key
+      - Startup Folder
+    security_controls:
+      Windows Defender: enabled
+      EDR: disabled # For full technique coverage
+      Firewall: enabled (allow SMB, RDP, HTTP/S)
+      Audit Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Windows\System32
+          - C:\Users\Public
+          - C:\ProgramData
+          - C:\NTDS
+        processes:
+          - lsass.exe
+          - svchost.exe
+          - explorer.exe
+          - winlogon.exe
+          - python.exe
+          - powershell.exe
+          - cmd.exe
+        registry_keys:
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Services
+      network:
+        protocols:
+          - SMB
+          - RDP
+          - DNS
+          - HTTP
+          - HTTPS
+          - ICMP
+          - TCP
+          - UDP
+          - LDAP
+          - Kerberos
+
+  # ==============================
+  # Linux SUT Variant
+  # ==============================
+  linux:
+    os: [Ubuntu Server 22.04 LTS, CentOS 7.9]
+    services:
+      sshd: enabled
+      cron: enabled
+      apache2: enabled
+      smbd: enabled
+      dnsmasq: enabled
+      rsyslog: enabled
+      # Ivanti Connect Secure VPN: installed and running (for exploitation simulation)
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      ipv6: enabled
+      samba_shares: enabled
+      # Network segmentation: minimal (to allow lateral movement)
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+      local_accounts: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+        - /usr/bin/python3
+      script_execution: unrestricted
+      cron: enabled
+    installed_software:
+      - Ivanti Connect Secure VPN (unpatched, vulnerable version)
+      - Python 3.11.x
+      - tar
+      - gzip
+      - zip
+      - netcat
+      - nmap
+      - openssh-server
+      - samba
+      - apache2
+      - office suite (LibreOffice 7.x)
+      - web browser (Firefox)
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - systemd service
+      - rc.local
+      - bashrc
+    security_controls:
+      AppArmor: disabled
+      SELinux: disabled
+      Auditd: enabled
+      Firewall: enabled (allow SSH, HTTP/S, SMB)
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+          - /home
+          - /opt
+        processes:
+          - sshd
+          - apache2
+          - python3
+          - bash
+          - smbd
+      network:
+        protocols:
+          - SSH
+          - DNS
+          - HTTP
+          - HTTPS
+          - SMB
+          - ICMP
+          - TCP
+          - UDP
+
+  # ==============================
+  # macOS SUT Variant
+  # ==============================
+  macos:
+    os: [macOS Ventura 13.4]
+    services:
+      ssh: enabled
+      cron: enabled
+      apache: enabled
+      smbd: enabled
+      # Ivanti Connect Secure VPN: installed and running (for exploitation simulation)
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      ipv6: enabled
+      samba_shares: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_accounts: present
+    execution_environment:
+      shells:
+        - /bin/zsh
+        - /bin/bash
+        - /usr/bin/python3
+      script_execution: unrestricted
+      launch_agents: enabled
+    installed_software:
+      - Ivanti Connect Secure VPN (unpatched, vulnerable version)
+      - Python 3.11.x
+      - tar
+      - gzip
+      - zip
+      - nmap
+      - openssh-server
+      - samba
+      - apache2
+      - Microsoft Office 2019 for Mac
+      - web browser (Safari/Chrome)
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launch agent
+      - cron
+      - login item
+    security_controls:
+      Gatekeeper: disabled
+      SIP: disabled
+      Firewall: enabled (allow SSH, HTTP/S, SMB)
+      Audit Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+          - /Users/Shared
+          - /Users
+        processes:
+          - sshd
+          - httpd
+          - python3
+          - zsh
+          - smbd
+      network:
+        protocols:
+          - SSH
+          - DNS
+          - HTTP
+          - HTTPS
+          - SMB
+          - ICMP
+          - TCP
+          - UDP
+
+  # ==============================
+  # ESXi SUT Variant
+  # ==============================
+  esxi:
+    os: [VMware ESXi 7.0 U2]
+    services:
+      ssh: enabled
+      web: enabled
+      vmware-hostd: running
+      # Ivanti Connect Secure VPN: installed and running (for exploitation simulation)
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      ipv6: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      root_account: present
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/python3
+      script_execution: unrestricted
+    installed_software:
+      - Ivanti Connect Secure VPN (unpatched, vulnerable version)
+      - Python 3.11.x
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+      - cron
+    security_controls:
+      Lockdown Mode: disabled
+      Firewall: enabled (allow SSH, HTTP/S)
+      Audit Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+        processes:
+          - sshd
+          - hostd
+          - python3
+      network:
+        protocols:
+          - SSH
+          - DNS
+          - HTTP
+          - HTTPS
+          - ICMP
+          - TCP
+          - UDP
+
+  # ==============================
+  # Network Devices SUT Variant
+  # ==============================
+  network_devices:
+    os: [Cisco IOS XE 17.3, Juniper JunOS 21.2R3]
+    services:
+      ssh: enabled
+      telnet: enabled
+      http: enabled
+      https: enabled
+      snmp: enabled
+      # Ivanti Connect Secure VPN: installed and running (for exploitation simulation)
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      ipv6: enabled
+    identity:
+      local_accounts: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - cli
+      script_execution: enabled
+    installed_software:
+      - Ivanti Connect Secure VPN (unpatched, vulnerable version)
+    privilege: enable_mode
+    domain_role: standalone
+    persistence_surfaces:
+      - startup-config
+      - scheduled job
+    security_controls:
+      AAA: enabled
+      Firewall: enabled (allow SSH, HTTP/S)
+      Logging: enabled
+    artifacts:
+      host:

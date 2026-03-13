@@ -1,0 +1,392 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Indian Critical Infrastructure Intrusions
+# Campaign ID: campaign--4b7f9839-4822-4c19-8a1f-70bb61ba97e1
+# Generated: 2026-03-06T15:05:56.764036
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__4b7f9839_4822_4c19_8a1f_70bb61ba97e1:
+  # --- Platform Variant: Windows Server 2019 Domain-Joined Host ---
+  os: [Windows Server 2019 Standard, 64-bit, latest cumulative updates]
+  
+  services:
+    winrm: running
+    w32time: running
+    dnscache: running
+    http: running
+    https: running
+    # Enable web and certificate services for relevant techniques
+    certsvc: running
+    # RDP for remote access
+    termservice: running
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: true
+    allow_non_standard_ports: true   # Required for Non-Standard Port technique
+    allow_dynamic_dns: true          # Required for Dynamic Resolution
+    # Allow web protocols (HTTP/HTTPS) outbound and inbound
+    inbound_http: allowed
+    inbound_https: allowed
+
+  identity:
+    domain_controller_reachable: true
+    credential_cache: present
+    certificate_store_accessible: true   # For Digital Certificates
+    # Allow local and domain accounts
+
+  execution_environment:
+    shells:
+      - powershell
+      - cmd
+    # Allow script execution for adversary emulation
+    script_execution_policy: unrestricted
+
+  installed_software:
+    - Microsoft Edge
+    - OpenSSL 1.1.1
+    - Wireshark 4.0
+    - Python 3.10
+    - IIS 10.0
+    - Windows Certificate Services
+    - Sysinternals Suite
+
+  privilege: Administrator
+
+  domain_role: Member Server
+
+  persistence_surfaces:
+    - Scheduled Tasks
+    - Registry Run Keys
+    - Windows Service
+
+  security_controls:
+    windows_defender: enabled
+    firewall: enabled
+    applocker: disabled        # Disabled to allow execution of unsigned binaries/scripts
+    uac: enabled
+    logging: enabled
+    # EDR/AV can be enabled but should allow test binaries
+
+  artifacts:
+    host:
+      directories:
+        - C:\Windows\System32\config
+        - C:\ProgramData\Microsoft\Crypto\RSA\MachineKeys
+        - C:\inetpub\wwwroot
+      processes:
+        - svchost.exe
+        - lsass.exe
+        - powershell.exe
+        - w3wp.exe
+        - certsrv.exe
+      registry_keys:
+        - HKLM\SYSTEM\CurrentControlSet\Services\CertSvc
+        - HKLM\SOFTWARE\Microsoft\SystemCertificates
+    network:
+      protocols:
+        - DNS
+        - HTTP
+        - HTTPS
+        - TCP
+        - UDP
+        - SMB
+        - RDP
+        - Custom (non-standard ports)
+
+  # --- Platform Variant: Ubuntu Linux 22.04 LTS Host ---
+  # For techniques requiring Linux (Dynamic Resolution, Non-Standard Port, Web Protocols, Asymmetric Cryptography)
+  linux_variant:
+    os: [Ubuntu Server 22.04 LTS, kernel 5.15+, fully patched]
+
+    services:
+      ssh: running
+      systemd-resolved: running
+      apache2: running
+      openssl: running
+      # Enable custom web service for non-standard port
+      custom_web_service: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      allow_non_standard_ports: true
+      allow_dynamic_dns: true
+      inbound_http: allowed
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      # Local user accounts
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      sudo: enabled
+
+    installed_software:
+      - openssl 1.1.1
+      - apache2 2.4
+      - python3
+      - curl
+      - netcat-openbsd
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - systemd service
+
+    security_controls:
+      ufw: enabled
+      selinux: disabled
+      auditd: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc/ssl/certs
+          - /var/www/html
+        processes:
+          - apache2
+          - systemd-resolved
+          - sshd
+          - openssl
+        files:
+          - /etc/hosts
+          - /etc/cron.d/
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - TCP
+          - UDP
+
+  # --- Platform Variant: macOS 13 Ventura Host ---
+  macos_variant:
+    os: [macOS Ventura 13.4, fully patched]
+
+    services:
+      system_resolver: running
+      apache: running
+      ssh: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      allow_non_standard_ports: true
+      allow_dynamic_dns: true
+      inbound_http: allowed
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+
+    installed_software:
+      - openssl 3.0
+      - python3
+      - apache2
+      - netcat
+
+    privilege: admin
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - launchd
+      - cron
+
+    security_controls:
+      gatekeeper: disabled   # To allow unsigned code execution
+      firewall: enabled
+      filevault: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc/ssl/certs
+          - /Library/WebServer/Documents
+        processes:
+          - httpd
+          - sshd
+          - openssl
+        files:
+          - /etc/hosts
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - TCP
+          - UDP
+
+  # --- Platform Variant: VMware ESXi 7.0 Host ---
+  esxi_variant:
+    os: [VMware ESXi 7.0 Update 3, latest security patches]
+
+    services:
+      hostd: running
+      vpxa: running
+      ssh: running
+      web: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      allow_non_standard_ports: true
+      allow_dynamic_dns: true
+      inbound_http: allowed
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - esxcli
+        - sh
+
+    installed_software:
+      - openssl 1.1.1
+      - python3
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - rc.local
+
+    security_controls:
+      firewall: enabled
+      lockdown_mode: disabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc/vmware/ssl
+        processes:
+          - hostd
+          - vpxa
+          - sshd
+        files:
+          - /etc/hosts
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - TCP
+          - UDP
+
+  # --- Platform Variant: Network Device (Cisco IOS XE 17.x) ---
+  network_device_variant:
+    os: [Cisco IOS XE 17.3, latest security patches]
+
+    services:
+      ssh: enabled
+      http: enabled
+      https: enabled
+      snmp: enabled
+      # Enable asymmetric crypto and web protocols
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      allow_non_standard_ports: true
+      allow_dynamic_dns: true
+      inbound_http: allowed
+      inbound_https: allowed
+      network_boundary_bridging: enabled   # For Network Boundary Bridging
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - ios_cli
+
+    installed_software:
+      - crypto_pki
+      - web_server
+      - snmp
+
+    privilege: 15
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - startup-config
+      - scheduled EEM script
+
+    security_controls:
+      aaa: enabled
+      firewall: enabled
+
+    artifacts:
+      host:
+        directories:
+          - flash:/certs
+        processes:
+          - sshd
+          - httpd
+          - snmpd
+        files:
+          - startup-config
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - TCP
+          - UDP
+
+  # --- Platform Variant: PRE (Pre-compromise Infrastructure) ---
+  pre_variant:
+    os: [Ubuntu Server 22.04 LTS, Windows Server 2019, or cloud-based Linux host]
+
+    services:
+      openssl: running
+      apache2: running
+      bind9: running
+      # For domain and certificate infrastructure emulation
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      allow_non_standard_ports: true
+      allow_dynamic_dns: true
+      inbound_http: allowed
+      inbound_https: allowed
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+
+    installed_software:
+      - openssl 1.1.1
+      - bind9
+      - apache2
+      -

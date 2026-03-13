@@ -1,0 +1,307 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: C0017
+# Campaign ID: campaign--ba6dfa37-f401-4140-88b0-8938f2895e61
+# Generated: 2026-03-06T15:09:29.492236
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__ba6dfa37_f401_4140_88b0_8938f2895e61:
+
+  # Windows Variant
+  windows:
+    os: ['Windows Server 2019', 'Windows 10 1909'] # Must be unpatched for relevant vulnerabilities
+    services:
+      TaskScheduler: enabled
+      WMI: enabled
+      IIS: enabled
+      SMB: enabled
+      WinRM: enabled
+      RemoteRegistry: enabled
+      # Critical for lateral movement and scheduled task persistence
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      inbound_http: allowed # Required for web shell and web protocols
+      inbound_smb: allowed
+      inbound_rdp: allowed
+      # Network must allow C2 and exfiltration channels
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      sam_access: enabled # Required for Security Account Manager access
+      # Local admin and domain user accounts must exist
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      scripting_languages:
+        - JavaScript
+        - VBScript
+      # Enable Windows Command Shell and scripting
+    installed_software:
+      - Office 2019 ProPlus # For Office Suite techniques
+      - .NET Framework 4.8
+      - Java 8
+      - Python 3.8
+      - Chrome 96
+      - IIS 10.0
+      - WinRAR 6.0
+      - 7-Zip 19.00
+      - Node.js 14.17.0
+      # Include archiving, scripting, and web server tools
+    privilege: 'Administrator'
+    domain_role: 'Member Server'
+    persistence_surfaces:
+      - Scheduled Task
+      - Service
+      - Registry Run Keys
+      - Startup Folder
+      # Enable multiple persistence mechanisms
+    security_controls:
+      Defender: disabled # Must be disabled for full technique coverage
+      Firewall: enabled # Allow inbound/outbound as needed
+      UAC: disabled
+      Logging: enabled
+      # Logging enabled for detection, but controls disabled for emulation
+    artifacts:
+      host:
+        directories:
+          - 'C:\inetpub\wwwroot'
+          - 'C:\Users\Public'
+          - 'C:\Windows\System32'
+          - 'C:\ProgramData'
+        processes:
+          - 'cmd.exe'
+          - 'powershell.exe'
+          - 'svchost.exe'
+          - 'explorer.exe'
+          - 'w3wp.exe'
+          - 'taskhostw.exe'
+        registry_keys:
+          - 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
+          - 'HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
+          - 'HKLM\SAM\SAM'
+          # Registry keys for persistence and SAM access
+        files:
+          - 'C:\inetpub\wwwroot\webshell.aspx'
+          - 'C:\Users\Public\payload.exe'
+          - 'C:\ProgramData\archive.zip'
+      network:
+        protocols:
+          - HTTP
+          - HTTPS
+          - SMB
+          - RDP
+          - DNS
+          - WebDAV
+          - FTP
+          # Protocols for exfiltration, C2, and web shell access
+
+  # Linux Variant
+  linux:
+    os: ['Ubuntu 20.04', 'CentOS 7.9'] # Must be unpatched for web app exploits
+    services:
+      sshd: enabled
+      httpd: enabled
+      cron: enabled
+      samba: enabled
+      rsyslog: enabled
+      # Enable cron for scheduled tasks, httpd for web shells
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_http: allowed
+      inbound_ssh: allowed
+      inbound_smb: allowed
+      # Enable C2 and exfiltration channels
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present # At least one sudo-enabled user
+      # Local users with varying privileges
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - python3
+        - node
+      scripting_languages:
+        - JavaScript
+        - Python
+        - Bash
+      # Enable scripting for web shells and tool execution
+    installed_software:
+      - Apache 2.4.41
+      - Python 3.8
+      - Node.js 14.17.0
+      - Samba 4.11
+      - tar
+      - gzip
+      - zip
+      - OpenSSL 1.1.1
+      - Office Online (if SaaS integration required)
+      # Include archiving, scripting, and web server tools
+    privilege: 'root'
+    domain_role: 'Standalone Server'
+    persistence_surfaces:
+      - Cron Job
+      - Systemd Service
+      - SSH Authorized Keys
+      # Enable multiple persistence mechanisms
+    security_controls:
+      SELinux: disabled
+      AppArmor: disabled
+      Firewall: enabled # Allow inbound/outbound as needed
+      Logging: enabled
+      # Controls disabled for full technique coverage
+    artifacts:
+      host:
+        directories:
+          - '/var/www/html'
+          - '/tmp'
+          - '/home'
+          - '/etc'
+        processes:
+          - 'bash'
+          - 'python3'
+          - 'node'
+          - 'httpd'
+          - 'sshd'
+          - 'cron'
+          - 'smbd'
+        files:
+          - '/var/www/html/webshell.php'
+          - '/tmp/payload.bin'
+          - '/tmp/archive.tar.gz'
+          - '/etc/passwd'
+          - '/etc/shadow'
+      network:
+        protocols:
+          - HTTP
+          - HTTPS
+          - SMB
+          - SSH
+          - DNS
+          - FTP
+          # Protocols for exfiltration, C2, and web shell access
+
+  # macOS Variant
+  macos:
+    os: ['macOS Catalina 10.15.7', 'macOS Big Sur 11.6'] # Must be unpatched for relevant exploits
+    services:
+      sshd: enabled
+      httpd: enabled
+      launchd: enabled
+      cron: enabled
+      # Enable launchd and cron for persistence
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_http: allowed
+      inbound_ssh: allowed
+      # Enable C2 and exfiltration channels
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+      # Local admin and user accounts
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - python3
+        - node
+      scripting_languages:
+        - JavaScript
+        - Python
+        - Bash
+      # Enable scripting for web shells and tool execution
+    installed_software:
+      - Python 3.8
+      - Node.js 14.17.0
+      - Apache 2.4.41
+      - tar
+      - gzip
+      - zip
+      - Office 2019 Mac
+      # Include archiving, scripting, and web server tools
+    privilege: 'admin'
+    domain_role: 'Standalone Workstation'
+    persistence_surfaces:
+      - Launchd Service
+      - Cron Job
+      - SSH Authorized Keys
+      # Enable multiple persistence mechanisms
+    security_controls:
+      Gatekeeper: disabled
+      SIP: disabled
+      Firewall: enabled # Allow inbound/outbound as needed
+      Logging: enabled
+      # Controls disabled for full technique coverage
+    artifacts:
+      host:
+        directories:
+          - '/Library/WebServer/Documents'
+          - '/tmp'
+          - '/Users'
+          - '/etc'
+        processes:
+          - 'bash'
+          - 'zsh'
+          - 'python3'
+          - 'node'
+          - 'httpd'
+          - 'sshd'
+          - 'cron'
+        files:
+          - '/Library/WebServer/Documents/webshell.php'
+          - '/tmp/payload.bin'
+          - '/tmp/archive.tar.gz'
+          - '/etc/passwd'
+          - '/etc/shadow'
+      network:
+        protocols:
+          - HTTP
+          - HTTPS
+          - SSH
+          - DNS
+          - FTP
+          # Protocols for exfiltration, C2, and web shell access
+
+  # ESXi Variant
+  esxi:
+    os: ['VMware ESXi 6.7', 'VMware ESXi 7.0'] # Must be unpatched for relevant exploits
+    services:
+      sshd: enabled
+      httpd: enabled
+      cron: enabled
+      # Enable cron for persistence, httpd for web protocols
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_http: allowed
+      inbound_ssh: allowed
+      # Enable C2 and exfiltration channels
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      root_access: enabled
+      # Root user must be accessible
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      # Enable shell access for tool execution
+    installed_software:
+      - Python 3.8
+      - Node.js 14.17.0
+      - tar
+      - gzip
+      - zip

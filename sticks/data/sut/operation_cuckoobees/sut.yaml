@@ -1,0 +1,365 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Operation CuckooBees
+# Campaign ID: campaign--93c23946-49af-41f4-ac03-40f9ffc7419b
+# Generated: 2026-03-06T14:58:35.945676
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__93c23946_49af_41f4_ac03_40f9ffc7419b:
+  # --- Windows Variant ---
+  os: [Windows Server 2019 Standard, Windows 10 Pro 21H2]
+
+  services:
+    Task Scheduler: running
+    WMI: running
+    SMB: running
+    WinRM: running
+    RemoteRegistry: running
+    Netlogon: running
+    DNS Client: running
+    DHCP Client: running
+    Workstation: running
+    Server: running
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: true
+    smb_shares_enabled: true
+    rdp_enabled: true
+    firewall: enabled # But allow required ports (445, 3389, 5985)
+    # Required for External Remote Services, Web Shell, and Exploit Public-Facing Application
+
+  identity:
+    domain_controller_reachable: true
+    credential_cache: present # For credential access and account discovery
+    local_admin_accounts: present
+    domain_accounts: present
+
+  execution_environment:
+    shells:
+      - cmd.exe
+      - powershell.exe
+    scripting_languages:
+      - Visual Basic for Applications
+      - PowerShell
+    # Required for Windows Command Shell, Visual Basic, and Command Obfuscation
+
+  installed_software:
+    - 7-Zip 21.07 # For Archive via Utility
+    - WinRAR 6.11
+    - IIS 10.0 # For Web Shell
+    - Microsoft Office 2019 ProPlus # For Office Suite, Visual Basic
+    - .NET Framework 4.8
+    - Python 3.9.x (optional, for tool execution)
+    - Sysinternals Suite
+    - OpenSSH Client
+
+  privilege: local_admin
+
+  domain_role: member_server
+
+  persistence_surfaces:
+    - Scheduled Tasks
+    - Windows Services
+    - DLL Search Order Hijacking
+    - Registry Run Keys
+
+  security_controls:
+    Windows Defender: enabled # Set to log-only mode for emulation
+    UAC: enabled
+    Credential Guard: disabled # To allow credential dumping
+    Event Logging: enabled
+    Application Whitelisting: disabled
+    Firewall: enabled (with exceptions as above)
+
+  artifacts:
+    host:
+      directories:
+        - C:\Windows\System32
+        - C:\Users\Public
+        - C:\inetpub\wwwroot
+        - C:\Program Files
+        - C:\Temp
+      processes:
+        - svchost.exe
+        - lsass.exe
+        - explorer.exe
+        - winlogon.exe
+        - spoolsv.exe
+        - w3wp.exe
+        - powershell.exe
+        - cmd.exe
+      registry_keys:
+        - HKLM\SYSTEM\CurrentControlSet\Services
+        - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+        - HKLM\SAM
+        - HKLM\SECURITY
+        - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+    network:
+      protocols:
+        - SMB
+        - RDP
+        - HTTP
+        - HTTPS
+        - DNS
+        - LDAP
+        - WebDAV
+
+  # --- Linux Variant ---
+  os: [Ubuntu Server 20.04 LTS, CentOS 7.9]
+
+  services:
+    sshd: running
+    cron: running
+    samba: running
+    apache2: running
+    rsyslog: running
+    systemd: running
+    NetworkManager: running
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    nfs_shares_enabled: true
+    firewall: enabled # Allow SSH, HTTP, SMB/NFS
+    # Required for External Remote Services, Web Shell, Exploit Public-Facing Application
+
+  identity:
+    domain_controller_reachable: true # If joined to AD via SSSD/realmd
+    credential_cache: present
+    local_admin_accounts: present
+    domain_accounts: present
+
+  execution_environment:
+    shells:
+      - /bin/bash
+      - /bin/sh
+    scripting_languages:
+      - python3
+      - perl
+      - bash
+    # For Command Obfuscation, Tool, Web Shell
+
+  installed_software:
+    - zip 3.0
+    - tar 1.30
+    - gzip 1.10
+    - samba 4.11
+    - apache2 2.4.x
+    - python3.8
+    - gcc 9.x
+    - sudo 1.8.x
+    - net-tools
+    - nfs-utils
+    - rsyslog
+    - openssh-server
+
+  privilege: root
+
+  domain_role: domain_member # If joined to AD, else standalone
+
+  persistence_surfaces:
+    - cron jobs
+    - systemd services
+    - rc.local
+    - SSH authorized_keys
+
+  security_controls:
+    SELinux: permissive
+    AppArmor: disabled
+    Auditd: enabled
+    Firewall: enabled (with exceptions as above)
+    PasswordPolicy: default
+
+  artifacts:
+    host:
+      directories:
+        - /etc
+        - /var/www/html
+        - /home
+        - /tmp
+        - /usr/lib
+        - /lib/modules
+      processes:
+        - sshd
+        - crond
+        - systemd
+        - bash
+        - python3
+        - apache2
+        - smbd
+        - nfsd
+      files:
+        - /etc/passwd
+        - /etc/shadow
+        - /etc/sudoers
+        - /etc/group
+        - /etc/hosts
+        - /var/log/auth.log
+        - /var/log/secure
+    network:
+      protocols:
+        - SSH
+        - HTTP
+        - HTTPS
+        - DNS
+        - SMB
+        - NFS
+
+  # --- macOS Variant ---
+  os: [macOS Monterey 12.6]
+
+  services:
+    ssh: running
+    cron: running
+    apache: running
+    smb: running
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    firewall: enabled # Allow SSH, HTTP, SMB
+
+  identity:
+    credential_cache: present
+    local_admin_accounts: present
+    domain_accounts: present # If bound to AD
+
+  execution_environment:
+    shells:
+      - /bin/bash
+      - /bin/zsh
+    scripting_languages:
+      - python3
+      - bash
+      - AppleScript
+
+  installed_software:
+    - zip 3.0
+    - tar 1.30
+    - gzip 1.10
+    - apache2 (pre-installed)
+    - python3
+    - Xcode command line tools
+    - Homebrew
+
+  privilege: admin
+
+  domain_role: domain_member # If bound to AD, else standalone
+
+  persistence_surfaces:
+    - launchd plists
+    - cron jobs
+    - login hooks
+
+  security_controls:
+    Gatekeeper: disabled
+    SIP: disabled
+    Firewall: enabled (with exceptions)
+    FileVault: disabled
+
+  artifacts:
+    host:
+      directories:
+        - /Users/Shared
+        - /Library/LaunchDaemons
+        - /tmp
+        - /etc
+        - /var/www
+      processes:
+        - launchd
+        - bash
+        - zsh
+        - sshd
+        - httpd
+        - smbd
+        - python3
+      files:
+        - /etc/passwd
+        - /etc/group
+        - /var/log/system.log
+        - /var/log/secure.log
+    network:
+      protocols:
+        - SSH
+        - HTTP
+        - HTTPS
+        - DNS
+        - SMB
+
+  # --- ESXi Variant ---
+  os: [VMware ESXi 7.0 Update 2]
+
+  services:
+    SSH: running
+    ESXi Shell: running
+    CIM Server: running
+    vpxa: running
+    hostd: running
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    firewall: enabled # Allow SSH, HTTPS, CIM
+
+  identity:
+    local_admin_accounts: present
+    domain_accounts: present # If joined to AD
+
+  execution_environment:
+    shells:
+      - /bin/sh
+      - ESXi Shell
+
+  installed_software:
+    - OpenSSH
+    - esxcli
+    - python3
+
+  privilege: root
+
+  domain_role: standalone # Or domain_member if joined to AD
+
+  persistence_surfaces:
+    - rc.local.d scripts
+    - cron jobs
+
+  security_controls:
+    Lockdown Mode: disabled
+    Firewall: enabled (with exceptions)
+    PasswordPolicy: default
+
+  artifacts:
+    host:
+      directories:
+        - /etc
+        - /var/log
+        - /scratch
+        - /tmp
+      processes:
+        - hostd
+        - vpxa
+        - sshd
+        - crond
+      files:
+        - /etc/shadow
+        - /etc/passwd
+        - /var/log/hostd.log
+        - /var/log/auth.log
+    network:
+      protocols:
+        - SSH
+        - HTTPS
+        - DNS
+
+  # --- Network Devices Variant ---
+  os: [Cisco IOS XE 16.9, JunOS 20.4R3]
+
+  services:
+    SSH: running
+    SNMP: running
+    HTTP

@@ -1,0 +1,358 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Outer Space
+# Campaign ID: campaign--a1f5df89-ec82-45ef-b229-4ca6a407dc4f
+# Generated: 2026-03-06T15:04:01.882567
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__a1f5df89_ec82_45ef_b229_4ca6a407dc4f:
+  # --- Windows Variant ---
+  os: [Windows 10 Enterprise 21H2, Windows Server 2019]
+  
+  services:
+    w32time: running
+    winrm: running
+    smb: running
+    http: running
+    https: running
+    dnscache: running
+    # Visual Basic execution via wscript/cscript
+    wscript: running
+    cscript: running
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: true
+    inbound_http: allowed
+    inbound_https: allowed
+    # Required for Ingress Tool Transfer and C2 over web protocols
+
+  identity:
+    domain_controller_reachable: true
+    credential_cache: present
+    # Cached credentials for credential access/privilege escalation
+
+  execution_environment:
+    shells:
+      - cmd.exe
+      - powershell.exe
+    scripting_languages:
+      - vbscript
+      - javascript
+    # Visual Basic required for T1505.005 (Visual Basic), scripting for tool execution
+
+  installed_software:
+    - Microsoft Visual C++ Redistributable 2015-2019
+    - Microsoft Office 2016 (for VB macro execution)
+    - Google Chrome 114.0.5735.199
+    - Mozilla Firefox 102.0
+    - 7-Zip 21.07
+    - OpenSSL 1.1.1
+    - SampleCheck5000
+    - Solar
+
+  privilege: Administrator
+
+  domain_role: Member_Workstation
+
+  persistence_surfaces:
+    - Scheduled Task
+    - Registry Run Key
+    - Startup Folder
+
+  security_controls:
+    windows_defender: enabled
+    applocker: disabled   # Must be disabled for unrestricted script execution
+    firewall: enabled
+    uac: enabled
+
+  artifacts:
+    host:
+      directories:
+        - C:\Users\Public\Downloads
+        - C:\Windows\Temp
+        - C:\ProgramData\Microsoft\Windows\Start Menu\Programs\Startup
+      processes:
+        - wscript.exe
+        - cscript.exe
+        - powershell.exe
+        - SampleCheck5000.exe
+        - Solar.exe
+      registry_keys:
+        - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+        - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+    network:
+      protocols:
+        - HTTP
+        - HTTPS
+        - DNS
+        - SMB
+
+  # --- Linux Variant ---
+  os: [Ubuntu 20.04 LTS, CentOS 7.9]
+
+  services:
+    sshd: running
+    cron: running
+    apache2: running
+    systemd-resolved: running
+    # Web server required for web protocols and ingress tool transfer
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+    inbound_http: allowed
+    inbound_https: allowed
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: present
+
+  execution_environment:
+    shells:
+      - bash
+      - sh
+    scripting_languages:
+      - python3
+      - perl
+      - bash
+      - vbscript  # via 'mono' or 'vbs' package for Visual Basic emulation
+
+  installed_software:
+    - curl 7.68.0
+    - wget 1.20.3
+    - openssl 1.1.1
+    - python3 3.8.10
+    - mono-complete 6.8.0.105  # For VBScript emulation
+    - firefox 102.0
+    - SampleCheck5000
+    - Solar
+
+  privilege: root
+
+  domain_role: Standalone
+
+  persistence_surfaces:
+    - cron job
+    - systemd service
+    - /etc/rc.local
+
+  security_controls:
+    selinux: permissive
+    apparmor: disabled
+    firewall: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /tmp
+        - /var/tmp
+        - /opt/SampleCheck5000
+        - /etc/systemd/system/
+      processes:
+        - bash
+        - python3
+        - SampleCheck5000
+        - Solar
+      files:
+        - /etc/rc.local
+        - /etc/cron.d/
+    network:
+      protocols:
+        - HTTP
+        - HTTPS
+        - DNS
+
+  # --- macOS Variant ---
+  os: [macOS 12 Monterey]
+
+  services:
+    ssh: running
+    httpd: running
+    system_resolver: running
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    domain_joined: false
+    inbound_http: allowed
+    inbound_https: allowed
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: present
+
+  execution_environment:
+    shells:
+      - zsh
+      - bash
+    scripting_languages:
+      - python3
+      - osascript  # For AppleScript and VBScript emulation
+
+  installed_software:
+    - python3 3.9.6
+    - curl 7.77.0
+    - openssl 1.1.1
+    - firefox 102.0
+    - SampleCheck5000
+    - Solar
+
+  privilege: admin
+
+  domain_role: Standalone
+
+  persistence_surfaces:
+    - launch agent
+    - login item
+    - cron job
+
+  security_controls:
+    gatekeeper: disabled  # Required for unsigned binary execution
+    xprotect: enabled
+    firewall: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /tmp
+        - /Users/Shared/
+        - /Library/LaunchAgents/
+      processes:
+        - zsh
+        - bash
+        - SampleCheck5000
+        - Solar
+      files:
+        - /etc/crontab
+        - /Library/LaunchAgents/
+    network:
+      protocols:
+        - HTTP
+        - HTTPS
+        - DNS
+
+  # --- ESXi Variant ---
+  os: [VMware ESXi 7.0 Update 2]
+
+  services:
+    ssh: running
+    hostd: running
+    vpxa: running
+    http: running
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    inbound_http: allowed
+    inbound_https: allowed
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: absent
+
+  execution_environment:
+    shells:
+      - sh
+    # Shell access required for tool transfer and execution
+
+  installed_software:
+    - openssl 1.1.1
+    - python3 3.8.10
+    - SampleCheck5000
+    - Solar
+
+  privilege: root
+
+  domain_role: Standalone
+
+  persistence_surfaces:
+    - rc.local
+    - cron job
+
+  security_controls:
+    lockdown_mode: disabled
+    firewall: enabled
+
+  artifacts:
+    host:
+      directories:
+        - /tmp
+        - /var/core
+      processes:
+        - sh
+        - SampleCheck5000
+        - Solar
+      files:
+        - /etc/rc.local
+    network:
+      protocols:
+        - HTTP
+        - HTTPS
+        - DNS
+
+  # --- Network Devices Variant ---
+  os: [Cisco IOS XE 17.3, JunOS 20.4R3]
+
+  services:
+    http: running
+    https: running
+    ssh: running
+    tftp: running
+
+  network:
+    outbound_https: allowed
+    dns_resolution: enabled
+    inbound_http: allowed
+    inbound_https: allowed
+
+  identity:
+    domain_controller_reachable: false
+    credential_cache: absent
+
+  execution_environment:
+    shells:
+      - cli
+    # CLI access required for file transfer and script execution
+
+  installed_software:
+    - SampleCheck5000
+    - Solar
+
+  privilege: admin
+
+  domain_role: Standalone
+
+  persistence_surfaces:
+    - startup-config
+    - scheduled script
+
+  security_controls:
+    aaa: enabled
+    firewall: enabled
+
+  artifacts:
+    host:
+      directories:
+        - flash:
+        - nvram:
+      processes:
+        - SampleCheck5000
+        - Solar
+      files:
+        - flash:SampleCheck5000
+        - flash:Solar
+    network:
+      protocols:
+        - HTTP
+        - HTTPS
+        - DNS
+        - TFTP
+
+# Note: PRE platform requirements (Malware, Cloud Accounts, Server) are covered by ensuring SUTs can ingest and execute malware, and have internet/cloud access as required.
+```

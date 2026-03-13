@@ -1,0 +1,367 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: 2022 Ukraine Electric Power Attack
+# Campaign ID: campaign--df8eb785-70f8-4300-b444-277ba849083d
+# Generated: 2026-03-06T15:10:47.537672
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__df8eb785_70f8_4300_b444_277ba849083d:
+
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows Server 2019 Standard, fully patched", "Windows 10 Pro, 21H2"]
+    services:
+      Task Scheduler: running
+      PowerShell Remoting: running
+      WMI: running
+      SMB: running
+      WinRM: running
+      IIS: running  # For web shell
+      Group Policy Client: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      rdp_enabled: true
+      smb_enabled: true
+      firewall: enabled # But allow inbound HTTP/HTTPS, SMB, RDP
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_account: present
+      gpo_edit_rights: present # Required for Group Policy Modification
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      remote_desktop: enabled
+      wmi: enabled
+    installed_software:
+      - Microsoft .NET Framework 4.8
+      - PowerShell 5.1
+      - IIS 10.0
+      - 7-Zip 19.00
+      - OpenSSH for Windows
+    privilege: Domain Admin  # Required for GPO modification and lateral movement
+    domain_role: Member Server
+    persistence_surfaces:
+      - Scheduled Task
+      - Service Registry Keys
+      - Group Policy Scripts
+      - Startup Folder
+    security_controls:
+      Windows Defender: enabled
+      AppLocker: disabled  # To allow LotL and web shell execution
+      UAC: enabled
+      Event Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Windows\System32\Tasks
+          - C:\inetpub\wwwroot
+          - C:\Users\Public
+        processes:
+          - svchost.exe
+          - powershell.exe
+          - cmd.exe
+          - w3wp.exe
+        registry_keys:
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Services
+      network:
+        protocols:
+          - SMB
+          - HTTP
+          - HTTPS
+          - DNS
+          - RDP
+          - ICMP
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu Server 20.04 LTS", "CentOS 7.9"]
+    services:
+      sshd: running
+      cron: running
+      apache2: running  # For web shell
+      systemd: running
+      smb: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled # Allow inbound SSH, HTTP/HTTPS, SMB
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+      root_account: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      ssh: enabled
+    installed_software:
+      - python3
+      - netcat-openbsd
+      - socat
+      - apache2
+      - samba
+      - systemd 245
+      - curl
+      - wget
+    privilege: root
+    domain_role: Standalone Server
+    persistence_surfaces:
+      - cron job
+      - systemd service
+      - rc.local
+      - SSH authorized_keys
+    security_controls:
+      SELinux: permissive
+      AppArmor: disabled
+      auditd: enabled
+    artifacts:
+      host:
+        directories:
+          - /etc/systemd/system
+          - /var/www/html
+          - /tmp
+        processes:
+          - sshd
+          - apache2
+          - cron
+          - systemd
+        files:
+          - /etc/crontab
+          - /etc/passwd
+          - /etc/shadow
+      network:
+        protocols:
+          - SSH
+          - HTTP
+          - HTTPS
+          - SMB
+          - DNS
+          - ICMP
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS Monterey 12.6"]
+    services:
+      sshd: running
+      apache: running
+      cron: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled # Allow inbound SSH, HTTP/HTTPS
+    identity:
+      credential_cache: present
+      admin_account: present
+      root_account: present
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - sh
+      ssh: enabled
+    installed_software:
+      - python3
+      - netcat
+      - apache2
+      - curl
+      - wget
+    privilege: admin
+    domain_role: Standalone Workstation
+    persistence_surfaces:
+      - launchd plist
+      - cron job
+      - SSH authorized_keys
+    security_controls:
+      Gatekeeper: disabled  # To allow unsigned code execution
+      SIP: enabled
+      FileVault: enabled
+    artifacts:
+      host:
+        directories:
+          - /Library/LaunchDaemons
+          - /var/www
+          - /tmp
+        processes:
+          - sshd
+          - httpd
+          - cron
+        files:
+          - /etc/crontab
+          - /etc/passwd
+      network:
+        protocols:
+          - SSH
+          - HTTP
+          - HTTPS
+          - DNS
+          - ICMP
+
+  # --- ESXi Variant ---
+  esxi:
+    os: ["VMware ESXi 7.0 Update 3"]
+    services:
+      sshd: running
+      hostd: running
+      vpxa: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled # Allow inbound SSH, HTTPS
+    identity:
+      root_account: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - sh
+        - bash
+      ssh: enabled
+    installed_software:
+      - python3
+      - netcat
+      - curl
+    privilege: root
+    domain_role: Standalone Hypervisor
+    persistence_surfaces:
+      - rc.local
+      - SSH authorized_keys
+    security_controls:
+      Lockdown Mode: disabled
+      ESXi Shell: enabled
+    artifacts:
+      host:
+        directories:
+          - /etc/rc.local.d
+          - /tmp
+        processes:
+          - sshd
+          - hostd
+        files:
+          - /etc/passwd
+      network:
+        protocols:
+          - SSH
+          - HTTPS
+          - DNS
+          - ICMP
+
+  # --- Network Device Variant ---
+  network_device:
+    os: ["Cisco IOS XE 17.3", "MikroTik RouterOS 6.49"]
+    services:
+      ssh: running
+      http: running
+      snmp: running
+      telnet: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled # Allow inbound SSH, HTTP, SNMP, Telnet
+    identity:
+      admin_account: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - cli
+      ssh: enabled
+    installed_software:
+      - netcat
+      - curl
+    privilege: enable
+    domain_role: Standalone Device
+    persistence_surfaces:
+      - startup-config
+      - scheduled script
+    security_controls:
+      AAA: enabled
+      SNMPv3: enabled
+    artifacts:
+      host:
+        directories:
+          - flash:/
+          - nvram:/
+        processes:
+          - sshd
+          - httpd
+          - snmpd
+        files:
+          - startup-config
+      network:
+        protocols:
+          - SSH
+          - HTTP
+          - HTTPS
+          - SNMP
+          - Telnet
+          - DNS
+          - ICMP
+
+  # --- Containers Variant ---
+  containers:
+    os: ["Ubuntu 20.04 (container base image)"]
+    services:
+      sshd: running
+      cron: running
+      apache2: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      firewall: enabled # Allow inbound SSH, HTTP/HTTPS
+    identity:
+      root_account: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      ssh: enabled
+    installed_software:
+      - python3
+      - netcat
+      - curl
+      - apache2
+    privilege: root
+    domain_role: Standalone Container
+    persistence_surfaces:
+      - cron job
+      - systemd service (if systemd enabled in container)
+    security_controls:
+      AppArmor: disabled
+      SELinux: permissive
+    artifacts:
+      host:
+        directories:
+          - /var/www/html
+          - /tmp
+        processes:
+          - sshd
+          - apache2
+          - cron
+        files:
+          - /etc/crontab
+      network:
+        protocols:
+          - SSH
+          - HTTP
+          - HTTPS
+          - DNS
+          - ICMP
+
+  # --- IaaS Variant ---
+  iaas:
+    os: ["Ubuntu Server 20.04 LTS", "Windows Server 2019"]
+    services:
+      sshd: running
+      apache2: running
+      cron: running
+      Task Scheduler: running
+      Power

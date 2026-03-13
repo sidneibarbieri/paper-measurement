@@ -1,0 +1,406 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Night Dragon
+# Campaign ID: campaign--ae407e32-87e0-4d92-8705-3ae25d504d8a
+# Generated: 2026-03-06T15:05:01.563335
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__ae407e32_87e0_4d92_8705_3ae25d504d8a:
+
+  # --- WINDOWS SUT VARIANT ---
+  windows:
+    os: [Windows Server 2019 Standard, Windows 10 Enterprise 21H2]
+
+    services:
+      winrm: enabled
+      smb: enabled
+      rdp: enabled
+      wmi: enabled
+      dns: enabled
+      http: enabled
+      https: enabled
+      outlook: enabled
+      # Required for Local Email Collection
+      remote_registry: enabled
+      # Required for remote registry modification
+      security_account_manager: enabled
+      # Required for SAM access
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      # Required for Domain Accounts, Pass the Hash, and Valid Accounts
+      inbound_rdp: allowed
+      inbound_smb: allowed
+      inbound_winrm: allowed
+      # Required for remote access and lateral movement
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      # Cached credentials required for Pass the Hash and Valid Accounts
+      local_admin_account: present
+      domain_user_accounts: present
+      # Needed for account discovery and credential access
+
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      # Required for Windows Command Shell and general execution
+      scripting_languages:
+        - powershell
+        - vbscript
+        - batch
+      # Required for tool execution and malware
+
+    installed_software:
+      - Microsoft Office 2019
+      - 7-Zip 21.07
+      - WinRAR 6.11
+      - OpenSSH 8.6
+      - Python 3.9
+      - Chrome 113
+      - Firefox 102
+      - Outlook 2019
+      - Sysinternals Suite
+      - Mimikatz 2.2.0
+      # For password dumping and Pass the Hash
+      - Remote Access Tools (e.g., AnyDesk, TeamViewer)
+      # For RAT technique
+
+    privilege: local_admin
+    domain_role: workstation
+
+    persistence_surfaces:
+      - registry_run_keys
+      - scheduled_tasks
+      - services
+      - startup_folder
+
+    security_controls:
+      windows_defender: enabled
+      applocker: disabled
+      firewall: enabled
+      tamper_protection: disabled
+      # Tamper protection disabled to allow Disable/Modify Tools
+      uac: enabled
+
+    artifacts:
+      host:
+        directories:
+          - C:\Users\
+          - C:\Windows\System32\
+          - C:\ProgramData\
+          - C:\Program Files\
+        processes:
+          - explorer.exe
+          - lsass.exe
+          - winlogon.exe
+          - svchost.exe
+          - outlook.exe
+          - powershell.exe
+          - cmd.exe
+        registry_keys:
+          - HKLM\SAM\
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Services
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - smb
+          - rdp
+          - ldap
+          - kerberos
+
+  # --- LINUX SUT VARIANT ---
+  linux:
+    os: [Ubuntu 20.04 LTS, CentOS 7.9]
+
+    services:
+      ssh: enabled
+      samba: enabled
+      httpd: enabled
+      nginx: enabled
+      postfix: enabled
+      cron: enabled
+      dnsmasq: enabled
+      # Required for DNS resolution and web protocols
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_ssh: allowed
+      inbound_http: allowed
+      inbound_smb: allowed
+
+    identity:
+      passwd_file: present
+      shadow_file: present
+      sudoers: present
+      # Needed for Password Cracking and Valid Accounts
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      scripting_languages:
+        - python3
+        - perl
+        - bash
+      # For tool and malware execution
+
+    installed_software:
+      - sudo
+      - netcat
+      - nmap
+      - openssl
+      - python3
+      - curl
+      - wget
+      - sshpass
+      - john
+      # For password cracking
+      - mailutils
+      - mutt
+      - gzip
+      - tar
+      - socat
+      - rsync
+      - Remote Access Tools (e.g., TeamViewer Host, AnyDesk)
+      # For RAT technique
+
+    privilege: sudo
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - systemd_services
+      - rc.local
+      - ssh_authorized_keys
+
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      firewall: enabled
+      auditd: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc/
+          - /var/log/
+          - /home/
+          - /tmp/
+        processes:
+          - sshd
+          - bash
+          - cron
+          - python3
+          - systemd
+          - httpd
+          - nginx
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - /var/mail/
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - smb
+          - ssh
+
+  # --- MACOS SUT VARIANT ---
+  macos:
+    os: [macOS Monterey 12.6]
+
+    services:
+      ssh: enabled
+      afp: enabled
+      httpd: enabled
+      postfix: enabled
+      cron: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_ssh: allowed
+      inbound_http: allowed
+
+    identity:
+      local_accounts: present
+      keychain: present
+      # For credential access
+
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+        - sh
+      scripting_languages:
+        - python3
+        - bash
+
+    installed_software:
+      - Homebrew
+      - nmap
+      - openssl
+      - python3
+      - curl
+      - wget
+      - John the Ripper
+      # For password cracking
+      - Remote Access Tools (e.g., TeamViewer Host, AnyDesk)
+
+    privilege: admin
+    domain_role: standalone
+
+    persistence_surfaces:
+      - launch_agents
+      - launch_daemons
+      - cron
+      - login_items
+
+    security_controls:
+      gatekeeper: disabled
+      sip: disabled
+      firewall: enabled
+      xprotect: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /Users/
+          - /etc/
+          - /var/log/
+          - /tmp/
+        processes:
+          - sshd
+          - bash
+          - zsh
+          - python3
+          - httpd
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - /var/mail/
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - ssh
+
+  # --- NETWORK DEVICE SUT VARIANT ---
+  network_device:
+    os: [Cisco IOS XE 17.3, JunOS 21.2]
+
+    services:
+      ssh: enabled
+      telnet: enabled
+      snmp: enabled
+      http: enabled
+      https: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_ssh: allowed
+      inbound_telnet: allowed
+      inbound_http: allowed
+
+    identity:
+      local_accounts: present
+      enable_secret: present
+
+    execution_environment:
+      shells:
+        - cli
+
+    installed_software:
+      - tclsh
+      # For script execution if supported
+
+    privilege: enable
+    domain_role: standalone
+
+    persistence_surfaces:
+      - startup_config
+      - scheduled_scripts
+
+    security_controls:
+      aaa_new_model: enabled
+      snmp_community: public
+      # Default community for testing
+
+    artifacts:
+      host:
+        directories:
+          - flash:/
+          - nvram:/
+        processes:
+          - sshd
+          - tclsh
+        files:
+          - startup-config
+          - running-config
+      network:
+        protocols:
+          - dns
+          - http
+          - https
+          - ssh
+          - snmp
+
+  # --- ESXi SUT VARIANT ---
+  esxi:
+    os: [VMware ESXi 7.0 Update 2]
+
+    services:
+      ssh: enabled
+      http: enabled
+      https: enabled
+      vpxa: enabled
+      hostd: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_ssh: allowed
+      inbound_https: allowed
+
+    identity:
+      root_account: present
+      local_users: present
+
+    execution_environment:
+      shells:
+        - esxcli
+        - sh
+
+    installed_software:
+      - python3
+      - openssl
+
+    privilege: root
+    domain_role: standalone
+
+    persistence_surfaces:
+      - rc.local.d
+      - cron
+
+    security_controls:
+      lockdown_mode: disabled
+      firewall:

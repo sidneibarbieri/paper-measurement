@@ -1,0 +1,394 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: FLORAHOX Activity
+# Campaign ID: campaign--f494272a-c110-4574-be90-42c4957f7ae7
+# Generated: 2026-03-06T15:02:14.294497
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__f494272a_c110_4574_be90_42c4957f7ae7:
+  # --- Platform Variant: Network Device (PRE-compromised, for ORB relay) ---
+  network_device_pre:
+    os: [RouterOS 6.x, OpenWRT 19.x, Cisco IOS 15.x]  # End-of-life/legacy firmware preferred for exploitability
+
+    services:
+      ssh: enabled
+      telnet: enabled
+      http: enabled
+      https: enabled
+      snmp: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      upnp: enabled  # Often exploited on IoT/routers
+      remote_admin: enabled  # Required for exploitation
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - sh
+        - ash
+        - bash
+      scripting_support: enabled  # E.g., shell scripts, TCL (if supported)
+
+    installed_software:
+      - dropbear 2016.74  # Common embedded SSH, vulnerable versions
+      - busybox 1.30.1
+
+    privilege: root  # Adversary requires full control
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - startup-config
+      - scheduled-tasks (cron)
+
+    security_controls:
+      firewall: disabled  # For emulation, disable to allow all traffic
+      firmware_integrity: disabled
+      logging: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc/
+          - /var/log/
+        processes:
+          - dropbear
+          - httpd
+          - snmpd
+        files:
+          - /etc/passwd
+          - /etc/shadow
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+
+  # --- Platform Variant: Leased Virtual Private Server (VPS) (PRE) ---
+  vps_pre:
+    os: [Ubuntu Server 20.04 LTS, CentOS 7.9, Windows Server 2019]
+
+    services:
+      ssh: enabled
+      rdp: enabled  # If Windows
+      http: enabled
+      https: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      public_ip: true  # Must be internet-accessible
+      port_forwarding: enabled
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - powershell  # If Windows
+      scripting_languages:
+        - python3
+        - perl
+        - powershell
+
+    installed_software:
+      - netcat-openbsd 1.206
+      - socat 1.7.3.2
+      - openssh-server 8.2p1
+      - python3.8
+      - nginx 1.18.0
+
+    privilege: root  # Or Administrator for Windows
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - systemd service
+      - Windows Task Scheduler  # If Windows
+
+    security_controls:
+      firewall: disabled
+      selinux: permissive  # If Linux
+      logging: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc/
+          - /var/log/
+          - C:\Windows\System32\  # If Windows
+        processes:
+          - sshd
+          - python3
+          - powershell.exe  # If Windows
+        files:
+          - /etc/passwd
+          - /etc/shadow
+          - C:\Users\Administrator\NTUSER.DAT  # If Windows
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+
+  # --- Platform Variant: Linux Host (IaaS, ESXi, Containers) ---
+  linux_host:
+    os: [Ubuntu 20.04 LTS, CentOS 7.9, Debian 10, VMware ESXi 6.7]
+
+    services:
+      ssh: enabled
+      http: enabled
+      https: enabled
+      docker: enabled  # For containers
+      vmtoolsd: enabled  # If ESXi
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      ipv6: enabled
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      scripting_languages:
+        - python3
+        - perl
+
+    installed_software:
+      - openssh-server 8.2p1
+      - python3.8
+      - docker-ce 20.10.7  # If containers
+      - netcat-openbsd 1.206
+      - socat 1.7.3.2
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - cron
+      - systemd service
+
+    security_controls:
+      firewall: disabled
+      selinux: permissive
+      logging: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc/
+          - /var/log/
+        processes:
+          - sshd
+          - python3
+          - dockerd
+        files:
+          - /etc/passwd
+          - /etc/shadow
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+
+  # --- Platform Variant: Windows Host (IaaS, Office Suite) ---
+  windows_host:
+    os: [Windows 10 Pro 21H2, Windows Server 2019]
+
+    services:
+      winrm: enabled
+      rdp: enabled
+      smb: enabled
+      wmi: enabled
+      http: enabled
+      https: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      ipv6: enabled
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - powershell
+        - cmd
+      scripting_languages:
+        - powershell
+        - vbscript
+
+    installed_software:
+      - Microsoft Office 2019
+      - Python 3.8
+      - Sysinternals Suite
+
+    privilege: Administrator
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - Windows Task Scheduler
+      - Registry Run Keys
+
+    security_controls:
+      firewall: disabled
+      defender: disabled
+      logging: enabled
+
+    artifacts:
+      host:
+        directories:
+          - C:\Windows\System32\
+          - C:\Users\Public\
+        processes:
+          - powershell.exe
+          - cmd.exe
+          - winword.exe
+        registry_keys:
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+
+  # --- Platform Variant: macOS Host ---
+  macos_host:
+    os: [macOS 12 Monterey]
+
+    services:
+      ssh: enabled
+      http: enabled
+      https: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+      scripting_languages:
+        - python3
+
+    installed_software:
+      - Python 3.8
+      - netcat 0.7.1
+
+    privilege: root
+
+    domain_role: standalone
+
+    persistence_surfaces:
+      - launchd
+      - cron
+
+    security_controls:
+      firewall: disabled
+      gatekeeper: disabled
+      logging: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /Users/Shared/
+          - /var/log/
+        processes:
+          - zsh
+          - bash
+        files:
+          - /etc/passwd
+      network:
+        protocols:
+          - tcp
+          - udp
+          - icmp
+
+  # --- Platform Variant: Identity Provider (IdP) ---
+  identity_provider:
+    os: [Ubuntu 20.04 LTS, Windows Server 2019]
+
+    services:
+      ldap: enabled
+      kerberos: enabled
+      http: enabled
+      https: enabled
+      ssh: enabled
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - bash
+        - powershell  # If Windows
+      scripting_languages:
+        - python3
+
+    installed_software:
+      - OpenLDAP 2.4.49
+      - MIT Kerberos 1.18
+      - Python 3.8
+
+    privilege: root  # Or Administrator for Windows
+
+    domain_role: domain controller
+
+    persistence_surfaces:
+      - cron
+      - systemd service
+      - Windows Task Scheduler  # If Windows
+
+    security_controls:
+      firewall: disabled
+      logging: enabled
+
+    artifacts:
+      host:
+        directories:
+          - /etc/ldap/
+          - /var/log/
+          - C:\Windows\NTDS\  # If Windows
+        processes:
+          - slapd
+          - krb5kdc
+        files:
+          - /etc/krb5.conf
+     

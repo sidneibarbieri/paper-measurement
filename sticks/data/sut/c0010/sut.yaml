@@ -1,0 +1,311 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: C0010
+# Campaign ID: campaign--ab747e62-1bcb-479f-a26b-1cd39d413d81
+# Generated: 2026-03-06T14:58:02.460959
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__ab747e62_1bcb_479f_a26b_1cd39d413d81:
+
+  # --- PRE Platform (Staging, C2, Initial Access Infrastructure) ---
+  pre_infrastructure:
+    os: [Ubuntu 20.04 LTS, Windows Server 2019, macOS 12]
+    services:
+      httpd: running
+      ssh: running
+      # Web server for drive-by and malware/tool hosting
+      smb: running       # For tool/malware upload scenarios
+      ftp: running       # For alternative upload methods
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      public_ip: true     # Exposed to Internet for drive-by and C2
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+    execution_environment:
+      shells:
+        - bash
+        - powershell
+        - zsh
+      python: present
+      php: present
+      # Scripting for payload hosting and tool automation
+    installed_software:
+      - Apache/2.4.41
+      - nginx/1.18.0
+      - Python 3.8.10
+      - PHP 7.4
+      - Metasploit Framework 6.x
+      - Cobalt Strike 4.x
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - crontab
+      - systemd service
+      - Windows Scheduled Task
+    security_controls:
+      antivirus: disabled
+      firewall: configured_allow_http_https
+      endpoint_detection: disabled
+    artifacts:
+      host:
+        directories:
+          - /var/www/html/
+          - C:\inetpub\wwwroot\
+        processes:
+          - httpd
+          - nginx
+          - python
+          - php
+      network:
+        protocols:
+          - http
+          - https
+          - dns
+
+  # --- Windows SUT ---
+  windows:
+    os: [Windows Server 2019, Windows 10 Pro 21H2]
+    services:
+      w3svc: running
+      winrm: running
+      smb: running
+      # Web server for drive-by compromise
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      firewall: configured_allow_http_https
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      kerberos_ticket_cache: present
+    execution_environment:
+      shells:
+        - powershell
+        - cmd
+      .NET: present
+      python: present
+    installed_software:
+      - Google Chrome 115
+      - Microsoft Edge 115
+      - Python 3.9
+      - 7-Zip 19.00
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - registry_run_key
+      - scheduled_task
+      - service
+    security_controls:
+      windows_defender: enabled
+      smartscreen: enabled
+      applocker: disabled
+      firewall: configured_allow_http_https
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\
+          - C:\Windows\System32\
+        processes:
+          - explorer.exe
+          - powershell.exe
+          - chrome.exe
+          - msedge.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - http
+          - https
+          - smb
+
+  # --- Linux SUT ---
+  linux:
+    os: [Ubuntu 20.04 LTS, CentOS 7.9]
+    services:
+      ssh: running
+      apache2: running
+      cron: running
+      # Web server for drive-by compromise
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      python: present
+      perl: present
+    installed_software:
+      - Google Chrome 115
+      - Firefox 115
+      - Python 3.8
+      - curl
+      - wget
+    privilege: sudo
+    domain_role: standalone
+    persistence_surfaces:
+      - crontab
+      - systemd_service
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      firewall: configured_allow_http_https
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /var/www/html/
+        processes:
+          - bash
+          - python
+          - apache2
+          - chrome
+          - firefox
+      network:
+        protocols:
+          - http
+          - https
+          - ssh
+
+  # --- macOS SUT ---
+  macos:
+    os: [macOS 12 Monterey]
+    services:
+      ssh: running
+      apache: running
+      launchd: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+      python: present
+    installed_software:
+      - Google Chrome 115
+      - Safari 15
+      - Python 3.9
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launch_agent
+      - launch_daemon
+      - crontab
+    security_controls:
+      gatekeeper: disabled
+      xprotect: disabled
+      firewall: configured_allow_http_https
+    artifacts:
+      host:
+        directories:
+          - /Users/Shared/
+          - /tmp/
+        processes:
+          - zsh
+          - bash
+          - python3
+          - Google Chrome
+          - Safari
+      network:
+        protocols:
+          - http
+          - https
+          - ssh
+
+  # --- ESXi SUT ---
+  esxi:
+    os: [VMware ESXi 7.0]
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - sh
+      python: present
+    installed_software:
+      - VMware Tools 11.x
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+    security_controls:
+      lockdown_mode: disabled
+      firewall: configured_allow_https
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /var/core/
+        processes:
+          - hostd
+          - vpxa
+          - python
+      network:
+        protocols:
+          - https
+          - ssh
+
+  # --- Network Devices SUT ---
+  network_devices:
+    os: [Cisco IOS XE 17.3, Juniper Junos OS 20.4]
+    services:
+      ssh: running
+      http: running
+      snmp: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - cli
+    installed_software:
+      - custom_script_support: enabled
+    privilege: enable
+    domain_role: standalone
+    persistence_surfaces:
+      - startup_config
+      - scheduled_script
+    security_controls:
+      aaa: disabled
+      firewall: configured_allow_https
+    artifacts:
+      host:
+        directories:
+          - flash:/
+        processes:
+          - sshd
+          - httpd
+      network:
+        protocols:
+          - https
+          - ssh
+          - snmp
+```

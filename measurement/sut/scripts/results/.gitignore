@@ -1,4 +1,1 @@
-# Optional exploratory artifacts (not part of canonical release dataset)
-report_gap_pilot.json
-audit/report_gap_object_level.csv
-audit/report_gap_reference_level.csv
+# Reserved for optional local exploratory outputs (none required by release_check.sh).

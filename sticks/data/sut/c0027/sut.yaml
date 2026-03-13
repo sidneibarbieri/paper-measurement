@@ -1,0 +1,326 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: C0027
+# Campaign ID: campaign--df74f7ad-b10d-431c-9f1d-a2bc18dadefa
+# Generated: 2026-03-06T14:56:21.493421
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__df74f7ad_b10d_431c_9f1d_a2bc18dadefa:
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows Server 2019", "Windows 10 Enterprise 21H2"]
+    services:
+      wmi: enabled
+      remote_desktop: enabled
+      sharepoint: enabled
+      smb: enabled
+      winrm: enabled
+      ldap: enabled
+      dns: enabled
+      http: enabled
+      https: enabled
+      cloud_sync: enabled
+      email: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      inbound_rdp: allowed
+      inbound_http: allowed
+      inbound_https: allowed
+      proxy_enabled: true
+      vpn: enabled
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      mfa_enabled: true # Required for MFA request generation
+      device_registration: enabled
+      cloud_identity_provider: enabled
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      remote_shells:
+        - winrm
+        - rdp
+      office_suite: enabled
+    installed_software:
+      - Microsoft SharePoint Server 2019
+      - Microsoft Office 365 ProPlus
+      - Remote Desktop Client
+      - Proxy software (e.g., Squid)
+      - Cloud sync agent (e.g., OneDrive)
+      - Email client (e.g., Outlook 2019)
+      - MFA client (e.g., Azure MFA)
+      - LDAP tools
+      - WinRM tools
+      - Network discovery tools (e.g., Nmap)
+      - Credential dumping tools (for DCSync emulation)
+    privilege: "Domain Admin"
+    domain_role: "Member Server"
+    persistence_surfaces:
+      - Scheduled Task
+      - Registry Run Key
+      - WMI Event Subscription
+      - Device Registration
+      - Office Add-ins
+    security_controls:
+      antivirus: enabled
+      endpoint_detection_response: enabled
+      firewall: enabled
+      mfa: enabled
+      logging: verbose
+      cloud_access_security_broker: enabled
+    artifacts:
+      host:
+        directories:
+          - "C:\\Windows\\System32\\wbem"
+          - "C:\\Program Files\\Microsoft Office"
+          - "C:\\Program Files\\SharePoint"
+          - "C:\\Users\\Public"
+        processes:
+          - "wmiprvse.exe"
+          - "powershell.exe"
+          - "svchost.exe"
+          - "explorer.exe"
+          - "outlook.exe"
+          - "rdpclip.exe"
+          - "sharepoint.exe"
+          - "proxy.exe"
+        registry_keys:
+          - "HKLM\\Software\\Microsoft\\Windows\\CurrentVersion\\Run"
+          - "HKLM\\Software\\Microsoft\\WMI"
+          - "HKLM\\System\\CurrentControlSet\\Services\\W32Time"
+      network:
+        protocols:
+          - "HTTP"
+          - "HTTPS"
+          - "SMB"
+          - "LDAP"
+          - "RDP"
+          - "DNS"
+          - "Proxy"
+          - "VPN"
+          - "MFA"
+          - "Cloud Sync"
+          - "Email"
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7"]
+    services:
+      ssh: enabled
+      http: enabled
+      https: enabled
+      proxy: enabled
+      samba: enabled
+      cloud_sync: enabled
+      email: enabled
+      ldap: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_ssh: allowed
+      inbound_http: allowed
+      inbound_https: allowed
+      proxy_enabled: true
+      vpn: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      mfa_enabled: true
+      cloud_identity_provider: enabled
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+      remote_shells:
+        - ssh
+      office_suite: enabled # e.g., LibreOffice for Office Suite techniques
+    installed_software:
+      - OpenSSH Server 8.2p1
+      - Apache 2.4.41
+      - Squid Proxy 4.10
+      - Samba 4.11
+      - LibreOffice 7.0
+      - Remote Desktop (xrdp)
+      - MFA client (e.g., Duo Unix)
+      - LDAP tools
+      - Cloud sync agent (e.g., Nextcloud)
+      - Network discovery tools (e.g., Nmap)
+      - Email client (e.g., Thunderbird)
+    privilege: "root"
+    domain_role: "Standalone"
+    persistence_surfaces:
+      - Cron Job
+      - Systemd Service
+      - SSH Authorized Keys
+      - Office Add-ins
+    security_controls:
+      antivirus: enabled
+      endpoint_detection_response: enabled
+      firewall: enabled
+      mfa: enabled
+      logging: verbose
+      cloud_access_security_broker: enabled
+    artifacts:
+      host:
+        directories:
+          - "/etc/ssh"
+          - "/var/www/html"
+          - "/etc/squid"
+          - "/home"
+          - "/opt/office"
+        processes:
+          - "sshd"
+          - "apache2"
+          - "smbd"
+          - "squid"
+          - "xrdp"
+          - "bash"
+          - "thunderbird"
+        files:
+          - "/etc/crontab"
+          - "/etc/systemd/system"
+          - "/home/.ssh/authorized_keys"
+      network:
+        protocols:
+          - "SSH"
+          - "HTTP"
+          - "HTTPS"
+          - "SMB"
+          - "LDAP"
+          - "Proxy"
+          - "VPN"
+          - "MFA"
+          - "Cloud Sync"
+          - "Email"
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS Monterey 12.6"]
+    services:
+      ssh: enabled
+      http: enabled
+      https: enabled
+      proxy: enabled
+      cloud_sync: enabled
+      email: enabled
+      ldap: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_ssh: allowed
+      inbound_http: allowed
+      inbound_https: allowed
+      proxy_enabled: true
+      vpn: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      mfa_enabled: true
+      cloud_identity_provider: enabled
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+      remote_shells:
+        - ssh
+      office_suite: enabled # Microsoft Office for Mac
+    installed_software:
+      - Microsoft Office 365 for Mac
+      - Remote Desktop (Microsoft Remote Desktop)
+      - MFA client (e.g., Duo Mac)
+      - Cloud sync agent (e.g., OneDrive)
+      - Proxy software (e.g., Squid)
+      - Email client (e.g., Outlook for Mac)
+      - LDAP tools
+      - Network discovery tools (e.g., Nmap)
+    privilege: "admin"
+    domain_role: "Standalone"
+    persistence_surfaces:
+      - Launch Agent
+      - Launch Daemon
+      - SSH Authorized Keys
+      - Office Add-ins
+    security_controls:
+      antivirus: enabled
+      endpoint_detection_response: enabled
+      firewall: enabled
+      mfa: enabled
+      logging: verbose
+      cloud_access_security_broker: enabled
+    artifacts:
+      host:
+        directories:
+          - "/Users"
+          - "/Library/LaunchAgents"
+          - "/Library/LaunchDaemons"
+          - "/Applications/Microsoft Office"
+        processes:
+          - "sshd"
+          - "Microsoft Outlook"
+          - "Microsoft Word"
+          - "proxy"
+          - "bash"
+        files:
+          - "/etc/ssh/sshd_config"
+          - "/Users/.ssh/authorized_keys"
+      network:
+        protocols:
+          - "SSH"
+          - "HTTP"
+          - "HTTPS"
+          - "LDAP"
+          - "Proxy"
+          - "VPN"
+          - "MFA"
+          - "Cloud Sync"
+          - "Email"
+
+  # --- ESXi Variant ---
+  esxi:
+    os: ["VMware ESXi 7.0 Update 3"]
+    services:
+      ssh: enabled
+      http: enabled
+      https: enabled
+      proxy: enabled
+      cloud_sync: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_ssh: allowed
+      inbound_http: allowed
+      inbound_https: allowed
+      proxy_enabled: true
+      vpn: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      mfa_enabled: true
+      cloud_identity_provider: enabled
+    execution_environment:
+      shells:
+        - bash
+        - sh
+      remote_shells:
+        - ssh
+    installed_software:
+      - Proxy software (e.g., Squid)
+      - Network discovery tools (e.g., Nmap)
+      - MFA client (e.g., Duo Unix)
+      - Cloud sync agent
+    privilege: "root"
+    domain_role: "Standalone"
+    persistence_surfaces:
+      - Cron Job
+      - Systemd Service
+      - SSH Authorized Keys

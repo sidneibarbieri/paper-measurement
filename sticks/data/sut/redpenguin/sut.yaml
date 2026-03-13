@@ -1,0 +1,295 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: RedPenguin
+# Campaign ID: campaign--35879bf3-0a21-4cc1-9e42-6de917a22501
+# Generated: 2026-03-06T15:02:46.639917
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__35879bf3_0a21_4cc1_9e42_6de917a22501:
+  # --- Windows Variant ---
+  windows_10_enterprise_22H2:
+    os: [Windows 10 Enterprise, Version 22H2, Build 19045]
+    services:
+      winrm: enabled
+      wmi: enabled
+      smb: enabled
+      rdp: enabled
+      dns_client: enabled
+      # Ensure Office Suite is installed for Office Suite techniques
+      office_suite: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      inbound_tcp_ports: [3389, 445, 139, 8080, 9000] # For RDP, SMB, and non-standard port techniques
+      outbound_tcp_ports: [80, 443, 8080, 9000]
+      ipv6_enabled: true
+      # Non-Application Layer Protocols (e.g., ICMP, GRE)
+      non_app_layer_protocols: enabled
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_accounts: present
+      valid_domain_accounts: present
+      # Office Suite user accounts for Office Suite techniques
+      office_suite_accounts: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      execution_policy: unrestricted # Required for process injection and malware execution
+    installed_software:
+      - Microsoft Office 365 ProPlus (Version 2306)
+      - OpenSSH (8.9p1)
+      - Wireshark (4.2.0)
+      - Juniper Network Connect (if network device emulation required)
+      - .NET Framework 4.8
+      - Python 3.11
+      - TINYSHELL (custom build)
+      - Sysinternals Suite
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - registry_run_key
+      - scheduled_task
+      - service_installation
+      - WMI event subscription
+      - startup_folder
+    security_controls:
+      defender: disabled # For rootkit and process injection techniques
+      firewall: enabled
+      audit_logging: enabled
+      applocker: disabled
+      credential_guard: disabled
+      # Logging must be impaired for Impair Command History Logging
+      powershell_logging: disabled
+    artifacts:
+      host:
+        directories:
+          - C:\Windows\System32
+          - C:\Users\Public
+          - C:\ProgramData
+          - C:\Temp
+        processes:
+          - explorer.exe
+          - svchost.exe
+          - powershell.exe
+          - tinyshell.exe
+          - wireshark.exe
+          - office_suite.exe
+        registry_keys:
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\SYSTEM\CurrentControlSet\Services
+          - HKLM\Software\Policies\Microsoft\Windows\PowerShell
+        files:
+          - C:\Temp\encrypted_payload.bin
+          - C:\ProgramData\tinyshell_backdoor.exe
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - ICMP
+          - SMB
+          - HTTP
+          - HTTPS
+          - DNS
+          - GRE
+          - custom_protocol # For Non-Application Layer Protocol and Traffic Signaling
+
+  # --- Linux Variant ---
+  ubuntu_22_04_lts:
+    os: [Ubuntu 22.04 LTS]
+    services:
+      sshd: enabled
+      cron: enabled
+      systemd: enabled
+      dnsmasq: enabled
+      snmpd: enabled
+      samba: enabled
+      # For containers, docker must be enabled
+      docker: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_tcp_ports: [22, 445, 8080, 9000]
+      outbound_tcp_ports: [80, 443, 8080, 9000]
+      ipv6_enabled: true
+      non_app_layer_protocols: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      valid_local_accounts: present
+      valid_ldap_accounts: present # If identity provider is simulated
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - zsh
+        - dash
+      sudoers: present
+      root_shell_access: enabled # Required for rootkit and process injection
+    installed_software:
+      - Wireshark (4.2.0)
+      - TINYSHELL (custom build)
+      - Python 3.11
+      - OpenSSL (3.0.2)
+      - Docker (24.0.2)
+      - netcat (1.10)
+      - tcpdump (4.99.1)
+      - Juniper CLI emulator (if network device emulation required)
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - crontab
+      - systemd service
+      - /etc/rc.local
+      - SSH authorized_keys
+      - Docker container startup
+    security_controls:
+      auditd: enabled
+      apparmor: disabled # For rootkit and process injection
+      selinux: disabled
+      firewall: enabled
+      logging: enabled
+      bash_history: impaired # For Impair Command History Logging
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+          - /usr/local/bin
+          - /home
+        processes:
+          - bash
+          - sshd
+          - tinyshell
+          - wireshark
+          - python3
+          - docker
+        files:
+          - /tmp/encrypted_payload.bin
+          - /usr/local/bin/tinyshell_backdoor
+          - /etc/rc.local
+          - /var/log/auth.log
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - ICMP
+          - HTTP
+          - HTTPS
+          - DNS
+          - GRE
+          - custom_protocol
+
+  # --- macOS Variant ---
+  macos_ventura_13_5:
+    os: [macOS Ventura 13.5]
+    services:
+      sshd: enabled
+      launchd: enabled
+      cron: enabled
+      dns_client: enabled
+      samba: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_tcp_ports: [22, 445, 8080, 9000]
+      outbound_tcp_ports: [80, 443, 8080, 9000]
+      ipv6_enabled: true
+      non_app_layer_protocols: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      valid_local_accounts: present
+      valid_ldap_accounts: present
+    execution_environment:
+      shells:
+        - bash
+        - zsh
+        - sh
+      sudoers: present
+      root_shell_access: enabled
+    installed_software:
+      - Wireshark (4.2.0)
+      - TINYSHELL (custom build)
+      - Python 3.11
+      - OpenSSL (3.0.2)
+      - netcat (1.10)
+      - tcpdump (4.99.1)
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - launchd plist
+      - crontab
+      - /etc/rc.local
+      - SSH authorized_keys
+    security_controls:
+      auditd: enabled
+      gatekeeper: disabled # For rootkit and process injection
+      firewall: enabled
+      logging: enabled
+      bash_history: impaired
+    artifacts:
+      host:
+        directories:
+          - /etc
+          - /var/log
+          - /tmp
+          - /usr/local/bin
+          - /Users
+        processes:
+          - bash
+          - sshd
+          - tinyshell
+          - wireshark
+          - python3
+        files:
+          - /tmp/encrypted_payload.bin
+          - /usr/local/bin/tinyshell_backdoor
+          - /etc/rc.local
+          - /var/log/system.log
+      network:
+        protocols:
+          - TCP
+          - UDP
+          - ICMP
+          - HTTP
+          - HTTPS
+          - DNS
+          - GRE
+          - custom_protocol
+
+  # --- ESXi Variant ---
+  vmware_esxi_7_0u3:
+    os: [VMware ESXi 7.0 Update 3]
+    services:
+      sshd: enabled
+      esxi_shell: enabled
+      cron: enabled
+      snmpd: enabled
+      vmware_management: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_tcp_ports: [22, 443, 8080, 9000]
+      outbound_tcp_ports: [80, 443, 8080, 9000]
+      ipv6_enabled: true
+      non_app_layer_protocols: enabled
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      valid_local_accounts: present
+    execution_environment:
+      shells:
+        - esxi_shell
+        - bash
+      root_shell_access: enabled

@@ -1,0 +1,329 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: HomeLand Justice
+# Campaign ID: campaign--7e21077d-2589-43a7-a5f9-490061289526
+# Generated: 2026-03-06T15:08:07.075228
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__7e21077d_2589_43a7_a5f9_490061289526:
+  # Platform variants are required due to technique coverage; each SUT section is per platform family.
+
+  # --- Windows SUT ---
+  windows:
+    os: ['Windows Server 2019', 'Windows 10 Enterprise 1909']
+    services:
+      wmi: enabled
+      smb: enabled
+      winrm: enabled
+      eventlog: enabled
+      rdp: enabled
+      powershell: enabled
+      outlook: enabled # For Office Suite techniques
+      defender: enabled # Can be disabled for impact techniques
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smb_shares: enabled
+      rdp_port: open
+      email_access: enabled
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      valid_accounts: present
+      default_accounts: present
+      email_delegate_permissions: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      wmi_shell: enabled
+      remote_shell: enabled
+    installed_software:
+      - Microsoft Office 2019
+      - Outlook 2019
+      - PowerShell 5.1
+      - WinRM 2.3
+      - SMBv2/v3
+      - RDP (mstsc.exe)
+      - Security tools (Sysmon, Defender) # May be disabled for impact
+      - Web server (IIS 10) # For web shell
+      - LSASS
+    privilege: 'Administrator'
+    domain_role: 'Member Server'
+    persistence_surfaces:
+      - Scheduled Task
+      - Registry Run Keys
+      - Service
+      - Email Delegate Permissions
+    security_controls:
+      defender: enabled # Can be disabled for impact
+      event_logging: enabled # Can be disabled for impact
+      firewall: enabled
+      credential_guard: disabled # For LSASS access
+    artifacts:
+      host:
+        directories:
+          - 'C:\Windows\System32'
+          - 'C:\Users\Public'
+          - 'C:\Program Files'
+          - 'C:\inetpub\wwwroot' # Web shell
+        processes:
+          - 'lsass.exe'
+          - 'wmiprvse.exe'
+          - 'powershell.exe'
+          - 'cmd.exe'
+          - 'svchost.exe'
+          - 'explorer.exe'
+          - 'rdpclip.exe'
+          - 'outlook.exe'
+        registry_keys:
+          - 'HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run'
+          - 'HKLM\SYSTEM\CurrentControlSet\Services'
+      network:
+        protocols:
+          - 'SMB'
+          - 'RDP'
+          - 'HTTPS'
+          - 'DNS'
+          - 'LDAP'
+          - 'IMAP'
+          - 'SMTP'
+
+  # --- Linux SUT ---
+  linux:
+    os: ['Ubuntu Server 20.04 LTS', 'CentOS 7.9']
+    services:
+      sshd: enabled
+      apache2: enabled # For web shell
+      samba: enabled # For SMB-like lateral transfer
+      cron: enabled
+      postfix: enabled # For email
+      syslog: enabled # Can be disabled for impact
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      smb_shares: enabled
+      email_access: enabled
+    identity:
+      valid_accounts: present
+      default_accounts: present
+      sudoers: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+        - /bin/zsh
+      remote_shell: enabled
+    installed_software:
+      - Apache 2.4
+      - Samba 4.11
+      - OpenSSH 8.2
+      - Python 3.8
+      - Postfix 3.4
+      - cron
+      - wiper tool (custom or dd)
+      - encryption tool (cryptsetup, openssl)
+    privilege: 'root'
+    domain_role: 'Standalone Server'
+    persistence_surfaces:
+      - Cron jobs
+      - Systemd services
+      - SSH authorized_keys
+    security_controls:
+      auditd: enabled # Can be disabled for impact
+      firewall: enabled
+      SELinux/AppArmor: permissive # For technique coverage
+    artifacts:
+      host:
+        directories:
+          - '/etc'
+          - '/var/www/html' # Web shell
+          - '/home'
+          - '/tmp'
+        processes:
+          - 'sshd'
+          - 'apache2'
+          - 'smbd'
+          - 'cron'
+          - 'postfix'
+        files:
+          - '/etc/passwd'
+          - '/etc/shadow'
+          - '/var/log/syslog'
+          - '/var/log/auth.log'
+      network:
+        protocols:
+          - 'SSH'
+          - 'HTTPS'
+          - 'DNS'
+          - 'SMB'
+          - 'SMTP'
+          - 'IMAP'
+
+  # --- macOS SUT ---
+  macos:
+    os: ['macOS Monterey 12.6']
+    services:
+      sshd: enabled
+      apache2: enabled # For web shell
+      smb: enabled
+      cron: enabled
+      syslog: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      smb_shares: enabled
+    identity:
+      valid_accounts: present
+      default_accounts: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/zsh
+        - /bin/sh
+      remote_shell: enabled
+    installed_software:
+      - Apache 2.4
+      - Samba 4.11
+      - OpenSSH 8.6
+      - Python 3.9
+      - cron
+      - wiper tool (custom or dd)
+      - encryption tool (openssl)
+    privilege: 'admin'
+    domain_role: 'Standalone Workstation'
+    persistence_surfaces:
+      - LaunchAgents
+      - LaunchDaemons
+      - Cron jobs
+      - SSH authorized_keys
+    security_controls:
+      firewall: enabled
+      auditd: enabled # Can be disabled for impact
+      SIP: disabled # For technique coverage
+    artifacts:
+      host:
+        directories:
+          - '/Users'
+          - '/etc'
+          - '/var/www/html' # Web shell
+          - '/tmp'
+        processes:
+          - 'sshd'
+          - 'httpd'
+          - 'smbd'
+          - 'cron'
+        files:
+          - '/etc/passwd'
+          - '/etc/shadow'
+          - '/var/log/system.log'
+      network:
+        protocols:
+          - 'SSH'
+          - 'HTTPS'
+          - 'DNS'
+          - 'SMB'
+
+  # --- ESXi SUT ---
+  esxi:
+    os: ['VMware ESXi 6.7']
+    services:
+      sshd: enabled
+      web_server: enabled
+      management_api: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      valid_accounts: present
+      default_accounts: present
+      credential_cache: present
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/bash
+      remote_shell: enabled
+    installed_software:
+      - ESXi management tools
+      - SSH
+      - Web server
+      - wiper tool (custom)
+      - encryption tool (openssl)
+    privilege: 'root'
+    domain_role: 'Standalone Host'
+    persistence_surfaces:
+      - SSH authorized_keys
+      - Scheduled tasks
+    security_controls:
+      firewall: enabled
+      auditd: enabled # Can be disabled for impact
+    artifacts:
+      host:
+        directories:
+          - '/etc'
+          - '/vmfs/volumes'
+          - '/tmp'
+        processes:
+          - 'sshd'
+          - 'hostd'
+          - 'web server'
+        files:
+          - '/etc/passwd'
+          - '/etc/shadow'
+          - '/var/log/syslog'
+      network:
+        protocols:
+          - 'SSH'
+          - 'HTTPS'
+          - 'DNS'
+
+  # --- Containers SUT ---
+  containers:
+    os: ['Ubuntu 20.04 (container base)', 'Alpine 3.14']
+    services:
+      sshd: enabled
+      web_server: enabled
+      cron: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+    identity:
+      valid_accounts: present
+      default_accounts: present
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/bash
+      remote_shell: enabled
+    installed_software:
+      - Apache 2.4
+      - OpenSSH 8.2
+      - cron
+      - wiper tool (custom)
+      - encryption tool (openssl)
+    privilege: 'root'
+    domain_role: 'Standalone Container'
+    persistence_surfaces:
+      - Cron jobs
+      - SSH authorized_keys
+    security_controls:
+      firewall: enabled
+      auditd: enabled # Can be disabled for impact
+    artifacts:
+      host:
+        directories:
+          - '/etc'
+          - '/var/www/html' # Web shell
+          - '/tmp'
+        processes:
+          - 'sshd'

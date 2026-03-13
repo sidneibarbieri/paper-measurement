@@ -1,0 +1,367 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Triton Safety Instrumented System Attack
+# Campaign ID: campaign--45a98f02-852f-49b2-94c0-c63207bebbbf
+# Generated: 2026-03-06T15:12:30.728670
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__45a98f02_852f_49b2_94c0_c63207bebbbf:
+  # --- WINDOWS SUT ---
+  windows:
+    os: ["Windows Server 2016", "Windows 10 Enterprise 1909"]
+    services:
+      Task Scheduler: running
+      WinRM: running
+      LSASS: running
+      WMI: running
+      RemoteRegistry: running
+      PowerShell: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      smb: allowed
+      rdp: allowed
+      # Required for C2 and lateral movement
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_accounts: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      powershell_script_execution: unrestricted  # For PowerShell technique
+      wmic: enabled
+    installed_software:
+      - Triconex Safety Controller software v11.3  # Targeted asset
+      - Python 3.7.3
+      - 7-Zip 19.00
+      - Sysinternals Suite
+      - Wireshark 3.2.0
+      - Chrome 80
+      - Triton malware framework (test harness)
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - Scheduled Task
+      - Registry Run Keys
+      - Service Creation
+    security_controls:
+      Windows Defender: disabled  # To avoid interference with malware
+      AppLocker: not_configured
+      Credential Guard: disabled  # For LSASS memory access
+      Event Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Windows\System32\Tasks
+          - C:\Program Files\Triconex
+          - C:\Users\Public
+        processes:
+          - lsass.exe
+          - powershell.exe
+          - taskhostw.exe
+          - svchost.exe
+        registry_keys:
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - SMB
+          - RDP
+          - HTTPS
+          - DNS
+          - TCP
+          - UDP
+
+  # --- LINUX SUT ---
+  linux:
+    os: ["Ubuntu 18.04 LTS", "CentOS 7.8"]
+    services:
+      sshd: running
+      cron: running
+      apache2: running
+      rsyslog: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      ssh: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+      python: present
+    installed_software:
+      - Triconex Safety Controller utilities (Linux version, if applicable)
+      - Python 3.7.3
+      - netcat-openbsd
+      - nmap 7.80
+      - curl
+      - socat
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - systemd service
+    security_controls:
+      SELinux: permissive
+      AppArmor: disabled
+      auditd: enabled
+    artifacts:
+      host:
+        directories:
+          - /etc/cron.d
+          - /usr/local/bin
+          - /opt/triconex
+        processes:
+          - sshd
+          - cron
+          - bash
+          - python3
+        files:
+          - /var/log/auth.log
+          - /etc/shadow
+      network:
+        protocols:
+          - SSH
+          - HTTPS
+          - DNS
+          - TCP
+          - UDP
+
+  # --- MACOS SUT ---
+  macos:
+    os: ["macOS Mojave 10.14.6"]
+    services:
+      launchd: running
+      sshd: running
+      apache2: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      ssh: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      admin_accounts: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/zsh
+      python: present
+    installed_software:
+      - Python 3.7.3
+      - netcat
+      - nmap 7.80
+      - curl
+      - Triton test utilities (if available)
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launchd plist
+      - cron
+    security_controls:
+      Gatekeeper: disabled
+      System Integrity Protection: disabled
+      auditd: enabled
+    artifacts:
+      host:
+        directories:
+          - /Library/LaunchDaemons
+          - /usr/local/bin
+        processes:
+          - launchd
+          - bash
+          - python3
+        files:
+          - /var/log/system.log
+      network:
+        protocols:
+          - SSH
+          - HTTPS
+          - DNS
+          - TCP
+          - UDP
+
+  # --- ESXi SUT ---
+  esxi:
+    os: ["VMware ESXi 6.7"]
+    services:
+      SSH: running
+      ESXi Shell: running
+      vpxa: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      management_network: allowed
+    identity:
+      domain_controller_reachable: false
+      root_account: present
+    execution_environment:
+      shells:
+        - /bin/sh
+      python: present
+    installed_software:
+      - nmap 7.80
+      - curl
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+    security_controls:
+      Lockdown Mode: disabled
+      Firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /etc/rc.local.d
+        processes:
+          - hostd
+          - vpxa
+        files:
+          - /var/log/hostd.log
+      network:
+        protocols:
+          - HTTPS
+          - DNS
+          - TCP
+          - UDP
+
+  # --- CONTAINER SUT ---
+  containers:
+    os: ["Ubuntu 18.04 LTS (container base image)"]
+    services:
+      cron: running
+      sshd: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      bridge_networking: enabled
+    identity:
+      domain_controller_reachable: false
+      root_account: present
+    execution_environment:
+      shells:
+        - /bin/bash
+      python: present
+    installed_software:
+      - Python 3.7.3
+      - netcat-openbsd
+      - curl
+      - nmap 7.80
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - entrypoint script
+    security_controls:
+      AppArmor: disabled
+      SELinux: disabled
+    artifacts:
+      host:
+        directories:
+          - /etc/cron.d
+        processes:
+          - bash
+          - python3
+          - cron
+        files:
+          - /var/log/cron.log
+      network:
+        protocols:
+          - HTTPS
+          - DNS
+          - TCP
+          - UDP
+
+  # --- NETWORK DEVICES SUT ---
+  network_devices:
+    os: ["Cisco IOS XE 16.9"]
+    services:
+      SSH: running
+      HTTPS: running
+      SNMP: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      management_vlan: allowed
+    identity:
+      local_admin_account: present
+    execution_environment:
+      shells:
+        - IOS CLI
+    installed_software:
+      - nmap 7.80  # For active scanning from/to device
+    privilege: enable
+    domain_role: standalone
+    persistence_surfaces:
+      - startup-config
+    security_controls:
+      AAA: enabled
+      SNMPv3: enabled
+      Logging: enabled
+    artifacts:
+      host:
+        directories:
+          - flash:/
+        processes:
+          - sshd
+          - httpd
+        files:
+          - flash:/startup-config
+      network:
+        protocols:
+          - HTTPS
+          - DNS
+          - TCP
+          - UDP
+          - SNMP
+
+  # --- PRE (Adversary-controlled infrastructure) SUT ---
+  pre:
+    os: ["Kali Linux 2020.4"]
+    services:
+      sshd: running
+      apache2: running
+      python3: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      vpn: allowed
+    identity:
+      local_admin_account: present
+    execution_environment:
+      shells:
+        - /bin/bash
+      python: present
+    installed_software:
+      - Triton malware framework
+      - nmap 7.80
+      - metasploit-framework
+      - custom C2 tools
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - systemd service
+    security_controls:
+      AppArmor: disabled
+      SELinux: disabled
+    artifacts:
+      host:
+        directories:
+          - /opt/triton
+        processes:
+          - python3
+          - apache2
+          - bash
+        files:

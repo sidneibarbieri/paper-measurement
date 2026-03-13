@@ -1,0 +1,367 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Salesforce Data Exfiltration
+# Campaign ID: campaign--9cea8bec-07c5-422b-84b8-99d3128ce570
+# Generated: 2026-03-06T15:08:41.608360
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__9cea8bec_07c5_422b_84b8_99d3128ce570:
+
+  # --- Windows Variant ---
+  windows:
+    os: [Windows 10 Enterprise 22H2, Windows Server 2019]
+    services:
+      WinRM: enabled
+      WMI: enabled
+      SMB: enabled
+      RDP: enabled
+      # Email client required for PRE-phishing simulation
+      Outlook: enabled
+      # Salesforce integration for SaaS access
+      Salesforce_Plugin: enabled
+      # Python for scripting
+      Python3: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      proxy_configured: true   # Required for Proxy/Multi-hop Proxy techniques
+      # Allow cloud/SaaS access for exfiltration and CRM
+      salesforce_access: allowed
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      multiple_domain_accounts: present  # For account manipulation/impersonation
+    execution_environment:
+      shells:
+        - powershell
+        - cmd
+        - python
+      office_suite: installed  # For Office Suite platform techniques
+    installed_software:
+      - Microsoft Office 365 (latest)
+      - Salesforce CLI (latest)
+      - Python 3.11.x
+      - Chrome 124.x
+      - Outlook 2021
+      - VMware Tools (if VM)
+      - Security Agent (with exclusions for emulation)
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - registry_run_keys
+      - scheduled_tasks
+      - startup_folder
+    security_controls:
+      defender: enabled  # Exclusions for emulation tools
+      applocker: disabled
+      uac: enabled
+      cloud_app_security: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public
+          - C:\Program Files\Salesforce
+          - C:\Temp
+        processes:
+          - python.exe
+          - powershell.exe
+          - outlook.exe
+          - chrome.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - https
+          - dns
+          - smb
+          - ldap
+
+  # --- Linux Variant ---
+  linux:
+    os: [Ubuntu 22.04 LTS, CentOS 8]
+    services:
+      sshd: enabled
+      postfix: enabled  # For email account simulation
+      cron: enabled
+      docker: enabled   # For container techniques
+      python3: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      proxy_configured: true
+      salesforce_access: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      local_accounts: present
+    execution_environment:
+      shells:
+        - bash
+        - sh
+        - python3
+      containers_supported: true
+    installed_software:
+      - python3.10
+      - curl
+      - wget
+      - docker-ce
+      - salesforce-cli
+      - postfix
+      - chromium-browser
+    privilege: sudo
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - systemd_service
+      - ~/.bashrc
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      auditd: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/spool/mail
+          - /opt/salesforce
+        processes:
+          - python3
+          - bash
+          - chromium-browser
+        files:
+          - /etc/passwd
+          - /etc/shadow
+      network:
+        protocols:
+          - https
+          - dns
+          - ssh
+
+  # --- macOS Variant ---
+  macos:
+    os: [macOS Ventura 13.5]
+    services:
+      ssh: enabled
+      postfix: enabled
+      python3: enabled
+      salesforce_cli: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      proxy_configured: true
+      salesforce_access: allowed
+    identity:
+      credential_cache: present
+      local_accounts: present
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+        - python3
+    installed_software:
+      - python3.10
+      - salesforce-cli
+      - Microsoft Office 365
+      - Chrome
+      - Mail.app
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launch_agents
+      - cron
+      - login_items
+    security_controls:
+      gatekeeper: disabled
+      sip: enabled
+      xprotect: enabled
+    artifacts:
+      host:
+        directories:
+          - /Users/Shared
+          - /Applications/Salesforce
+          - /tmp
+        processes:
+          - python3
+          - zsh
+          - Mail
+        files:
+          - /etc/passwd
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- ESXi Variant ---
+  esxi:
+    os: [VMware ESXi 7.0 Update 3]
+    services:
+      ssh: enabled
+      esxcli: enabled
+      python3: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      proxy_configured: true
+    identity:
+      root_access: present
+      local_accounts: present
+    execution_environment:
+      shells:
+        - esxcli
+        - python3
+    installed_software:
+      - python3.7
+      - curl
+      - esxcli
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/core
+        processes:
+          - python3
+          - esxcli
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- Containers Variant ---
+  containers:
+    os: [Ubuntu 22.04 LTS (container base image)]
+    services:
+      sshd: enabled
+      python3: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      proxy_configured: true
+    identity:
+      local_accounts: present
+    execution_environment:
+      shells:
+        - bash
+        - python3
+    installed_software:
+      - python3.10
+      - curl
+      - wget
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - entrypoint_script
+    security_controls:
+      seccomp: disabled
+      apparmor: disabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+        processes:
+          - python3
+          - bash
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- SaaS Variant (Salesforce) ---
+  saas:
+    os: [SaaS (Salesforce Cloud Platform)]
+    services:
+      salesforce: enabled
+      office365: enabled
+      # Integration with Office Suite for cloud app integration
+      cloud_app_integration: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      # No local proxy, but allow multi-hop via API integrations
+      api_proxy: enabled
+    identity:
+      salesforce_accounts: present
+      impersonation_capability: enabled
+      # Multiple roles for account manipulation
+      multiple_roles: present
+    execution_environment:
+      api_access: enabled
+      browser_access: enabled
+    installed_software:
+      - Salesforce (cloud)
+      - Office 365 (cloud)
+      - Salesforce-CLI (for API access)
+    privilege: admin
+    domain_role: crm_instance
+    persistence_surfaces:
+      - connected_apps
+      - api_tokens
+    security_controls:
+      mfa: disabled  # For emulation
+      ip_restrictions: disabled
+    artifacts:
+      host:
+        directories:
+          - /  # N/A, but placeholder for API-accessible objects
+        processes:
+          - N/A
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- Office Suite Variant ---
+  office_suite:
+    os: [Windows 10 Enterprise 22H2, macOS Ventura 13.5]
+    services:
+      office365: enabled
+      salesforce_plugin: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      salesforce_access: allowed
+    identity:
+      office365_accounts: present
+      impersonation_capability: enabled
+    execution_environment:
+      office_macros: enabled
+      browser_access: enabled
+    installed_software:
+      - Microsoft Office 365 (latest)
+      - Salesforce Plugin
+      - Chrome
+    privilege: user
+    domain_role: workstation
+    persistence_surfaces:
+      - office_macros
+      - add-ins
+    security_controls:
+      macro_security: disabled
+      cloud_app_security: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\Documents
+        processes:
+          - WINWORD.EXE
+          - EXCEL.EXE
+      network:
+        protocols:
+          - https
+          - dns
+
+  # --- Network Devices Variant ---
+  network_devices:
+    os: [Cisco IOS XE 17.x, Jun

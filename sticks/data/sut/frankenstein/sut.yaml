@@ -1,0 +1,359 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: Frankenstein
+# Campaign ID: campaign--26d9ebae-de59-427f-ae9a-349456bae4b1
+# Generated: 2026-03-06T15:03:33.349793
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__26d9ebae_de59_427f_ae9a_349456bae4b1:
+  # This SUT specification is designed for adversary emulation of the Frankenstein campaign (C0001).
+  # To cover all techniques, the SUT must include representative hosts for Windows, Linux, macOS, ESXi, IaaS, Network Devices, Office Suite, SaaS, and PRE environments.
+  # Below, platform-specific SUT variants are provided where necessary.
+
+  # ===================== WINDOWS VARIANT =====================
+  windows:
+    os: [Windows 10 Pro 21H2, Windows Server 2019]
+    services:
+      Task Scheduler: running
+      WMI: running
+      PowerShell Remoting: enabled
+      MSBuild: installed
+      SMB: running
+      WinRM: running
+      Windows Defender: enabled
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      inbound_smb: allowed
+      outbound_smb: allowed
+      # Required for C2 and exfiltration techniques
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_accounts: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+        - wmic.exe
+        - msbuild.exe
+      office_macros: enabled
+      visual_basic_runtime: installed
+      # Required for Template Injection, Visual Basic, and macro-based execution
+    installed_software:
+      - Microsoft Office 2019
+      - PowerShell 5.1
+      - .NET Framework 4.8
+      - Empire Agent (for emulation)
+      - 7-Zip
+      - Python 3.9
+      - WinRAR
+    privilege: local_admin
+    domain_role: workstation
+    persistence_surfaces:
+      - Scheduled Task
+      - WMI Event Subscription
+      - Registry Run Keys
+      - Services
+    security_controls:
+      UAC: enabled
+      Defender: enabled
+      AppLocker: disabled # Must be disabled for unrestricted execution
+      AMSI: enabled
+      Firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\
+          - C:\Windows\System32\
+          - C:\ProgramData\
+        processes:
+          - explorer.exe
+          - powershell.exe
+          - cmd.exe
+          - wmiprvse.exe
+          - msbuild.exe
+          - svchost.exe
+        registry_keys:
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+          - HKCU\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SMB
+          - TCP
+          - UDP
+
+  # ===================== LINUX VARIANT =====================
+  linux:
+    os: [Ubuntu 20.04 LTS, CentOS 7.9]
+    services:
+      cron: running
+      sshd: running
+      rsyslog: running
+      systemd: running
+      apache2: stopped # For masquerading as a service
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_ssh: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+        - /usr/bin/python3
+      gcc: installed
+      perl: installed
+      python3: installed
+    installed_software:
+      - Python 3.8
+      - gcc
+      - curl
+      - wget
+      - unzip
+      - Empire Agent (for emulation)
+      - OpenSSL
+    privilege: sudo
+    domain_role: standalone
+    persistence_surfaces:
+      - cron
+      - systemd service
+      - rc.local
+    security_controls:
+      SELinux: permissive
+      AppArmor: disabled
+      Firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /var/tmp/
+          - /etc/systemd/system/
+          - /home/
+        processes:
+          - bash
+          - python3
+          - sshd
+          - cron
+          - systemd
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SSH
+          - TCP
+          - UDP
+
+  # ===================== MACOS VARIANT =====================
+  macos:
+    os: [macOS 12 Monterey]
+    services:
+      launchd: running
+      ssh: running
+      cron: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      inbound_ssh: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      admin_users: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/zsh
+        - /usr/bin/python3
+      applescript: enabled
+    installed_software:
+      - Python 3.9
+      - curl
+      - wget
+      - Empire Agent (for emulation)
+      - Microsoft Office 2019
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - launchd
+      - cron
+      - login hook
+    security_controls:
+      Gatekeeper: disabled # Must be disabled for unrestricted execution
+      SIP: enabled
+      Firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /Users/Shared/
+          - /Library/LaunchAgents/
+        processes:
+          - bash
+          - zsh
+          - python3
+          - launchd
+          - cron
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - TCP
+          - UDP
+
+  # ===================== ESXi VARIANT =====================
+  esxi:
+    os: [VMware ESXi 7.0]
+    services:
+      sshd: running
+      hostd: running
+      vpxa: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_ssh: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      root_access: present
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/bash
+      python3: installed
+    installed_software:
+      - python3
+      - curl
+      - wget
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - rc.local
+      - cron
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - /etc/rc.local.d/
+        processes:
+          - hostd
+          - vpxa
+          - sshd
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - TCP
+          - UDP
+
+  # ===================== NETWORK DEVICES VARIANT =====================
+  network_devices:
+    os: [Cisco IOS XE 17.x, Juniper Junos OS 20.x]
+    services:
+      ssh: running
+      snmp: running
+      telnet: stopped
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      inbound_ssh: allowed
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      enable_secret: present
+    execution_environment:
+      shells:
+        - cli
+        - shell (if supported)
+    installed_software:
+      - python (if supported)
+      - tclsh (if supported)
+    privilege: enable
+    domain_role: standalone
+    persistence_surfaces:
+      - startup-config
+      - scheduled jobs (EEM applets)
+    security_controls:
+      aaa: enabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - flash:/
+          - nvram:/
+        processes:
+          - sshd
+          - snmpd
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          - HTTPS
+          - SSH
+          - TCP
+          - UDP
+
+  # ===================== IAAS VARIANT =====================
+  iaas:
+    os: [Ubuntu 20.04 LTS, Windows Server 2019] # Representative VMs in cloud
+    services:
+      cloud-init: running
+      sshd: running
+      winrm: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      public_ip: assigned
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      cloud_metadata_service: enabled
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+        - powershell.exe
+    installed_software:
+      - Python 3.8
+      - PowerShell 7
+      - curl
+      - wget
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - cloud-init scripts
+      - cron
+      - Scheduled Task
+    security_controls:
+      cloud_security_agent: enabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp/
+          - C:\Users\Public\
+        processes:
+          - bash
+          - powershell.exe
+      network:
+        protocols:
+          - DNS
+          - HTTP
+          -

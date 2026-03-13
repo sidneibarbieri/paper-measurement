@@ -1,0 +1,309 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: C0026
+# Campaign ID: campaign--c89fa3ff-4773-4daf-8aec-d8f43f10116e
+# Generated: 2026-03-06T15:13:21.572446
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__c89fa3ff_4773_4daf_8aec_d8f43f10116e:
+
+  # --- Windows Variant ---
+  windows:
+    os: [Windows 10 Pro 21H2, Windows Server 2019]
+    services:
+      w32time: running
+      dnscache: running
+      eventlog: running
+      # Required for archive utilities and tool transfer
+      bits: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      # Required for C2 and dynamic resolution
+      firewall: enabled
+      # Ensure C2 domains can be resolved
+      allow_dynamic_dns: true
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      # Required for domain-joined context
+      kerberos_ticket: present
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      # Required for tool transfer and execution
+      script_execution_policy: unrestricted  # Allows execution of transferred tools/scripts
+    installed_software:
+      - 7-Zip 21.07  # Archive via Utility
+      - WinRAR 6.11
+      - Microsoft Defender Antivirus (latest, but real-time protection disabled for testing)
+      - Python 3.10.8
+      - curl 7.83.1
+    privilege: Administrator
+    domain_role: workstation
+    persistence_surfaces:
+      - Startup Folder
+      - Registry Run Keys
+    security_controls:
+      defender_realtime_protection: disabled  # To allow malware execution for emulation
+      applocker: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - C:\Users\Public\Downloads
+          - C:\Windows\Temp
+        processes:
+          - explorer.exe
+          - powershell.exe
+          - cmd.exe
+          - 7z.exe
+          - winrar.exe
+        registry_keys:
+          - HKCU\Software\Microsoft\Windows\CurrentVersion\Run
+          - HKLM\Software\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+          - SMB
+
+  # --- Linux Variant ---
+  linux:
+    os: [Ubuntu 20.04 LTS, CentOS 7.9]
+    services:
+      sshd: running
+      systemd-resolved: running
+      cron: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      # For dynamic DNS and C2
+      allow_dynamic_dns: true
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      # Sudo access for privilege escalation
+      sudoers: present
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+      # Required for tool transfer and execution
+      python3: present
+    installed_software:
+      - p7zip-full 16.02
+      - curl 7.68.0
+      - wget 1.20.3
+      - python3 3.8.10
+      - netcat-openbsd 1.206
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - ~/.bashrc
+      - /etc/rc.local
+      - cron jobs
+    security_controls:
+      selinux: permissive
+      apparmor: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /var/tmp
+          - /home/testuser/Downloads
+        processes:
+          - bash
+          - python3
+          - 7z
+          - curl
+          - wget
+        files:
+          - /etc/passwd
+          - /etc/shadow
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+          - SSH
+
+  # --- macOS Variant ---
+  macos:
+    os: [macOS Monterey 12.6]
+    services:
+      system_profiler: running
+      launchd: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      allow_dynamic_dns: true
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - /bin/zsh
+        - /bin/bash
+      python3: present
+    installed_software:
+      - Keka 1.2.58  # Archive utility
+      - The Unarchiver 4.3.6
+      - curl 7.79.1
+      - python3 3.9.6
+      - wget 1.21.1
+    privilege: admin
+    domain_role: standalone
+    persistence_surfaces:
+      - ~/Library/LaunchAgents
+      - /Library/LaunchDaemons
+    security_controls:
+      gatekeeper: disabled
+      sip: enabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+          - /Users/testuser/Downloads
+        processes:
+          - zsh
+          - bash
+          - Keka
+          - curl
+          - python3
+        files:
+          - /etc/passwd
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+
+  # --- ESXi Variant ---
+  esxi:
+    os: [VMware ESXi 7.0 Update 3]
+    services:
+      ssh: running
+      hostd: running
+      vpxa: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      allow_dynamic_dns: true
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - /bin/sh
+      python3: present
+    installed_software:
+      - python3 3.7.3
+      - curl 7.61.1
+      - busybox 1.30.1
+    privilege: root
+    domain_role: standalone
+    persistence_surfaces:
+      - /etc/rc.local.d/local.sh
+    security_controls:
+      lockdown_mode: disabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - /tmp
+        processes:
+          - sh
+          - python3
+          - curl
+        files:
+          - /etc/passwd
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+
+  # --- Network Devices Variant ---
+  network_devices:
+    os: [Cisco IOS XE 17.3, Juniper Junos OS 20.4]
+    services:
+      ssh: running
+      snmp: running
+      tftp: running
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      allow_dynamic_dns: true
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+    execution_environment:
+      shells:
+        - cli
+    installed_software:
+      - curl 7.61.1  # If available in shell
+    privilege: enable
+    domain_role: standalone
+    persistence_surfaces:
+      - startup-config
+      - scheduled scripts
+    security_controls:
+      aaa_new_model: enabled
+      firewall: enabled
+    artifacts:
+      host:
+        directories:
+          - flash:/
+        processes:
+          - cli
+        files:
+          - startup-config
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+
+  # --- PRE Variant (for Domains technique) ---
+  pre:
+    os: [N/A]
+    services:
+      none: none
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: false
+      allow_dynamic_dns: true
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+    execution_environment:
+      shells:
+        - N/A
+    installed_software:
+      - N/A
+    privilege: N/A
+    domain_role: N/A
+    persistence_surfaces:
+      - N/A
+    security_controls:
+      N/A: N/A
+    artifacts:
+      host:
+        directories:
+          - N/A
+        processes:
+          - N/A
+      network:
+        protocols:
+          - DNS
+          - HTTPS
+```

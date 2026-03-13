@@ -39,6 +39,12 @@ python3 generate_traceability.py >/tmp/measurement_traceability_release.log 2>&1
   fail "traceability generation failed"
 }
 
+log "1d) Evaluating compatibility manual-validation packet"
+python3 evaluate_compatibility_validation.py >/tmp/measurement_validation_release.log 2>&1 || {
+  tail -n 120 /tmp/measurement_validation_release.log >&2
+  fail "compatibility validation summary generation failed"
+}
+
 log "2) Checking required output artifacts"
 required=(
   "results/todo_values.json"
@@ -61,7 +67,13 @@ required=(
   "results/audit/delta_sensitivity.csv"
   "results/audit/bootstrap_confusion_distribution.csv"
   "results/audit/platform_distribution.csv"
+  "results/audit/cve_validation.csv"
   "results/audit/technique_compatibility.csv"
+  "results/audit/compatibility_rule_breakdown.csv"
+  "results/audit/compatibility_validation_sample.csv"
+  "results/compatibility_validation_summary.json"
+  "results/audit/compatibility_validation_confusion.csv"
+  "results/audit/compatibility_validation_disagreements.csv"
 )
 for f in "${required[@]}"; do
   [[ -f "$f" ]] || fail "missing artifact: $MEAS_SCRIPTS/$f"
@@ -83,7 +95,10 @@ checks.append((d['enterprise_campaigns_platform_unknown_count'] == 5, 'campaigns
 checks.append((d['ent_campaigns_with_cve_count'] == 5, 'campaigns_with_cve_count must be 5'))
 checks.append((d['compatibility_container_feasible_count'] + d['compatibility_vm_required_count'] + d['compatibility_infrastructure_dependent_count'] == d['enterprise_platform_count'], 'CF+VMR+ID must equal enterprise_platform_count'))
 checks.append((d['threshold_k_one_confusion_pct'] >= d['threshold_k_three_confusion_pct'], 'confusion should not increase from k>=1 to k>=3'))
+checks.append((d['threshold_k_one_confusion_pct'] >= d['threshold_k_two_confusion_pct'], 'confusion should not increase from k>=1 to k>=2'))
+checks.append((d['threshold_k_two_confusion_pct'] >= d['threshold_k_three_confusion_pct'], 'confusion should not increase from k>=2 to k>=3'))
 checks.append((d['threshold_k_three_confusion_pct'] >= d['threshold_k_five_confusion_pct'], 'confusion should not increase from k>=3 to k>=5'))
+checks.append((d['threshold_k_two_sample'] > 0, 'threshold_k_two_sample must be > 0'))
 checks.append((d['delta_zero_zero_five_confusion_pct'] <= d['delta_zero_ten_confusion_pct'], 'confusion should not decrease when delta goes 0.05 -> 0.10'))
 checks.append((d['delta_zero_ten_confusion_pct'] <= d['delta_zero_fifteen_confusion_pct'], 'confusion should not decrease when delta goes 0.10 -> 0.15'))
 checks.append((d['enterprise_campaigns_with_software_ci_low'] <= d['enterprise_campaigns_with_software_percentage'] <= d['enterprise_campaigns_with_software_ci_high'], 'campaign software CI must bound point estimate'))
@@ -98,6 +113,11 @@ checks.append((0.0 <= d['sut_profile_confusion_software_compat_percentage'] <= 1
 checks.append((d['capec_platform_percentage'] == 0.0, 'CAPEC platform percentage must be 0.0 for this bundle'))
 checks.append((d['capec_software_link_pct'] == 0.0, 'CAPEC software-link percentage must be 0.0 for this bundle'))
 checks.append((d['capec_cve_link_pct'] == 0.0, 'CAPEC CVE-link percentage must be 0.0 for this bundle'))
+
+with open(base/'compatibility_validation_summary.json', encoding='utf-8') as f:
+    validation = json.load(f)
+checks.append((validation['total_sample_rows'] == d['compatibility_validation_sample_size'], 'compatibility validation sample size mismatch'))
+checks.append((validation['status'] in {'pending_manual_labels', 'ready'}, 'unexpected compatibility validation status'))
 
 unknown_names = []
 with open(base/'audit'/'campaign_platform_unknown.csv', newline='', encoding='utf-8') as f:
@@ -193,6 +213,38 @@ for name, cves in expected.items():
 print('[release-check] static table checks OK')
 PY
 
+log "3c) Enforcing bibliography policy (no poster entries/citations)"
+python3 "$MEAS_SCRIPTS/sanitize_bibliography_policy.py" \
+  --input "$PAPER_DIR/references.bib" \
+  --input "$PAPER_DIR/references_official_downloaded.bib" \
+  --input "$PAPER_DIR/used_citations_only.bib" \
+  --check >/tmp/measurement_bib_policy_check.log 2>&1 || {
+    cat /tmp/measurement_bib_policy_check.log >&2
+    fail "bibliography policy check failed"
+  }
+
+python3 - <<'PY'
+import re
+import sys
+from pathlib import Path
+
+main_tex = Path('/Users/sidneibarbieri/paper measurement/ACM CCS - Paper 2/main.tex')
+tex = main_tex.read_text(encoding='utf-8')
+cite_keys = set()
+for group in re.findall(r'\\cite[a-zA-Z*]*\{([^}]*)\}', tex):
+    for raw in group.split(','):
+        key = raw.strip()
+        if key:
+            cite_keys.add(key)
+
+poster_like_cites = sorted(k for k in cite_keys if re.search(r'(?i)(poster|asiaccs.*kurt|chen_2020)', k))
+if poster_like_cites:
+    print(f"[release-check][FAIL] poster-like citation keys found in main.tex: {', '.join(poster_like_cites)}")
+    sys.exit(1)
+
+print('[release-check] bibliography policy checks OK')
+PY
+
 log "4) Building manuscript PDF"
 cd "$PAPER_DIR"
 latexmk -pdf -interaction=nonstopmode -halt-on-error main.tex >/tmp/measurement_paper_release.log 2>&1 || {
@@ -208,11 +260,89 @@ if rg -n 'TODO\{|\[TBD\]' main.tex | rg -v '^87:' >/tmp/measurement_todo_hits.lo
 fi
 
 log "6) Ensuring manuscript imports generated measurement macros"
-rg -n '\\input\{../measurement/sut/scripts/results/todo_values_latex.tex\}' main.tex >/dev/null || \
-  fail "main.tex is not importing generated todo_values_latex.tex"
+# Paper now uses results/values.tex (local copy of generated macros)
+rg -n '\\input\{results/values\.tex\}' main.tex >/dev/null || \
+  fail "main.tex is not importing results/values.tex"
 
 log "6b) Ensuring rendered ablation figure template exists"
-[[ -f "$ROOT/ACM CCS - Paper 2/figs/ablation_template.tex" ]] || fail "missing ablation_template.tex"
+[[ -f "$ROOT/ACM CCS - Paper 2/figures/ablation_template.tex" ]] || fail "missing ablation_template.tex"
+
+log "6c) Ensuring rendered tier-collapse figure template exists"
+[[ -f "$ROOT/ACM CCS - Paper 2/figures/tier_collapse_template.tex" ]] || fail "missing tier_collapse_template.tex"
+
+log "6d) Ensuring macro coverage report exists and is non-empty"
+[[ -f "$MEAS_SCRIPTS/results/macro_coverage.json" ]] || fail "missing macro_coverage.json"
+python3 - <<'PY'
+import json, sys
+from pathlib import Path
+p = Path('/Users/sidneibarbieri/paper measurement/measurement/sut/scripts/results/macro_coverage.json')
+d = json.loads(p.read_text(encoding='utf-8'))
+used = int(d.get('manuscript_macro_count', 0))
+generated = int(d.get('generated_macro_count', 0))
+if used <= 0 or generated <= 0:
+    print('[release-check][FAIL] macro coverage report indicates empty generated/used macro sets')
+    sys.exit(1)
+print('[release-check] macro coverage report OK')
+PY
+
+log "6e) Checking macro consistency (defined vs used)"
+python3 - <<'PY'
+import re, sys
+from pathlib import Path
+
+latex_file = Path('/Users/sidneibarbieri/paper measurement/ACM CCS - Paper 2/results/values.tex')
+main_file  = Path('/Users/sidneibarbieri/paper measurement/ACM CCS - Paper 2/main.tex')
+
+if not latex_file.exists() or not main_file.exists():
+    print('[release-check][WARN] cannot run macro consistency check (files missing)')
+    sys.exit(0)
+
+# Extract defined macros from todo_values_latex.tex
+defined = set()
+for line in latex_file.read_text(encoding='utf-8').splitlines():
+    m = re.match(r'\\newcommand\{\\([A-Za-z]+)\}', line)
+    if m:
+        defined.add(m.group(1))
+
+# Extract macro uses from main.tex (backslash + alphabetic name)
+main_text = main_file.read_text(encoding='utf-8')
+used_all = set(re.findall(r'\\([A-Za-z][A-Za-z0-9]+)', main_text))
+
+# Only check against our generated macros
+used_from_generated = used_all & defined
+used_but_undefined = set()
+# Well-known LaTeX/package commands that match our heuristic but are NOT pipeline macros
+latex_builtins = {
+    'includegraphics', 'definecolor', 'textcolor', 'resizebox',
+    'raggedright', 'arraybackslash', 'shortstack', 'nolinkurl',
+    'multicolumn', 'bibliography', 'bibliographystyle',
+}
+# Check if main.tex uses macros that LOOK like pipeline macros but aren't defined
+# Heuristic: pipeline macros are camelCase starting with lowercase
+for name in used_all:
+    if name[0].islower() and len(name) > 8 and name not in defined and name not in latex_builtins:
+        # Likely intended as a pipeline macro
+        if any(keyword in name.lower() for keyword in [
+            'enterprise', 'campaign', 'software', 'compatibility',
+            'threshold', 'bootstrap', 'null', 'cve', 'sut', 'delta',
+            'capec', 'fight', 'ics', 'mobile', 'jaccard', 'profile',
+        ]):
+            used_but_undefined.add(name)
+
+defined_but_unused = defined - used_all
+
+if used_but_undefined:
+    print(f'[release-check][WARN] {len(used_but_undefined)} pipeline-like macros used in main.tex but NOT defined in todo_values_latex.tex:')
+    for name in sorted(used_but_undefined):
+        print(f'  \\{name}')
+
+if defined_but_unused:
+    print(f'[release-check][INFO] {len(defined_but_unused)} macros defined in todo_values_latex.tex but not used in main.tex (audit-only metrics)')
+
+print(f'[release-check] macro consistency: {len(defined)} defined, {len(used_from_generated)} used in manuscript, {len(used_but_undefined)} potentially missing')
+if used_but_undefined:
+    sys.exit(1)
+PY
 
 log "7) Ensuring traceability appendix exists"
 [[ -f "$ROOT/measurement/sut/TRACEABILITY.md" ]] || fail "missing TRACEABILITY.md"

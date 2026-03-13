@@ -1,0 +1,394 @@
+# SUT Specification for MITRE ATT&CK Campaign
+# Campaign: CostaRicto
+# Campaign ID: campaign--f9cc545e-b0ef-4b92-8884-a3a4427609f6
+# Generated: 2026-03-06T14:59:08.107843
+#
+# This specification defines the System Under Test required to
+# execute all techniques in this campaign.
+# ============================================================
+
+```yaml
+sut_campaign__f9cc545e_b0ef_4b92_8884_a3a4427609f6:
+
+  # --- Windows Variant ---
+  windows:
+    os: ["Windows Server 2019", "Windows 10 Enterprise 21H2"]
+    
+    services:
+      Task Scheduler: running
+      Remote Desktop Services: running
+      SMB: running
+      WinRM: running
+      DNS Client: running
+      WMI: running
+    
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      domain_joined: true
+      allow_rdp: true
+      allow_smb: true
+      allow_icmp: true
+      allow_proxy: true
+      allow_multi_hop: true # Required for multi-hop proxy technique
+    
+    identity:
+      domain_controller_reachable: true
+      credential_cache: present
+      local_admin_account: present
+    
+    execution_environment:
+      shells:
+        - cmd.exe
+        - powershell.exe
+      allow_script_execution: true
+      allow_tool_installation: true
+    
+    installed_software:
+      - OpenSSH 8.1
+      - PuTTY 0.74
+      - WinSCP 5.17
+      - 7-Zip 19.00
+      - CustomMalwareStub.exe # Placeholder for custom malware
+      - Nmap 7.91 # For network discovery
+      - ProxyCap 5.36 # Example for multi-hop proxy
+    
+    privilege: local_admin
+    
+    domain_role: workstation # Can be changed to 'member_server' if needed
+    
+    persistence_surfaces:
+      - Scheduled Task
+      - Registry Run Key
+      - Service Creation
+    
+    security_controls:
+      Windows Defender: enabled
+      EDR: disabled # Disable EDR for full technique execution
+      Firewall: enabled
+      UAC: enabled
+    
+    artifacts:
+      host:
+        directories:
+          - C:\Windows\System32\Tasks
+          - C:\Users\Public\Downloads
+          - C:\ProgramData
+        processes:
+          - svchost.exe
+          - schtasks.exe
+          - powershell.exe
+          - CustomMalwareStub.exe
+        registry_keys:
+          - HKLM\SOFTWARE\Microsoft\Windows\CurrentVersion\Run
+      network:
+        protocols:
+          - SMB
+          - RDP
+          - HTTP
+          - HTTPS
+          - DNS
+          - ICMP
+          - SSH
+          - Proxy
+
+  # --- Linux Variant ---
+  linux:
+    os: ["Ubuntu 20.04 LTS", "CentOS 7.9"]
+    
+    services:
+      sshd: running
+      cron: running
+      rsyslog: running
+      NetworkManager: running
+      systemd-resolved: running
+    
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      allow_ssh: true
+      allow_proxy: true
+      allow_multi_hop: true
+      allow_icmp: true
+    
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      sudoers: present
+    
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/sh
+      allow_script_execution: true
+      allow_tool_installation: true
+    
+    installed_software:
+      - openssh-server 8.2p1
+      - curl 7.68
+      - wget 1.20
+      - netcat 1.10
+      - nmap 7.91
+      - socat 1.7.3.3
+      - ProxyChains 4.14
+      - CustomMalwareStub # Placeholder for custom malware
+    
+    privilege: sudo
+    
+    domain_role: standalone
+    
+    persistence_surfaces:
+      - cron job
+      - systemd service
+      - rc.local
+    
+    security_controls:
+      AppArmor: disabled
+      SELinux: disabled
+      Firewall: enabled
+    
+    artifacts:
+      host:
+        directories:
+          - /etc/cron.d
+          - /usr/local/bin
+          - /tmp
+        processes:
+          - sshd
+          - cron
+          - CustomMalwareStub
+        files:
+          - /etc/rc.local
+          - /lib/systemd/system/custom-malware.service
+      network:
+        protocols:
+          - SSH
+          - HTTP
+          - HTTPS
+          - DNS
+          - ICMP
+          - Proxy
+
+  # --- macOS Variant ---
+  macos:
+    os: ["macOS 12 Monterey"]
+    
+    services:
+      ssh: running
+      cron: running
+      launchd: running
+      discoveryd: running
+    
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      allow_ssh: true
+      allow_proxy: true
+      allow_multi_hop: true
+    
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      admin_account: present
+    
+    execution_environment:
+      shells:
+        - /bin/bash
+        - /bin/zsh
+      allow_script_execution: true
+      allow_tool_installation: true
+    
+    installed_software:
+      - openssh 8.6p1
+      - curl 7.77
+      - nmap 7.91
+      - ProxyChains-ng 4.14
+      - CustomMalwareStub
+      - Homebrew # For tool installation
+    
+    privilege: admin
+    
+    domain_role: standalone
+    
+    persistence_surfaces:
+      - launchd plist
+      - cron job
+      - login item
+    
+    security_controls:
+      Gatekeeper: disabled # Required for unsigned malware execution
+      XProtect: enabled
+      Firewall: enabled
+    
+    artifacts:
+      host:
+        directories:
+          - /Library/LaunchDaemons
+          - /usr/local/bin
+          - /tmp
+        processes:
+          - sshd
+          - cron
+          - CustomMalwareStub
+        files:
+          - /Library/LaunchDaemons/com.custom.malware.plist
+      network:
+        protocols:
+          - SSH
+          - HTTP
+          - HTTPS
+          - DNS
+          - Proxy
+
+  # --- ESXi Variant ---
+  esxi:
+    os: ["VMware ESXi 7.0U2"]
+    
+    services:
+      SSH: running
+      ESXi Shell: running
+      vpxa: running
+      hostd: running
+    
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      allow_ssh: true
+      allow_proxy: true
+      allow_multi_hop: true
+    
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      root_account: present
+    
+    execution_environment:
+      shells:
+        - /bin/sh
+      allow_script_execution: true
+    
+    installed_software:
+      - esxcli
+      - CustomMalwareStub
+      - nmap 7.91
+    
+    privilege: root
+    
+    domain_role: standalone
+    
+    persistence_surfaces:
+      - rc.local.d
+      - cron job
+    
+    security_controls:
+      Lockdown Mode: disabled
+      Firewall: enabled
+    
+    artifacts:
+      host:
+        directories:
+          - /etc/rc.local.d
+          - /tmp
+        processes:
+          - hostd
+          - vpxa
+          - CustomMalwareStub
+      network:
+        protocols:
+          - SSH
+          - HTTPS
+          - DNS
+          - Proxy
+
+  # --- Network Devices Variant ---
+  network_devices:
+    os: ["Cisco IOS XE 17.3", "Juniper JunOS 20.2R3"]
+    
+    services:
+      SSH: running
+      SNMP: running
+      Telnet: disabled
+      HTTP: running
+      HTTPS: running
+    
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      allow_snmp: true
+      allow_proxy: true
+      allow_multi_hop: true
+    
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      enable_secret: present
+    
+    execution_environment:
+      shells:
+        - CLI
+      allow_script_execution: true # For devices supporting TCL/Expect
+    
+    installed_software:
+      - CustomMalwareStub # If supported by device
+      - Nmap (if supported)
+    
+    privilege: enable
+    
+    domain_role: standalone
+    
+    persistence_surfaces:
+      - startup-config
+      - scheduled job (EEM applet for Cisco)
+    
+    security_controls:
+      AAA: enabled
+      Firewall: enabled
+    
+    artifacts:
+      host:
+        directories:
+          - flash:/
+        processes:
+          - CustomMalwareStub
+      network:
+        protocols:
+          - SSH
+          - SNMP
+          - HTTP
+          - HTTPS
+          - DNS
+          - Proxy
+
+  # --- Containers Variant ---
+  containers:
+    os: ["Alpine Linux 3.14", "Ubuntu 20.04 (containerized)"]
+    
+    services:
+      sshd: running
+      cron: running
+      systemd: running
+    
+    network:
+      outbound_https: allowed
+      dns_resolution: enabled
+      allow_ssh: true
+      allow_proxy: true
+      allow_multi_hop: true
+    
+    identity:
+      domain_controller_reachable: false
+      credential_cache: present
+      root_account: present
+    
+    execution_environment:
+      shells:
+        - /bin/sh
+        - /bin/bash
+      allow_script_execution: true
+      allow_tool_installation: true
+    
+    installed_software:
+      - openssh-server 8.2p1
+      - curl 7.68
+      - wget 1.20
+      -
